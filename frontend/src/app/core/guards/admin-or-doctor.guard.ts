@@ -1,17 +1,17 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { ToastService } from '../services/toast.service';
 
-/** Portal features available to both staff roles. */
-export const adminOrDoctorGuard: CanActivateFn = () => {
+/** Portal features available to both staff roles. Wrong role lands on the 403 page. */
+export const adminOrDoctorGuard: CanActivateFn = (_route, state) => {
   const auth = inject(AuthService);
   const router = inject(Router);
-  const toast = inject(ToastService);
 
   if (auth.hasAnyRole('ADMIN', 'DOCTOR')) {
     return true;
   }
-  toast.error('You do not have permission to access this area.');
-  return router.createUrlTree(['/login']);
+  if (!auth.isLoggedIn()) {
+    return router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
+  }
+  return router.createUrlTree(['/forbidden']);
 };

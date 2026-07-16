@@ -1,7 +1,9 @@
 # Local development — safe defaults so the app starts with zero env vars.
 spring:
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/poshan}
+    # Dedicated DB for this rebuild — the plain `poshan` DB holds the
+    # original Next.js app's Prisma schema; don't point Flyway at it.
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/poshan_api}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
   jpa:

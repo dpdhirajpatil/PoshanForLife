@@ -3,10 +3,17 @@ import { adminOnlyGuard } from './core/guards/admin-only.guard';
 import { adminOrDoctorGuard } from './core/guards/admin-or-doctor.guard';
 import { authGuard } from './core/guards/auth.guard';
 import { LoginComponent } from './features/auth/login.component';
+import { ForbiddenComponent } from './features/errors/forbidden.component';
 import { ShellComponent } from './layout/shell.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent, title: 'Poshan · Sign in' },
+  {
+    path: 'forbidden',
+    component: ForbiddenComponent,
+    canActivate: [authGuard],
+    title: 'Poshan · Access denied',
+  },
   {
     path: '',
     component: ShellComponent,

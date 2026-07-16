@@ -10,7 +10,9 @@ Patients use a separate mobile app; this portal serves ADMIN and DOCTOR roles on
 
 ## Running locally
 
-Backend (needs a local PostgreSQL `poshan` database, or point `DB_URL` at Supabase):
+Backend (needs a local PostgreSQL `poshan_api` database — dedicated to this rebuild; the plain
+`poshan` DB holds the original Next.js app's Prisma schema, keep Flyway out of it — or point
+`DB_URL` at Supabase):
 
 ```bash
 cd backend
@@ -66,6 +68,29 @@ MapStruct mappers default to the Spring component model. Profiles: `local` (defa
 - `layout/ShellComponent` — sidenav + topbar; Users nav item is admin-only
 - `features/<domain>/` — one folder per domain, lazy-loaded via `loadChildren` +
   a default-exported routes file; replace the placeholder page component per feature prompt
+
+### Authentication (feature: auth — done)
+
+- `POST /api/v1/auth/login` `{ email, password }` → `{ accessToken, refreshToken, user }`
+  (bad credentials → 401 `AUTH_REQUIRED`, same message for unknown email vs wrong password;
+  rate-limited 10/min/IP)
+- `POST /api/v1/auth/refresh` — rotates: presented refresh token is revoked, a new pair is returned;
+  replaying a rotated/revoked token → 401
+- `POST /api/v1/auth/logout` — revokes the refresh token server-side (idempotent)
+- Access token: HS256 JWT, 15 min (claims `sub`=user id, `email`, `role`). Refresh token: opaque
+  random 256-bit value, 14 days, only its SHA-256 hash stored (`refresh_tokens` table)
+- Role enforcement: `@AdminOnly` / `@AdminOrDoctor` meta-annotations (wrap `@PreAuthorize`);
+  DOCTOR row-level scoping happens in services via the `AuthenticatedUser` principal
+  (`@AuthenticationPrincipal AuthenticatedUser user`)
+- Rate limiting: annotate any controller method with `@RateLimit(requests, windowSeconds)` —
+  per-IP bucket4j bucket, 429 `RATE_LIMIT_EXCEEDED` (in-memory; swap for Redis ProxyManager when scaling out)
+- Local/dev seed user (never prod): `admin@poshanforlife.com` / `Admin@123` via `DevUserSeeder`
+- Frontend token strategy: access token + user in memory only; refresh token in localStorage,
+  rotated on every use and revocable server-side. Silent refresh on app init (`APP_INITIALIZER`)
+  keeps sessions across reloads; interceptor retries a 401 once after a silent refresh, then
+  forces logout with a "session expired" toast. Hardening option later: backend-set httpOnly
+  cookie for the refresh token (only `AuthService` changes).
+- Wrong-role navigation lands on `/forbidden` (403 page); unauthenticated → `/login?returnUrl=…`
 
 ## Feature prompts still to come
 

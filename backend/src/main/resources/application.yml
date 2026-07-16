@@ -33,7 +33,10 @@ app:
   jwt:
     # HS256 key material; must be at least 256 bits (32 bytes)
     secret: ${JWT_SECRET}
-    expiry-ms: ${JWT_EXPIRY_MS:86400000}
+    # Short-lived access token (default 15 min)
+    access-expiry-ms: ${JWT_ACCESS_EXPIRY_MS:900000}
+    # Refresh token lifetime (default 14 days)
+    refresh-expiry-ms: ${JWT_REFRESH_EXPIRY_MS:1209600000}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
   supabase:

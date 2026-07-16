@@ -7,7 +7,9 @@ export interface CurrentUser {
   role: Role;
 }
 
-export interface LoginResponse {
-  token: string;
+/** Body of /auth/login and /auth/refresh (inside the standard envelope). */
+export interface AuthResponse {
+  accessToken: string;
+  refreshToken: string;
   user: CurrentUser;
 }
