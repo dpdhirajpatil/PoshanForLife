@@ -1,0 +1,10 @@
+# Production — all secrets come from the environment (no defaults).
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+logging:
+  level:
+    root: INFO

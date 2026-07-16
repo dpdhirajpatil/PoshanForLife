@@ -1,0 +1,4 @@
+# Dev/staging — all secrets come from the environment (no defaults).
+logging:
+  level:
+    com.poshanforlife.api: DEBUG
