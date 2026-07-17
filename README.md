@@ -117,6 +117,30 @@ MapStruct mappers default to the Spring component model. Profiles: `local` (defa
   change/reset-password dialog, assign-patients dialog (pre-selected, filterable multi-select),
   deactivate confirm dialog + reactivate action
 
+### Patient management (feature: patients — done)
+
+- `GET/POST /api/v1/patients`, `GET/PATCH /api/v1/patients/{id}`, `DELETE` (ADMIN, soft),
+  `GET /api/v1/patients/stats`
+- Data model: patient = User(role=PATIENT) + 1:1 `patient_profiles` (gender, bloodGroup,
+  heightCm, emergencyContact, medicalHistory, doctorNotes) — dateOfBirth stays on users (V3);
+  minimal `health_records` table added now so stats/overview are real (extended later by the
+  health-records prompt); profile is created lazily for patients that predate the feature
+- DOCTOR scoping enforced on EVERY endpoint (list ignores foreign doctorId, get/patch check the
+  DoctorPatient link, stats aggregate only assigned patients); doctorId list filter is ADMIN-only
+- Create: password optional → temp password generated (returned once as `tempPassword`; email
+  delivery stubbed for the notifications prompt); DOCTOR callers are auto-assigned and cannot
+  assign to another doctor; heightCm must be positive
+- Stats: totalPatients, activeThisMonth (created or with a health record this calendar month),
+  avg BMI + avg body-fat from each patient's latest record (BMI = weight / height²)
+- Frontend `/patients`: stats cards, server-paginated table (assigned-doctor column is
+  admin-only), debounced search, add/edit dialog (Account + Medical sections, temp-password
+  one-time dialog), deactivate = confirm-dialog soft delete (admin-only); detail page
+  `/patients/:id` with profile header + Overview / Programmes (stub, prompt 06) / Reports (stub)
+  / Health Records tabs
+- Gotcha fixed along the way: `(:param is null or lower(x) like ...)` JPQL breaks on Postgres
+  (null String binds as bytea → "lower(bytea) does not exist"); repo search params are now
+  non-null with `''` = no filter — applies to all future search queries
+
 ## Feature prompts still to come
 
-patients · catalogue · orders · transactions · reports · leads · dashboard · notifications
+catalogue · orders · transactions · reports · leads · dashboard · notifications

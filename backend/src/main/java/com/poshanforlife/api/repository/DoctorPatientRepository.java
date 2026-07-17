@@ -12,6 +12,10 @@ public interface DoctorPatientRepository extends JpaRepository<DoctorPatient, UU
 
     List<DoctorPatient> findByDoctorId(UUID doctorId);
 
+    List<DoctorPatient> findByPatientId(UUID patientId);
+
+    boolean existsByDoctorIdAndPatientId(UUID doctorId, UUID patientId);
+
     @Modifying
     @Query("delete from DoctorPatient dp where dp.doctor.id = :doctorId")
     void deleteByDoctorId(UUID doctorId);

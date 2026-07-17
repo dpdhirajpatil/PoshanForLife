@@ -46,7 +46,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public Page<UserDetailDto> list(Role role, String search, int page, int limit) {
         var pageable = PageRequest.of(Math.max(page - 1, 0), limit, Sort.by("createdAt").descending());
-        String term = (search == null || search.isBlank()) ? null : search.trim();
+        String term = (search == null || search.isBlank()) ? "" : search.trim();
         return userRepository.search(role, term, pageable).map(userMapper::toDetailDto);
     }
 
