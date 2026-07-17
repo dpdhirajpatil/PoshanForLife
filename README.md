@@ -141,6 +141,22 @@ MapStruct mappers default to the Spring component model. Profiles: `local` (defa
   (null String binds as bytea → "lower(bytea) does not exist"); repo search params are now
   non-null with `''` = no filter — applies to all future search queries
 
+### Doctor–patient assignments (feature: assignments — done)
+
+- `GET/POST /api/v1/assignments` (+ `?doctorId=` / `?patientId=` filters),
+  `DELETE /api/v1/assignments/{id}` — all ADMIN-only; fine-grained single-pair CRUD
+  complementing the bulk replace-all flow at `POST /users/{id}/assign-patients`
+- Duplicate pair → 409 with new code `ASSIGNMENT_CONFLICT`; role mismatches → 422; delete
+  removes only the link (patient + history kept)
+- Creating an assignment records an in-app Notification for the doctor ("You've been assigned
+  patient X") in the new minimal `notifications` table (V5 — extended later by the
+  notifications prompt, same pattern as `health_records`)
+- Frontend: "Assigned doctors" panel on the patient detail Overview (admins: searchable
+  autocomplete add + confirm-dialog remove, header refreshes via `changed` output; doctors:
+  read-only list); "Manage patients" dialog on DOCTOR rows in `/users` for individual
+  add/remove (bulk dialog relabeled "Replace patient list"); success toasts state the doctor
+  was notified
+
 ## Feature prompts still to come
 
 catalogue · orders · transactions · reports · leads · dashboard · notifications

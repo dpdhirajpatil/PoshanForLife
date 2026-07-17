@@ -19,6 +19,7 @@ import { Role, UserDetail } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog.component';
+import { ManagePatientsDialogComponent } from '../assignments/manage-patients-dialog.component';
 import { AssignPatientsDialogComponent } from './assign-patients-dialog.component';
 import { ChangePasswordDialogComponent } from './change-password-dialog.component';
 import { UserFormDialogComponent } from './user-form-dialog.component';
@@ -164,9 +165,13 @@ import { UsersService } from './users.service';
           {{ isSelf(user) ? 'Change password' : 'Reset password' }}
         </button>
         @if (user.role === 'DOCTOR') {
+          <button mat-menu-item (click)="openManagePatients(user)">
+            <mat-icon>person_add</mat-icon>
+            Manage patients
+          </button>
           <button mat-menu-item (click)="openAssignPatients(user)">
             <mat-icon>diversity_1</mat-icon>
-            Assigned patients
+            Replace patient list
           </button>
         }
         @if (user.isActive) {
@@ -329,6 +334,10 @@ export class UsersPageComponent {
 
   protected openAssignPatients(user: UserDetail): void {
     this.dialog.open(AssignPatientsDialogComponent, { data: { doctor: user } });
+  }
+
+  protected openManagePatients(user: UserDetail): void {
+    this.dialog.open(ManagePatientsDialogComponent, { data: { doctor: user } });
   }
 
   protected deactivate(user: UserDetail): void {

@@ -17,6 +17,8 @@ public enum ErrorCode {
     VALIDATION_ERROR(HttpStatus.UNPROCESSABLE_ENTITY),
     RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND),
     EMAIL_CONFLICT(HttpStatus.CONFLICT),
+    /** Doctor–patient pair already assigned (assignments feature). */
+    ASSIGNMENT_CONFLICT(HttpStatus.CONFLICT),
     RATE_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS),
     OCR_FAILED(HttpStatus.UNPROCESSABLE_ENTITY),
     STORAGE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR),

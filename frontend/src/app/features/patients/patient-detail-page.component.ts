@@ -11,6 +11,7 @@ import { RouterLink } from '@angular/router';
 import { ApiError } from '../../core/models/api-response.model';
 import { PatientDetail, ageFrom } from '../../core/models/patient.model';
 import { ToastService } from '../../core/services/toast.service';
+import { AssignedDoctorsPanelComponent } from '../assignments/assigned-doctors-panel.component';
 import { PatientFormDialogComponent } from './patient-form-dialog.component';
 import { PatientsService } from './patients.service';
 
@@ -33,6 +34,7 @@ import { PatientsService } from './patients.service';
     MatTableModule,
     MatDialogModule,
     MatProgressSpinnerModule,
+    AssignedDoctorsPanelComponent,
   ],
   template: `
     @if (loading()) {
@@ -99,6 +101,12 @@ import { PatientsService } from './patients.service';
                 <span class="stat-label">Height (cm)</span>
               </mat-card>
             </div>
+
+            <app-assigned-doctors-panel
+              [patientId]="p.id"
+              [fallbackDoctors]="p.assignedDoctors"
+              (changed)="reload()"
+            />
 
             <mat-card appearance="outlined" class="info-card">
               <mat-card-header>
@@ -286,6 +294,11 @@ export class PatientDetailPageComponent implements OnInit {
   protected readonly recordColumns = ['recordedAt', 'weightKg', 'bmi', 'bodyFatPct'];
 
   ngOnInit(): void {
+    this.load(this.id());
+  }
+
+  /** Re-fetch after assignment changes so the header doctor list stays fresh. */
+  protected reload(): void {
     this.load(this.id());
   }
 
