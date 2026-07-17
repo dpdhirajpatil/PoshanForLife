@@ -92,6 +92,31 @@ MapStruct mappers default to the Spring component model. Profiles: `local` (defa
   cookie for the refresh token (only `AuthService` changes).
 - Wrong-role navigation lands on `/forbidden` (403 page); unauthenticated → `/login?returnUrl=…`
 
+### User management (feature: users — done)
+
+- `GET/POST /api/v1/users`, `GET/PATCH/DELETE /api/v1/users/{id}`, plus
+  `/{id}/password`, `/{id}/assign-patients`, `/{id}/patients` (read counterpart added so the
+  UI can pre-select current assignments), `/{id}/notification-prefs`
+- List (ADMIN): `role`, `search` (name/email contains), `page` (1-based), `limit`; meta in envelope
+- Create (ADMIN): name ≥ 2, valid unique email (409 `EMAIL_CONFLICT`), password ≥ 8 chars with a
+  digit, role, phone? → 201
+- Update: ADMIN may change name/phone/role/isActive/dateOfBirth; a non-admin self-update may only
+  change name/phone — sending any other field is **rejected with 422 VALIDATION_ERROR**
+  (documented choice, not silently ignored)
+- DELETE = soft delete (isActive=false) + refresh-token revocation; deactivated users can't log
+  in or refresh (same opaque 401 as bad credentials); reactivate via `PATCH { isActive: true }`
+- Password change: self needs correct `currentPassword`; ADMIN acting on another user doesn't;
+  confirmPassword must match; all refresh tokens revoked afterwards
+- assign-patients (ADMIN): replaces ALL of a doctor's `doctor_patients` rows in one transaction;
+  target must be a DOCTOR, ids must be existing PATIENTs
+- notification-prefs: jsonb column, partial-merge semantics (null = keep)
+- Password hash never leaves the API (`UserDetailDto` has no password field)
+- Frontend `/users` (admin-only route guard + nav item hidden): server-paginated table with
+  debounced search + role filter, add/edit dialog (shared form, 409 surfaced on the email field,
+  VALIDATION_ERROR details mapped to field errors via `core/utils/form-errors.ts`),
+  change/reset-password dialog, assign-patients dialog (pre-selected, filterable multi-select),
+  deactivate confirm dialog + reactivate action
+
 ## Feature prompts still to come
 
-users · patients · catalogue · orders · transactions · reports · leads · dashboard · notifications
+patients · catalogue · orders · transactions · reports · leads · dashboard · notifications

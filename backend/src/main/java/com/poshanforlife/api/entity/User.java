@@ -7,6 +7,10 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -27,4 +31,21 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 32)
     private Role role;
+
+    @Column(length = 32)
+    private String phone;
+
+    @Column(name = "avatar_url", length = 512)
+    private String avatarUrl;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
+    /** Soft delete: DELETE /users/{id} flips this to false, rows are never removed. */
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "notification_prefs", nullable = false)
+    private NotificationPrefs notificationPrefs = NotificationPrefs.defaults();
 }

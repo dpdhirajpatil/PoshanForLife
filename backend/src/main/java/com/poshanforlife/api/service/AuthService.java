@@ -49,6 +49,10 @@ public class AuthService {
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             throw new ApiException(ErrorCode.AUTH_REQUIRED, BAD_CREDENTIALS);
         }
+        // Deactivated (soft-deleted) accounts get the same opaque message
+        if (!user.isActive()) {
+            throw new ApiException(ErrorCode.AUTH_REQUIRED, BAD_CREDENTIALS);
+        }
         return issueTokens(user);
     }
 
@@ -60,6 +64,7 @@ public class AuthService {
     public AuthResponse refresh(String refreshToken) {
         RefreshToken stored = refreshTokenRepository.findByTokenHash(sha256(refreshToken))
                 .filter(RefreshToken::isUsable)
+                .filter(token -> token.getUser().isActive())
                 .orElseThrow(() -> new ApiException(ErrorCode.AUTH_REQUIRED, "Invalid or expired refresh token"));
 
         stored.setRevoked(true);
