@@ -13,9 +13,9 @@ import com.poshanforlife.api.entity.CatalogueStatus;
 import com.poshanforlife.api.entity.Challenge;
 import com.poshanforlife.api.entity.Order;
 import com.poshanforlife.api.entity.PatientProgramme;
-import com.poshanforlife.api.entity.PaymentType;
 import com.poshanforlife.api.entity.Programme;
 import com.poshanforlife.api.entity.Role;
+import com.poshanforlife.api.entity.Session;
 import com.poshanforlife.api.entity.Transaction;
 import com.poshanforlife.api.entity.TransactionType;
 import com.poshanforlife.api.entity.User;
@@ -62,7 +62,7 @@ public class PatientProgrammeService {
     private final ChallengeRepository challengeRepository;
     private final UserRepository userRepository;
     private final DoctorPatientRepository doctorPatientRepository;
-    private final TransactionNumbers transactionNumbers;
+    private final TransactionFactory transactionFactory;
 
     @Transactional(readOnly = true)
     public List<PatientProgrammeDto> list(UUID patientId, AuthenticatedUser caller) {
@@ -147,23 +147,10 @@ public class PatientProgrammeService {
         order.setCreatedBy(userRepository.getReferenceById(callerId));
         order = orderRepository.save(order);
 
-        // (e) priced items get an activation ledger entry immediately;
-        // paymentType defaults to OFFLINE (payments are recorded in-clinic
-        // until the payment-gateway integration lands)
-        List<Transaction> transactions = List.of();
-        if (price.signum() > 0) {
-            Transaction tx = new Transaction();
-            tx.setTransactionId(transactionNumbers.newTransactionId());
-            tx.setInvoiceNumber(transactionNumbers.nextInvoiceNumber());
-            tx.setTransactionType(TransactionType.ACTIVATION);
-            tx.setPaymentType(PaymentType.OFFLINE);
-            tx.setPriceInr(price);
-            tx.setAmountInr(price);
-            tx.setOrder(order);
-            tx.setPatient(patient);
-            tx.setCreatedBy(userRepository.getReferenceById(callerId));
-            transactions = List.of(transactionRepository.save(tx));
-        }
+        // (e) priced items get an activation ledger entry immediately
+        List<Transaction> transactions = price.signum() > 0
+                ? List.of(transactionFactory.activation(order, callerId))
+                : List.of();
         return toDto(pp, order, transactions);
     }
 
@@ -322,11 +309,21 @@ public class PatientProgrammeService {
         return toDto(pp, order, transactions);
     }
 
+    /** Shared by the assignments and orders features. */
+    static ServiceRefDto serviceRef(CatalogueItem item) {
+        return new ServiceRefDto(
+                item.getId().toString(),
+                item.getName(),
+                item.getServiceCode(),
+                item instanceof Programme p ? p.getDurationWeeks() : null,
+                item instanceof Session s ? s.getDurationMinutes() : null,
+                item instanceof Challenge c ? c.getDurationDays() : null);
+    }
+
     private PatientProgrammeDto toDto(PatientProgramme pp, Order order,
                                       List<Transaction> transactions) {
         ServiceRefDto itemRef = findCatalogueItem(pp.getServiceType(), pp.itemId())
-                .map(item -> new ServiceRefDto(item.getId().toString(), item.getName(),
-                        item.getServiceCode()))
+                .map(PatientProgrammeService::serviceRef)
                 .orElse(null);
         OrderSummaryDto orderDto = order == null ? null : new OrderSummaryDto(
                 order.getId().toString(),

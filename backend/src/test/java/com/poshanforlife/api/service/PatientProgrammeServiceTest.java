@@ -81,10 +81,13 @@ class PatientProgrammeServiceTest {
 
     @BeforeEach
     void setUp() {
+        // real factory over the mocked repos so transaction assertions still apply
+        TransactionFactory transactionFactory =
+                new TransactionFactory(transactionRepository, transactionNumbers, userRepository);
         service = new PatientProgrammeService(patientProgrammeRepository, orderRepository,
                 transactionRepository, programmeRepository, sessionRepository,
                 challengeRepository, userRepository, doctorPatientRepository,
-                transactionNumbers);
+                transactionFactory);
         admin = newUser("Admin", Role.ADMIN);
         patient = newUser("Pat Kumar", Role.PATIENT);
         adminCaller = new AuthenticatedUser(admin.getId().toString(), "admin@poshan.test", Role.ADMIN);
