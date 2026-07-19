@@ -5,14 +5,11 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import java.util.Locale;
 
-/**
- * Lifecycle of a patient's assignment to a catalogue item. Wire format is
- * lowercase ("active" | "completed" | "cancelled"); the DB stores the name.
- */
-public enum PatientProgrammeStatus {
-    ACTIVE,
-    COMPLETED,
-    CANCELLED;
+/** Wire format lowercase ("paid" | "unpaid" | "pending"). */
+public enum PaymentStatus {
+    PAID,
+    UNPAID,
+    PENDING;
 
     @JsonValue
     public String toWire() {
@@ -20,7 +17,7 @@ public enum PatientProgrammeStatus {
     }
 
     @JsonCreator
-    public static PatientProgrammeStatus fromWire(String value) {
+    public static PaymentStatus fromWire(String value) {
         return valueOf(value.trim().toUpperCase(Locale.ROOT));
     }
 }

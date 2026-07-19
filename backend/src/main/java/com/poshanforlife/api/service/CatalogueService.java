@@ -252,8 +252,7 @@ public class CatalogueService {
     }
 
     private long countActive(CatalogueItemType type, UUID itemId) {
-        return patientProgrammeRepository.countByItemTypeAndItemIdAndStatus(
-                type, itemId, PatientProgrammeStatus.ACTIVE);
+        return patientProgrammeRepository.countForItem(type, itemId, PatientProgrammeStatus.ACTIVE);
     }
 
     private Map<UUID, Long> activeCounts(CatalogueItemType type, List<CatalogueItem> items) {

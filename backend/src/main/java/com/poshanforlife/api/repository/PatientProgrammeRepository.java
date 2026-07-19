@@ -13,15 +13,32 @@ import java.util.UUID;
 
 public interface PatientProgrammeRepository extends JpaRepository<PatientProgramme, UUID> {
 
-    long countByItemTypeAndItemIdAndStatus(CatalogueItemType itemType, UUID itemId,
-                                           PatientProgrammeStatus status);
+    List<PatientProgramme> findByPatientIdOrderByCreatedAtDesc(UUID patientId);
+
+    /**
+     * Exactly one of the three catalogue columns is set per row, so
+     * coalesce(...) is the referenced item's id; serviceType says which table
+     * it points into. Used by the catalogue delete guard.
+     */
+    @Query("""
+            select count(pp) from PatientProgramme pp
+            where pp.serviceType = :itemType
+              and coalesce(pp.programmeId, pp.sessionId, pp.challengeId) = :itemId
+              and pp.status = :status
+            """)
+    long countForItem(@Param("itemType") CatalogueItemType itemType,
+                      @Param("itemId") UUID itemId,
+                      @Param("status") PatientProgrammeStatus status);
 
     /** Assignment counts for a page of catalogue items in one query. */
     @Query("""
-            select pp.itemId as itemId, count(pp) as total
+            select coalesce(pp.programmeId, pp.sessionId, pp.challengeId) as itemId,
+                   count(pp) as total
             from PatientProgramme pp
-            where pp.itemType = :itemType and pp.itemId in :itemIds and pp.status = :status
-            group by pp.itemId
+            where pp.serviceType = :itemType
+              and coalesce(pp.programmeId, pp.sessionId, pp.challengeId) in :itemIds
+              and pp.status = :status
+            group by coalesce(pp.programmeId, pp.sessionId, pp.challengeId)
             """)
     List<ItemAssignmentCount> countByItems(@Param("itemType") CatalogueItemType itemType,
                                            @Param("itemIds") Collection<UUID> itemIds,

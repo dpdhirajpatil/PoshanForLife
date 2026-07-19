@@ -13,6 +13,7 @@ import { PatientDetail, ageFrom } from '../../core/models/patient.model';
 import { ToastService } from '../../core/services/toast.service';
 import { AssignedDoctorsPanelComponent } from '../assignments/assigned-doctors-panel.component';
 import { PatientFormDialogComponent } from './patient-form-dialog.component';
+import { PatientProgrammesPanelComponent } from './patient-programmes-panel.component';
 import { PatientsService } from './patients.service';
 
 /**
@@ -35,6 +36,7 @@ import { PatientsService } from './patients.service';
     MatDialogModule,
     MatProgressSpinnerModule,
     AssignedDoctorsPanelComponent,
+    PatientProgrammesPanelComponent,
   ],
   template: `
     @if (loading()) {
@@ -127,11 +129,7 @@ import { PatientsService } from './patients.service';
 
         <mat-tab label="Programmes">
           <div class="tab-body">
-            <mat-card appearance="outlined">
-              <mat-card-content>
-                <p class="stub">Programme assignments arrive with the programmes feature (prompt 06).</p>
-              </mat-card-content>
-            </mat-card>
+            <app-patient-programmes-panel [patientId]="p.id" [patientName]="p.name" />
           </div>
         </mat-tab>
 

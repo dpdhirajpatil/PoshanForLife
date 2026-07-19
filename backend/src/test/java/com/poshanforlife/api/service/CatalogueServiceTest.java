@@ -150,7 +150,7 @@ class CatalogueServiceTest {
     void deleteBlockedWhileActiveAssignmentsExist() {
         Programme programme = programme("PRG-001", CatalogueStatus.PUBLISHED);
         when(programmeRepository.findById(programme.getId())).thenReturn(Optional.of(programme));
-        when(patientProgrammeRepository.countByItemTypeAndItemIdAndStatus(
+        when(patientProgrammeRepository.countForItem(
                 CatalogueItemType.PROGRAMME, programme.getId(), PatientProgrammeStatus.ACTIVE))
                 .thenReturn(3L);
 
@@ -166,7 +166,7 @@ class CatalogueServiceTest {
     void deleteAllowedWhenArchivedDespiteActiveAssignments() {
         Programme programme = programme("PRG-001", CatalogueStatus.ARCHIVED);
         when(programmeRepository.findById(programme.getId())).thenReturn(Optional.of(programme));
-        when(patientProgrammeRepository.countByItemTypeAndItemIdAndStatus(
+        when(patientProgrammeRepository.countForItem(
                 CatalogueItemType.PROGRAMME, programme.getId(), PatientProgrammeStatus.ACTIVE))
                 .thenReturn(3L);
         when(serviceCodeRepository.findByItemTypeAndItemId(CatalogueItemType.PROGRAMME, programme.getId()))
