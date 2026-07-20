@@ -1,4 +1,112 @@
-/* You can add global styles to this file, and also import other style files */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+:root {
+  --font-sora: 'Sora', ui-sans-serif, sans-serif;
+  --font-plus-jakarta: 'Plus Jakarta Sans', ui-sans-serif, sans-serif;
+
+  --color-brand: #2d8a68;
+  --color-accent: #f59e0b;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #2d8a68;
+  --primary-foreground: #f8fafc;
+  --secondary: #e2e8f0;
+  --secondary-foreground: #0f172a;
+  --muted: #eef2f7;
+  --muted-foreground: #64748b;
+  --accent: #f59e0b;
+  --accent-foreground: #3f2a00;
+  --destructive: #dc2626;
+  --destructive-foreground: #f8fafc;
+  --border: #d8e1ea;
+  --input: #d8e1ea;
+  --ring: #4dc49a;
+  --chart-1: #2d8a68;
+  --chart-2: #4dc49a;
+  --chart-3: #f59e0b;
+  --chart-4: #226b4f;
+  --chart-5: #94a3b8;
+  --radius: 0.875rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #2d8a68;
+  --sidebar-primary-foreground: #f8fafc;
+  --sidebar-accent: #f0fdf7;
+  --sidebar-accent-foreground: #226b4f;
+  --sidebar-border: #d8e1ea;
+  --sidebar-ring: #4dc49a;
+
+  --app-gradient: radial-gradient(circle at top left, rgb(45 138 104 / 0.12), transparent 32%),
+    radial-gradient(circle at top right, rgb(245 158 11 / 0.14), transparent 22%);
+}
+
+.dark {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --card: #1e293b;
+  --card-foreground: #f1f5f9;
+  --popover: #1e293b;
+  --popover-foreground: #f1f5f9;
+  --primary: #34a87e;
+  --primary-foreground: #ffffff;
+  --secondary: #334155;
+  --secondary-foreground: #f1f5f9;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #f59e0b;
+  --accent-foreground: #3f2a00;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #334155;
+  --input: #334155;
+  --ring: #34a87e;
+  --chart-1: #34a87e;
+  --chart-2: #4dc49a;
+  --chart-3: #f59e0b;
+  --chart-4: #7dd9b8;
+  --chart-5: #64748b;
+  --sidebar: #1e293b;
+  --sidebar-foreground: #f1f5f9;
+  --sidebar-primary: #34a87e;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #0f2d1f;
+  --sidebar-accent-foreground: #7dd9b8;
+  --sidebar-border: #334155;
+  --sidebar-ring: #34a87e;
+
+  --app-gradient: radial-gradient(circle at top left, rgb(52 168 126 / 0.08), transparent 32%),
+    radial-gradient(circle at top right, rgb(245 158 11 / 0.06), transparent 22%);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-plus-jakarta);
+  background-color: var(--background);
+  background-image: var(--app-gradient);
+  background-attachment: fixed;
+  color: var(--foreground);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.font-display {
+  font-family: var(--font-sora);
+}
