@@ -15,7 +15,6 @@ import com.poshanforlife.api.entity.Order;
 import com.poshanforlife.api.entity.PatientProgramme;
 import com.poshanforlife.api.entity.Programme;
 import com.poshanforlife.api.entity.Role;
-import com.poshanforlife.api.entity.Session;
 import com.poshanforlife.api.entity.Transaction;
 import com.poshanforlife.api.entity.TransactionType;
 import com.poshanforlife.api.entity.User;
@@ -309,21 +308,10 @@ public class PatientProgrammeService {
         return toDto(pp, order, transactions);
     }
 
-    /** Shared by the assignments and orders features. */
-    static ServiceRefDto serviceRef(CatalogueItem item) {
-        return new ServiceRefDto(
-                item.getId().toString(),
-                item.getName(),
-                item.getServiceCode(),
-                item instanceof Programme p ? p.getDurationWeeks() : null,
-                item instanceof Session s ? s.getDurationMinutes() : null,
-                item instanceof Challenge c ? c.getDurationDays() : null);
-    }
-
     private PatientProgrammeDto toDto(PatientProgramme pp, Order order,
                                       List<Transaction> transactions) {
         ServiceRefDto itemRef = findCatalogueItem(pp.getServiceType(), pp.itemId())
-                .map(PatientProgrammeService::serviceRef)
+                .map(ServiceRefDto::of)
                 .orElse(null);
         OrderSummaryDto orderDto = order == null ? null : new OrderSummaryDto(
                 order.getId().toString(),

@@ -56,6 +56,12 @@ public class Transaction extends BaseEntity {
     @Column(nullable = false, length = 32)
     private String source = "admin";
 
+    @Column(name = "payment_gateway_ref", length = 255)
+    private String paymentGatewayRef;
+
+    @Column(columnDefinition = "text")
+    private String notes;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;

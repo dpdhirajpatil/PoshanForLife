@@ -15,6 +15,17 @@ export const routes: Routes = [
     title: 'Poshan · Access denied',
   },
   {
+    // Outside the shell (no sidenav/topbar) so window.print() only renders
+    // the invoice sheet itself.
+    path: 'invoices/:transactionId',
+    loadComponent: () =>
+      import('./features/transactions/invoice-page.component').then(
+        (m) => m.InvoicePageComponent,
+      ),
+    canActivate: [authGuard, adminOrDoctorGuard],
+    title: 'Poshan · Invoice',
+  },
+  {
     path: '',
     component: ShellComponent,
     canActivate: [authGuard, adminOrDoctorGuard],

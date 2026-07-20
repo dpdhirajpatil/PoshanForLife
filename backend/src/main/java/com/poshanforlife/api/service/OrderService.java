@@ -3,6 +3,7 @@ package com.poshanforlife.api.service;
 import com.poshanforlife.api.dto.OrderDetailDto;
 import com.poshanforlife.api.dto.OrderListItemDto;
 import com.poshanforlife.api.dto.OrderProgrammeDto;
+import com.poshanforlife.api.dto.ServiceRefDto;
 import com.poshanforlife.api.dto.PatientRefDto;
 import com.poshanforlife.api.dto.TransactionSummaryDto;
 import com.poshanforlife.api.dto.UpdateOrderRequest;
@@ -156,7 +157,7 @@ public class OrderService {
                     pp.getId().toString(),
                     pp.getServiceType(),
                     findCatalogueItem(pp.getServiceType(), pp.itemId())
-                            .map(PatientProgrammeService::serviceRef).orElse(null),
+                            .map(ServiceRefDto::of).orElse(null),
                     pp.getStartDate(),
                     pp.getEndDate(),
                     pp.getStatus(),
