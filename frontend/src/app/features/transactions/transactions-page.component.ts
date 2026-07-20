@@ -279,7 +279,7 @@ const PAYMENT_TYPES: PaymentType[] = ['offline', 'online', 'credit'];
       width: 100%;
     }
     .invoice-link {
-      color: #3f51b5;
+      color: var(--primary);
       cursor: pointer;
       font-weight: 500;
     }

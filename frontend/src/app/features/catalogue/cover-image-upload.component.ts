@@ -82,8 +82,8 @@ const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
       transition: border-color 0.15s, background 0.15s;
     }
     .dropzone.dragover {
-      border-color: #3f51b5;
-      background: rgba(63, 81, 181, 0.06);
+      border-color: var(--primary);
+      background: rgba(45, 138, 104, 0.06);
     }
     .dropzone.has-image {
       padding: 0;

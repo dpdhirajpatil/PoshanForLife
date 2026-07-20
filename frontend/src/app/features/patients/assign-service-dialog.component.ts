@@ -214,8 +214,8 @@ const TYPE_TO_ROUTE: Record<ServiceType, CatalogueType> = {
       background: rgba(0, 0, 0, 0.03);
     }
     .item-row.selected {
-      border-color: #3f51b5;
-      background: rgba(63, 81, 181, 0.07);
+      border-color: var(--primary);
+      background: rgba(45, 138, 104, 0.07);
     }
     .item-main {
       display: flex;
