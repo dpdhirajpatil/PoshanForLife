@@ -207,7 +207,7 @@ const PAYMENT_TYPES: PaymentType[] = ['offline', 'online', 'credit'];
       justify-content: space-between;
       padding: 10px 12px;
       border-radius: 8px;
-      background: rgba(63, 81, 181, 0.07);
+      background: rgba(45, 138, 104, 0.07);
       margin-bottom: 12px;
     }
     .muted {

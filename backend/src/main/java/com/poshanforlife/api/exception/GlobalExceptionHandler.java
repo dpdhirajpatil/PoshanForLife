@@ -68,7 +68,7 @@ public class GlobalExceptionHandler {
     /** Multipart upload over the configured size cap → 422 VALIDATION_ERROR. */
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ApiErrorResponse> handleMaxUploadSize(MaxUploadSizeExceededException ex) {
-        return respond(ErrorCode.VALIDATION_ERROR, "File exceeds the maximum upload size (5 MB)", null);
+        return respond(ErrorCode.VALIDATION_ERROR, "File exceeds the maximum upload size", null);
     }
 
     @ExceptionHandler(AuthenticationException.class)

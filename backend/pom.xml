@@ -85,6 +85,13 @@
             <version>8.10.1</version>
         </dependency>
 
+        <!-- PDF text extraction + page rendering for the reports/InBody upload pipeline -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>3.0.3</version>
+        </dependency>
+
         <!-- OpenAPI / Swagger UI -->
         <dependency>
             <groupId>org.springdoc</groupId>

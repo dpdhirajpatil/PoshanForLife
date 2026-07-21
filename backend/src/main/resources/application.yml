@@ -19,9 +19,10 @@ spring:
     locations: classpath:db/migration
   servlet:
     multipart:
-      # Cover-image uploads — keep in sync with SupabaseStorageService.MAX_IMAGE_BYTES
-      max-file-size: 5MB
-      max-request-size: 6MB
+      # Ceiling across all uploads; per-type checks are stricter (cover images:
+      # SupabaseStorageService.MAX_IMAGE_BYTES = 5MB, report PDFs: 10MB).
+      max-file-size: 10MB
+      max-request-size: 11MB
 
 server:
   port: ${SERVER_PORT:8080}
@@ -48,6 +49,25 @@ app:
     storage-url: ${SUPABASE_STORAGE_URL:}
     service-key: ${SUPABASE_SERVICE_KEY:}
     bucket: ${SUPABASE_STORAGE_BUCKET:covers}
+    # Private bucket for report/InBody PDFs — never made public; served via signed URLs.
+    reports-bucket: ${SUPABASE_REPORTS_BUCKET:poshan-reports}
   anthropic:
     api-key: ${ANTHROPIC_API_KEY:}
     model: ${ANTHROPIC_MODEL:claude-sonnet-5}
+    # Configurable, not hardcoded in AnthropicExtractionService — override via
+    # app.anthropic.prompt-template (or APP_ANTHROPIC_PROMPT_TEMPLATE) to tune
+    # the extraction without a code change.
+    prompt-template: |
+      You are extracting structured body-composition data from an InBody
+      report. Read the provided report content (text or image) and return
+      ONLY a single JSON object - no markdown fences, no commentary - with
+      exactly these keys (use JSON null, not a guess, for any value not
+      present in the report):
+      weightKg, bodyFatPercent, skeletalMuscleMassKg, bmi, visceralFatLevel,
+      bodyWaterL, proteinKg, mineralKg, basalMetabolicRate, bodyFatMassKg,
+      fatFreeMassKg, waistHipRatio, targetWeightKg, weightControlKg,
+      fatControlKg, muscleControlKg, obesityDegreePercent,
+      intracellularWaterL, extracellularWaterL, inbodyScore.
+      All values are plain numbers in the units InBody normally reports them
+      in (kg, percent, liters, kcal) except inbodyScore which is an integer
+      0-100. Do not invent a value you cannot find in the report.
