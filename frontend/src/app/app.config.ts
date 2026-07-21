@@ -3,6 +3,7 @@ import { APP_INITIALIZER, ApplicationConfig, provideZoneChangeDetection } from '
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { firstValueFrom } from 'rxjs';
 
 import { routes } from './app.routes';
@@ -33,5 +34,6 @@ export const appConfig: ApplicationConfig = {
       provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
       useValue: { floatLabel: 'always' },
     },
+    provideCharts(withDefaultRegisterables()),
   ],
 };

@@ -20,4 +20,7 @@ public interface HealthRecordRepository extends JpaRepository<HealthRecord, UUID
     @Query(value = "SELECT DISTINCT ON (patient_id) * FROM health_records ORDER BY patient_id, recorded_at DESC",
             nativeQuery = true)
     List<HealthRecord> findLatestPerPatient();
+
+    /** Every record on/after {@code from} — used for the dashboard's 6-month PBF trend. */
+    List<HealthRecord> findByRecordDateGreaterThanEqual(LocalDate from);
 }

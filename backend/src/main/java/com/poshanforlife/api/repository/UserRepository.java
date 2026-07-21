@@ -52,4 +52,24 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Query("select dp.patient.id from DoctorPatient dp where dp.doctor.id = :doctorId")
     List<UUID> findPatientIdsOfDoctor(@Param("doctorId") UUID doctorId);
+
+    long countByRoleAndIsActiveTrue(Role role);
+
+    /** One row per active doctor, patientCount 0 for doctors with no assignments. */
+    @Query("""
+            select d.id as doctorId, d.name as doctorName, count(dp.id) as patientCount
+            from User d left join DoctorPatient dp on dp.doctor.id = d.id
+            where d.role = :role and d.isActive = true
+            group by d.id, d.name
+            order by d.name asc
+            """)
+    List<DoctorPatientCount> countPatientsPerDoctor(@Param("role") Role role);
+
+    interface DoctorPatientCount {
+        UUID getDoctorId();
+
+        String getDoctorName();
+
+        Long getPatientCount();
+    }
 }

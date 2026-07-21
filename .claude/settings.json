@@ -13,7 +13,33 @@
       "Bash(sed -i '' \"s/await page.locator\\('a.row-link', { hasText: 'Playwright Test Lead' }\\).click\\(\\);/await page.locator\\('a.row-link', { hasText: 'Playwright Test Lead' }\\).first\\(\\).click\\(\\);/\" /private/tmp/claude-501/-Users-dhiraj-Documents-Applications-Poshan-PoshanForLife/821e0a2b-cf38-48c6-80ed-db507c2bb9fb/scratchpad/driver/leads-check4.js)",
       "Bash(./mvnw -q test-compile)",
       "Bash(./mvnw -q test -Dtest=LeadServiceTest)",
-      "Bash(awk -F'[ ,]+' '{run+=$3; fail+=$5; err+=$7} END {print \"Total:\", run, \"Failures:\", fail, \"Errors:\", err}')"
+      "Bash(awk -F'[ ,]+' '{run+=$3; fail+=$5; err+=$7} END {print \"Total:\", run, \"Failures:\", fail, \"Errors:\", err}')",
+      "Bash(xargs -I{} basename {})",
+      "Bash(xargs -I{} sh -c 'echo ---{}---; cat {}')",
+      "Bash(./mvnw -q test -Dtest=DashboardServiceTest)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(npm view *)",
+      "Bash(kill 5218 5072)",
+      "Bash(ps -p 8488 -o pid,etime,command)",
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c \"select email, role from users order by role;\")",
+      "Bash(python3 -c \"import bcrypt; print\\(bcrypt.hashpw\\(b'Password123!', bcrypt.gensalt\\(\\)\\).decode\\(\\)\\)\")",
+      "Bash(htpasswd -bnBC 10 \"\" 'Password123!')",
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c 'update users set password_hash = '\\\\''$2y$10$ST8p1g6R3/N4pFbp8rGA/OlgBo/KkIVrHnH2T9LLo4kjbHIYvrIxu'\\\\'' where email in \\('\\\\''admin@poshanforlife.com'\\\\'','\\\\''dr.mehta@poshanforlife.com'\\\\''\\);')",
+      "Bash(curl -s -X POST http://localhost:8080/api/v1/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"admin@poshanforlife.com\",\"password\":\"Password123!\"}')",
+      "Bash(echo \"started frontend pid $!\")",
+      "Bash(kill %1)",
+      "Bash(jobs)",
+      "Bash(pkill -f \"ng serve\" -f \"17506\")",
+      "Bash(kill -9 17506)",
+      "Bash(ps -p 24782 -o pid,etime,command)",
+      "Bash(nohup npx ng serve)",
+      "Bash(node -e \"require\\('playwright'\\); console.log\\('ok'\\)\")",
+      "Bash(node /private/tmp/claude-501/-Users-dhiraj-Documents-Applications-Poshan-PoshanForLife/821e0a2b-cf38-48c6-80ed-db507c2bb9fb/scratchpad/dashboard-check.js)",
+      "Bash(node /tmp/debug-login.js)",
+      "Bash(rm -f /tmp/debug-login.js /tmp/dashboard-dark-check.js /tmp/login-debug.png)"
+    ],
+    "additionalDirectories": [
+      "/private/tmp"
     ]
   }
 }
