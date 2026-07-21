@@ -98,7 +98,7 @@ import { Assignment, AssignmentsService } from './assignments.service';
   `,
   styles: `
     .empty {
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
       margin: 8px 0;
     }
     .add-field {

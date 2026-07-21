@@ -135,10 +135,10 @@ import { ReportsService } from './reports.service';
       width: 90px;
       flex-shrink: 0;
       font-size: 0.82rem;
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
     }
     .muted {
-      color: rgba(0, 0, 0, 0.55);
+      color: var(--muted-foreground);
     }
     .badge {
       padding: 2px 10px;
@@ -146,14 +146,14 @@ import { ReportsService } from './reports.service';
       font-size: 0.78rem;
       margin-right: 6px;
     }
-    .type-inbody { background: #e3f2fd; color: #1565c0; }
-    .type-lab { background: #ede7f6; color: #5e35b1; }
-    .type-prescription { background: #fff8e1; color: #b26a00; }
-    .type-other { background: #eceff1; color: #455a64; }
-    .status-pending { background: #eceff1; color: #455a64; }
-    .status-processing { background: #fff8e1; color: #b26a00; }
-    .status-done { background: #e8f5e9; color: #2e7d32; }
-    .status-error { background: #fbe9e7; color: #c62828; }
+    .type-inbody { background: var(--badge-blue-bg); color: var(--badge-blue-fg); }
+    .type-lab { background: var(--badge-purple-bg); color: var(--badge-purple-fg); }
+    .type-prescription { background: var(--badge-amber-bg); color: var(--badge-amber-fg); }
+    .type-other { background: var(--badge-grey-bg); color: var(--badge-grey-fg); }
+    .status-pending { background: var(--badge-grey-bg); color: var(--badge-grey-fg); }
+    .status-processing { background: var(--badge-amber-bg); color: var(--badge-amber-fg); }
+    .status-done { background: var(--badge-green-bg); color: var(--badge-green-fg); }
+    .status-error { background: var(--badge-red-bg); color: var(--badge-red-fg); }
     .pdf-link {
       display: flex;
       align-items: center;
@@ -169,8 +169,8 @@ import { ReportsService } from './reports.service';
       display: flex;
       align-items: center;
       gap: 8px;
-      background: #fbe9e7;
-      color: #c62828;
+      background: var(--badge-red-bg);
+      color: var(--badge-red-fg);
       border-radius: 8px;
       padding: 10px 12px;
       font-size: 0.85rem;
@@ -180,14 +180,14 @@ import { ReportsService } from './reports.service';
       margin: 4px 0 0;
     }
     .low-confidence {
-      color: #b26a00;
+      color: var(--badge-amber-fg);
     }
     .group-label {
       margin: 10px 0 4px;
       font-size: 0.8rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: rgba(0, 0, 0, 0.55);
+      color: var(--muted-foreground);
     }
     .field-grid {
       display: grid;
@@ -198,11 +198,11 @@ import { ReportsService } from './reports.service';
       display: flex;
       justify-content: space-between;
       padding: 3px 0;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      border-bottom: 1px solid var(--border);
       font-size: 0.88rem;
     }
     .field-label {
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
     }
     .field-value {
       font-weight: 500;

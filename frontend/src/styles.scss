@@ -46,6 +46,27 @@
 
   --app-gradient: radial-gradient(circle at top left, rgb(45 138 104 / 0.12), transparent 32%),
     radial-gradient(circle at top right, rgb(245 158 11 / 0.14), transparent 22%);
+
+  /* Status/role/type badge palette — shared by every chip-style indicator
+     (role, status, payment, assignment, catalogue, report badges) so a
+     single place controls light/dark contrast instead of per-component hex. */
+  --badge-green-bg: #e8f5e9;
+  --badge-green-fg: #2e7d32;
+  --badge-blue-bg: #e3f2fd;
+  --badge-blue-fg: #1565c0;
+  --badge-purple-bg: #ede7f6;
+  --badge-purple-fg: #5e35b1;
+  --badge-amber-bg: #fff8e1;
+  --badge-amber-fg: #b26a00;
+  --badge-red-bg: #fbe9e7;
+  --badge-red-fg: #c62828;
+  --badge-grey-bg: #eceff1;
+  --badge-grey-fg: #455a64;
+  --badge-orange-bg: #fff3e0;
+  --badge-orange-fg: #e65100;
+
+  /* Subtle primary-tinted highlight for selected list rows/cards. */
+  --primary-tint: rgb(45 138 104 / 0.07);
 }
 
 .dark {
@@ -84,6 +105,23 @@
 
   --app-gradient: radial-gradient(circle at top left, rgb(52 168 126 / 0.08), transparent 32%),
     radial-gradient(circle at top right, rgb(245 158 11 / 0.06), transparent 22%);
+
+  --badge-green-bg: rgb(52 168 126 / 0.18);
+  --badge-green-fg: #6ee7b7;
+  --badge-blue-bg: rgb(59 130 246 / 0.18);
+  --badge-blue-fg: #93c5fd;
+  --badge-purple-bg: rgb(168 85 247 / 0.18);
+  --badge-purple-fg: #d8b4fe;
+  --badge-amber-bg: rgb(245 158 11 / 0.18);
+  --badge-amber-fg: #fcd34d;
+  --badge-red-bg: rgb(239 68 68 / 0.18);
+  --badge-red-fg: #fca5a5;
+  --badge-grey-bg: rgb(148 163 184 / 0.18);
+  --badge-grey-fg: #cbd5e1;
+  --badge-orange-bg: rgb(249 115 22 / 0.18);
+  --badge-orange-fg: #fdba74;
+
+  --primary-tint: rgb(52 168 126 / 0.14);
 }
 
 html,

@@ -175,7 +175,7 @@ const PAYMENT_TYPES: PaymentType[] = ['offline', 'online', 'credit'];
       justify-content: space-between;
       gap: 12px;
       padding: 10px 12px;
-      border: 1px solid rgba(0, 0, 0, 0.15);
+      border: 1px solid var(--border);
       border-radius: 8px;
       background: none;
       cursor: pointer;
@@ -183,7 +183,7 @@ const PAYMENT_TYPES: PaymentType[] = ['offline', 'online', 'credit'];
       font: inherit;
     }
     .order-row:hover {
-      background: rgba(0, 0, 0, 0.03);
+      background: var(--muted);
     }
     .order-main {
       display: flex;
@@ -195,7 +195,7 @@ const PAYMENT_TYPES: PaymentType[] = ['offline', 'online', 'credit'];
     }
     .order-meta {
       font-size: 0.8rem;
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
     }
     .order-amount {
       font-weight: 600;
@@ -207,11 +207,11 @@ const PAYMENT_TYPES: PaymentType[] = ['offline', 'online', 'credit'];
       justify-content: space-between;
       padding: 10px 12px;
       border-radius: 8px;
-      background: rgba(45, 138, 104, 0.07);
+      background: var(--primary-tint);
       margin-bottom: 12px;
     }
     .muted {
-      color: rgba(0, 0, 0, 0.55);
+      color: var(--muted-foreground);
     }
     .grid {
       display: grid;

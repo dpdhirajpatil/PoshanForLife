@@ -84,12 +84,12 @@ export interface AssignPatientsDialogData {
       padding: 32px;
     }
     .empty {
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
       padding: 8px;
     }
     .count {
       margin-right: auto;
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
       font-size: 0.85rem;
     }
     mat-dialog-content {

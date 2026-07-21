@@ -255,7 +255,7 @@ const PAYMENT_TYPES: PaymentType[] = ['offline', 'online', 'credit'];
       font-weight: 600;
     }
     .stat-label {
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
       font-size: 0.85rem;
     }
     .filters {
@@ -293,14 +293,14 @@ const PAYMENT_TYPES: PaymentType[] = ['offline', 'online', 'credit'];
     }
     .service-meta {
       font-size: 0.8rem;
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
     }
     .muted {
-      color: rgba(0, 0, 0, 0.55);
+      color: var(--muted-foreground);
     }
     .credit-note {
       font-size: 0.75rem;
-      color: #c62828;
+      color: var(--badge-red-fg);
     }
     .badge {
       padding: 2px 10px;
@@ -308,16 +308,16 @@ const PAYMENT_TYPES: PaymentType[] = ['offline', 'online', 'credit'];
       font-size: 0.78rem;
       white-space: nowrap;
     }
-    .type-activation { background: #e8f5e9; color: #2e7d32; }
-    .type-deactivation { background: #eceff1; color: #455a64; }
-    .type-refund { background: #fbe9e7; color: #c62828; }
-    .pay-offline { background: #e3f2fd; color: #1565c0; }
-    .pay-online { background: #ede7f6; color: #5e35b1; }
-    .pay-credit { background: #fff8e1; color: #b26a00; }
+    .type-activation { background: var(--badge-green-bg); color: var(--badge-green-fg); }
+    .type-deactivation { background: var(--badge-grey-bg); color: var(--badge-grey-fg); }
+    .type-refund { background: var(--badge-red-bg); color: var(--badge-red-fg); }
+    .pay-offline { background: var(--badge-blue-bg); color: var(--badge-blue-fg); }
+    .pay-online { background: var(--badge-purple-bg); color: var(--badge-purple-fg); }
+    .pay-credit { background: var(--badge-amber-bg); color: var(--badge-amber-fg); }
     .no-data {
       padding: 24px;
       text-align: center;
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
     }
   `,
 })

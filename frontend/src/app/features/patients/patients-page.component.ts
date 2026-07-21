@@ -211,7 +211,7 @@ import { PatientsService } from './patients.service';
       font-weight: 600;
     }
     .stat-label {
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
       font-size: 0.85rem;
     }
     .filters {
@@ -236,12 +236,12 @@ import { PatientsService } from './patients.service';
       padding: 2px 10px;
       border-radius: 12px;
       font-size: 0.78rem;
-      background: #e8f5e9;
-      color: #2e7d32;
+      background: var(--badge-green-bg);
+      color: var(--badge-green-fg);
     }
     .status-badge.inactive {
-      background: #fbe9e7;
-      color: #c62828;
+      background: var(--badge-red-bg);
+      color: var(--badge-red-fg);
     }
     .row-inactive td {
       opacity: 0.55;
@@ -249,7 +249,7 @@ import { PatientsService } from './patients.service';
     .no-data {
       padding: 24px;
       text-align: center;
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
     }
   `,
 })

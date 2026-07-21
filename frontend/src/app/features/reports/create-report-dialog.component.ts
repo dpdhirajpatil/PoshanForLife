@@ -127,7 +127,7 @@ const MANUAL_TYPES: ReportType[] = ['lab', 'prescription', 'other'];
       display: flex;
       align-items: center;
       padding: 10px 12px;
-      border: 1px solid rgba(0, 0, 0, 0.15);
+      border: 1px solid var(--border);
       border-radius: 8px;
       background: none;
       cursor: pointer;
@@ -136,7 +136,7 @@ const MANUAL_TYPES: ReportType[] = ['lab', 'prescription', 'other'];
       color: inherit;
     }
     .patient-row:hover {
-      background: rgba(0, 0, 0, 0.03);
+      background: var(--muted);
     }
     .patient-main {
       display: flex;
@@ -148,7 +148,7 @@ const MANUAL_TYPES: ReportType[] = ['lab', 'prescription', 'other'];
     }
     .patient-meta {
       font-size: 0.8rem;
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
     }
     .selected-patient {
       display: flex;
@@ -156,11 +156,11 @@ const MANUAL_TYPES: ReportType[] = ['lab', 'prescription', 'other'];
       justify-content: space-between;
       padding: 10px 12px;
       border-radius: 8px;
-      background: rgba(45, 138, 104, 0.07);
+      background: var(--primary-tint);
       margin-bottom: 12px;
     }
     .muted {
-      color: rgba(0, 0, 0, 0.55);
+      color: var(--muted-foreground);
     }
     .grid {
       display: grid;

@@ -234,7 +234,7 @@ const PAYMENT_STATUSES: OrderPaymentStatus[] = ['paid', 'unpaid', 'pending'];
       cursor: pointer;
     }
     .clickable:hover {
-      background: rgba(0, 0, 0, 0.03);
+      background: var(--muted);
     }
     .service-cell {
       display: flex;
@@ -243,10 +243,10 @@ const PAYMENT_STATUSES: OrderPaymentStatus[] = ['paid', 'unpaid', 'pending'];
     }
     .service-meta {
       font-size: 0.8rem;
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
     }
     .muted {
-      color: rgba(0, 0, 0, 0.55);
+      color: var(--muted-foreground);
     }
     .badge {
       padding: 2px 10px;
@@ -254,16 +254,16 @@ const PAYMENT_STATUSES: OrderPaymentStatus[] = ['paid', 'unpaid', 'pending'];
       font-size: 0.78rem;
       white-space: nowrap;
     }
-    .status-active { background: #e8f5e9; color: #2e7d32; }
-    .status-completed { background: #e3f2fd; color: #1565c0; }
-    .status-deactivated { background: #eceff1; color: #455a64; }
-    .payment-paid { background: #e8f5e9; color: #2e7d32; }
-    .payment-pending { background: #fff8e1; color: #b26a00; }
-    .payment-unpaid { background: #fbe9e7; color: #c62828; }
+    .status-active { background: var(--badge-green-bg); color: var(--badge-green-fg); }
+    .status-completed { background: var(--badge-blue-bg); color: var(--badge-blue-fg); }
+    .status-deactivated { background: var(--badge-grey-bg); color: var(--badge-grey-fg); }
+    .payment-paid { background: var(--badge-green-bg); color: var(--badge-green-fg); }
+    .payment-pending { background: var(--badge-amber-bg); color: var(--badge-amber-fg); }
+    .payment-unpaid { background: var(--badge-red-bg); color: var(--badge-red-fg); }
     .no-data {
       padding: 24px;
       text-align: center;
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
     }
   `,
 })

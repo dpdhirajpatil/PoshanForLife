@@ -1,5 +1,6 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { APP_INITIALIZER, ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -24,6 +25,13 @@ export const appConfig: ApplicationConfig = {
       multi: true,
       useFactory: initSessionFactory,
       deps: [AuthService],
+    },
+    {
+      // Always-floated labels avoid the MDC notched-outline render seam that
+      // appears when a field has both a mat-label and a placeholder but sits
+      // empty/unfocused (the "resting, hide-placeholder" notch state).
+      provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
+      useValue: { floatLabel: 'always' },
     },
   ],
 };

@@ -114,4 +114,24 @@ $poshan-dark-theme: mat.m2-define-dark-theme(
 // theme (typography/density set once above).
 .dark {
   @include mat.all-component-colors($poshan-dark-theme);
+
+  // m2-define-dark-theme() has no override hook for its background/foreground
+  // maps — it always forces Material's stock dark grey (#424242, "grey 800").
+  // That leaves every "surface" component (dialogs, menus, selects, etc.)
+  // showing a flat grey instead of this app's navy --card, clashing with the
+  // rest of the dark theme. Overriding the emitted custom properties directly
+  // is Material's supported customization path for exactly this case.
+  --mdc-dialog-container-color: var(--card);
+  --mdc-elevated-card-container-color: var(--card);
+  --mdc-outlined-card-container-color: var(--card);
+  --mdc-snackbar-container-color: var(--card);
+  --mat-menu-container-color: var(--card);
+  --mat-select-panel-background-color: var(--card);
+  --mat-autocomplete-background-color: var(--card);
+  --mat-datepicker-calendar-container-background-color: var(--card);
+  --mat-bottom-sheet-container-background-color: var(--card);
+  --mat-paginator-container-background-color: var(--card);
+  --mat-app-surface: var(--card);
+  --mat-app-surface-container: var(--card);
+  --mat-app-background-color: var(--background);
 }

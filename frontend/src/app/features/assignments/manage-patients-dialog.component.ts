@@ -99,7 +99,7 @@ export interface ManagePatientsDialogData {
       padding: 32px;
     }
     .empty {
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
       margin: 8px 0;
     }
     .add-field {

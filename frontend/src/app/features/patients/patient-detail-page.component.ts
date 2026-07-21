@@ -199,7 +199,7 @@ import { PatientsService } from './patients.service';
       font-size: 56px;
       width: 56px;
       height: 56px;
-      color: rgba(0, 0, 0, 0.35);
+      color: var(--muted-foreground);
     }
     .header-info {
       flex: 1;
@@ -212,7 +212,7 @@ import { PatientsService } from './patients.service';
       gap: 12px;
     }
     .header-meta {
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
@@ -222,12 +222,12 @@ import { PatientsService } from './patients.service';
       border-radius: 12px;
       font-size: 0.75rem;
       font-weight: 500;
-      background: #e8f5e9;
-      color: #2e7d32;
+      background: var(--badge-green-bg);
+      color: var(--badge-green-fg);
     }
     .status-badge.inactive {
-      background: #fbe9e7;
-      color: #c62828;
+      background: var(--badge-red-bg);
+      color: var(--badge-red-fg);
     }
     .tab-body {
       padding: 16px 0;
@@ -251,7 +251,7 @@ import { PatientsService } from './patients.service';
       font-weight: 600;
     }
     .stat-label {
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
       font-size: 0.85rem;
     }
     .info-grid {
@@ -262,7 +262,7 @@ import { PatientsService } from './patients.service';
     }
     .info-grid dt {
       font-size: 0.8rem;
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
     }
     .info-grid dd {
       margin: 2px 0 0;
@@ -271,7 +271,7 @@ import { PatientsService } from './patients.service';
       grid-column: span 2;
     }
     .stub {
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
       margin: 8px 0;
     }
     table {

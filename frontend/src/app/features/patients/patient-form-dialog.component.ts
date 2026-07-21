@@ -174,7 +174,7 @@ const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
     .patient-form h3 {
       margin: 8px 0;
       font-size: 0.95rem;
-      color: rgba(0, 0, 0, 0.65);
+      color: var(--muted-foreground);
     }
     .grid {
       display: grid;

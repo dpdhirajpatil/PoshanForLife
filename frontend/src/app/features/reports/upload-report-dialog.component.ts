@@ -174,7 +174,7 @@ type Step = 'patient' | 'upload' | 'review';
       align-items: center;
       justify-content: space-between;
       padding: 10px 12px;
-      border: 1px solid rgba(0, 0, 0, 0.15);
+      border: 1px solid var(--border);
       border-radius: 8px;
       background: none;
       cursor: pointer;
@@ -183,7 +183,7 @@ type Step = 'patient' | 'upload' | 'review';
       color: inherit;
     }
     .patient-row:hover {
-      background: rgba(0, 0, 0, 0.03);
+      background: var(--muted);
     }
     .patient-main {
       display: flex;
@@ -195,7 +195,7 @@ type Step = 'patient' | 'upload' | 'review';
     }
     .patient-meta {
       font-size: 0.8rem;
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
     }
     .selected-patient {
       display: flex;
@@ -203,7 +203,7 @@ type Step = 'patient' | 'upload' | 'review';
       justify-content: space-between;
       padding: 10px 12px;
       border-radius: 8px;
-      background: rgba(45, 138, 104, 0.07);
+      background: var(--primary-tint);
       margin-bottom: 12px;
     }
     .dropzone {
@@ -213,7 +213,7 @@ type Step = 'patient' | 'upload' | 'review';
       justify-content: center;
       gap: 6px;
       min-height: 160px;
-      border: 2px dashed rgba(0, 0, 0, 0.25);
+      border: 2px dashed var(--border);
       border-radius: 8px;
       cursor: pointer;
       padding: 16px;
@@ -222,24 +222,24 @@ type Step = 'patient' | 'upload' | 'review';
     }
     .dropzone.dragover {
       border-color: var(--primary);
-      background: rgba(45, 138, 104, 0.06);
+      background: var(--primary-tint);
     }
     .hint {
       font-size: 0.9rem;
-      color: rgba(0, 0, 0, 0.65);
+      color: var(--muted-foreground);
     }
     .sub-hint {
       font-size: 0.75rem;
-      color: rgba(0, 0, 0, 0.45);
+      color: var(--muted-foreground);
     }
     .muted {
-      color: rgba(0, 0, 0, 0.55);
+      color: var(--muted-foreground);
     }
     .warning-banner {
       display: flex;
       gap: 10px;
-      background: #fff8e1;
-      color: #8a5a00;
+      background: var(--badge-amber-bg);
+      color: var(--badge-amber-fg);
       border-radius: 8px;
       padding: 10px 12px;
       margin-bottom: 12px;
@@ -253,14 +253,14 @@ type Step = 'patient' | 'upload' | 'review';
       margin: 0 0 12px;
     }
     .low-confidence {
-      color: #b26a00;
+      color: var(--badge-amber-fg);
     }
     .group-label {
       margin: 14px 0 6px;
       font-size: 0.85rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: rgba(0, 0, 0, 0.55);
+      color: var(--muted-foreground);
     }
     .field-grid {
       display: grid;

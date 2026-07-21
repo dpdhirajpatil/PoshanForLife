@@ -218,27 +218,27 @@ import { UsersService } from './users.service';
       font-weight: 600;
     }
     .role-admin {
-      background: #ede7f6;
-      color: #4527a0;
+      background: var(--badge-purple-bg);
+      color: var(--badge-purple-fg);
     }
     .role-doctor {
-      background: #e3f2fd;
-      color: #1565c0;
+      background: var(--badge-blue-bg);
+      color: var(--badge-blue-fg);
     }
     .role-patient {
-      background: #e8f5e9;
-      color: #2e7d32;
+      background: var(--badge-green-bg);
+      color: var(--badge-green-fg);
     }
     .status-badge {
       padding: 2px 10px;
       border-radius: 12px;
       font-size: 0.78rem;
-      background: #e8f5e9;
-      color: #2e7d32;
+      background: var(--badge-green-bg);
+      color: var(--badge-green-fg);
     }
     .status-badge.inactive {
-      background: #fbe9e7;
-      color: #c62828;
+      background: var(--badge-red-bg);
+      color: var(--badge-red-fg);
     }
     .row-inactive td {
       opacity: 0.55;
@@ -246,7 +246,7 @@ import { UsersService } from './users.service';
     .no-data {
       padding: 24px;
       text-align: center;
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
     }
   `,
 })

@@ -92,14 +92,14 @@ import { PatientProgramme } from '../../core/models/patient-programme.model';
       width: 90px;
       flex-shrink: 0;
       font-size: 0.82rem;
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
       padding-top: 1px;
     }
     .amount {
       font-weight: 600;
     }
     .muted {
-      color: rgba(0, 0, 0, 0.55);
+      color: var(--muted-foreground);
     }
     .small {
       font-size: 0.82rem;
@@ -108,12 +108,12 @@ import { PatientProgramme } from '../../core/models/patient-programme.model';
       display: flex;
       gap: 10px;
       align-items: flex-start;
-      background: rgba(0, 0, 0, 0.03);
+      background: var(--muted);
       border-radius: 8px;
       padding: 10px 12px;
     }
     .tx mat-icon {
-      color: rgba(0, 0, 0, 0.45);
+      color: var(--muted-foreground);
     }
   `,
 })

@@ -74,7 +74,7 @@ const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
       justify-content: center;
       gap: 6px;
       min-height: 140px;
-      border: 2px dashed rgba(0, 0, 0, 0.25);
+      border: 2px dashed var(--border);
       border-radius: 8px;
       cursor: pointer;
       padding: 12px;
@@ -83,7 +83,7 @@ const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
     }
     .dropzone.dragover {
       border-color: var(--primary);
-      background: rgba(45, 138, 104, 0.06);
+      background: var(--primary-tint);
     }
     .dropzone.has-image {
       padding: 0;
@@ -97,11 +97,11 @@ const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
     }
     .hint {
       font-size: 0.85rem;
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
     }
     .sub-hint {
       font-size: 0.75rem;
-      color: rgba(0, 0, 0, 0.45);
+      color: var(--muted-foreground);
     }
     .actions {
       display: flex;

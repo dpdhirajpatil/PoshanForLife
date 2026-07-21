@@ -202,10 +202,10 @@ import { PatientProgrammesService } from './patient-programmes.service';
     }
     .service-meta {
       font-size: 0.8rem;
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
     }
     .muted {
-      color: rgba(0, 0, 0, 0.55);
+      color: var(--muted-foreground);
     }
     .badge {
       padding: 2px 10px;
@@ -214,28 +214,28 @@ import { PatientProgrammesService } from './patient-programmes.service';
       white-space: nowrap;
     }
     .assignment-active {
-      background: #e8f5e9;
-      color: #2e7d32;
+      background: var(--badge-green-bg);
+      color: var(--badge-green-fg);
     }
     .assignment-completed {
-      background: #e3f2fd;
-      color: #1565c0;
+      background: var(--badge-blue-bg);
+      color: var(--badge-blue-fg);
     }
     .assignment-cancelled {
-      background: #fbe9e7;
-      color: #c62828;
+      background: var(--badge-red-bg);
+      color: var(--badge-red-fg);
     }
     .payment-paid {
-      background: #e8f5e9;
-      color: #2e7d32;
+      background: var(--badge-green-bg);
+      color: var(--badge-green-fg);
     }
     .payment-pending {
-      background: #fff8e1;
-      color: #b26a00;
+      background: var(--badge-amber-bg);
+      color: var(--badge-amber-fg);
     }
     .payment-unpaid {
-      background: #fbe9e7;
-      color: #c62828;
+      background: var(--badge-red-bg);
+      color: var(--badge-red-fg);
     }
     .order-link {
       display: flex;
@@ -249,7 +249,7 @@ import { PatientProgrammesService } from './patient-programmes.service';
     }
     .invoice {
       font-size: 0.8rem;
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
     }
     .order-link:hover .invoice {
       text-decoration: underline;
@@ -257,7 +257,7 @@ import { PatientProgrammesService } from './patient-programmes.service';
     .no-data {
       padding: 24px;
       text-align: center;
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
     }
   `,
 })

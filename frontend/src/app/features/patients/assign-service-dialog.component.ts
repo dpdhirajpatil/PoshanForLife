@@ -203,7 +203,7 @@ const TYPE_TO_ROUTE: Record<ServiceType, CatalogueType> = {
       justify-content: space-between;
       gap: 12px;
       padding: 10px 12px;
-      border: 1px solid rgba(0, 0, 0, 0.15);
+      border: 1px solid var(--border);
       border-radius: 8px;
       background: none;
       cursor: pointer;
@@ -211,11 +211,11 @@ const TYPE_TO_ROUTE: Record<ServiceType, CatalogueType> = {
       font: inherit;
     }
     .item-row:hover {
-      background: rgba(0, 0, 0, 0.03);
+      background: var(--muted);
     }
     .item-row.selected {
       border-color: var(--primary);
-      background: rgba(45, 138, 104, 0.07);
+      background: var(--primary-tint);
     }
     .item-main {
       display: flex;
@@ -227,7 +227,7 @@ const TYPE_TO_ROUTE: Record<ServiceType, CatalogueType> = {
     }
     .item-meta {
       font-size: 0.8rem;
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
     }
     .item-price {
       font-weight: 600;
@@ -246,7 +246,7 @@ const TYPE_TO_ROUTE: Record<ServiceType, CatalogueType> = {
       margin: 4px 0 8px;
     }
     .muted {
-      color: rgba(0, 0, 0, 0.55);
+      color: var(--muted-foreground);
     }
     .small {
       font-size: 0.82rem;

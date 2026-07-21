@@ -230,8 +230,8 @@ import { CatalogueService } from './catalogue.service';
       margin: 0 16px 8px;
       padding: 8px 12px;
       border-radius: 6px;
-      background: #fbe9e7;
-      color: #c62828;
+      background: var(--badge-red-bg);
+      color: var(--badge-red-fg);
       font-size: 0.88rem;
     }
     .inline-error span {
@@ -254,7 +254,7 @@ import { CatalogueService } from './catalogue.service';
     }
     code {
       font-size: 0.82rem;
-      background: rgba(0, 0, 0, 0.05);
+      background: var(--muted);
       padding: 2px 6px;
       border-radius: 4px;
     }
@@ -268,21 +268,21 @@ import { CatalogueService } from './catalogue.service';
       font-size: 0.78rem;
     }
     .status-draft {
-      background: #eceff1;
-      color: #455a64;
+      background: var(--badge-grey-bg);
+      color: var(--badge-grey-fg);
     }
     .status-published {
-      background: #e8f5e9;
-      color: #2e7d32;
+      background: var(--badge-green-bg);
+      color: var(--badge-green-fg);
     }
     .status-archived {
-      background: #fff3e0;
-      color: #e65100;
+      background: var(--badge-orange-bg);
+      color: var(--badge-orange-fg);
     }
     .no-data {
       padding: 24px;
       text-align: center;
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--muted-foreground);
     }
   `,
 })
