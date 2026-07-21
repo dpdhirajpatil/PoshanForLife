@@ -3,9 +3,11 @@ spring:
   datasource:
     # Dedicated DB for this rebuild — the plain `poshan` DB holds the
     # original Next.js app's Prisma schema; don't point Flyway at it.
+    # This machine's local Postgres (Homebrew) has no "postgres" role — it
+    # uses the OS user (dhiraj) with trust auth, so that's the real default.
     url: ${DB_URL:jdbc:postgresql://localhost:5432/poshan_api}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    username: ${DB_USERNAME:dhiraj}
+    password: ${DB_PASSWORD:}
   jpa:
     show-sql: true
     properties:

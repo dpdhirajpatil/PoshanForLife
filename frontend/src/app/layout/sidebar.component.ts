@@ -1,9 +1,10 @@
-import { Component, Input, computed, inject } from '@angular/core';
+import { Component, Input, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { NAV_ITEMS } from '../core/config/nav-items';
 import { AppStateService } from '../core/services/app-state.service';
 import { AuthService } from '../core/services/auth.service';
 import { initials } from '../core/utils/initials';
+import { LeadsService } from '../features/leads/leads.service';
 import { SidebarTooltipDirective } from '../shared/sidebar-tooltip.directive';
 
 const ROLE_BADGE_CLASSES: Record<string, string> = {
@@ -91,6 +92,16 @@ const ROLE_BADGE_LABELS: Record<string, string> = {
             @if (showLabels()) {
               <span class="truncate">{{ item.label }}</span>
             }
+            @if (item.path === '/leads' && followupTodayCount() > 0) {
+              <span
+                class="ml-auto flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-accent-500 px-1 text-[11px] font-semibold text-white"
+                [class.absolute]="!showLabels()"
+                [class.right-1]="!showLabels()"
+                [class.top-1]="!showLabels()"
+              >
+                {{ followupTodayCount() }}
+              </span>
+            }
           </a>
         }
       </nav>
@@ -160,7 +171,16 @@ export class SidebarComponent {
 
   protected readonly appState = inject(AppStateService);
   protected readonly auth = inject(AuthService);
+  private readonly leadsService = inject(LeadsService);
   private readonly router = inject(Router);
+
+  protected readonly followupTodayCount = signal(0);
+
+  constructor() {
+    this.leadsService
+      .list({ followupToday: true, page: 1, limit: 1 })
+      .subscribe((result) => this.followupTodayCount.set(result.meta?.total ?? 0));
+  }
 
   protected readonly collapsed = computed(() => this.appState.sidebarCollapsed());
   protected readonly showLabels = computed(() => this.mobileSheet || !this.collapsed());

@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat)",
+      "Bash(node check-error.js)",
+      "Bash(node leads-check.js)",
+      "Bash(python3 -c ' *)",
+      "Bash(node leads-check2.js)",
+      "Bash(sed -i '' \"s/await page.getByRole\\('button', { name: 'Table view' }\\).click\\(\\);/await page.locator\\('.view-toggle button'\\).nth\\(1\\).click\\(\\);/\" /private/tmp/claude-501/-Users-dhiraj-Documents-Applications-Poshan-PoshanForLife/821e0a2b-cf38-48c6-80ed-db507c2bb9fb/scratchpad/driver/leads-check3.js)",
+      "Bash(node leads-check3.js)",
+      "Bash(sed -i '' \"s/await page.locator\\('button:has-text\\(\\\\\"Next\\\\\"\\)'\\).click\\(\\);/await page.locator\\('button:has-text\\(\\\\\"Next\\\\\"\\)'\\).first\\(\\).click\\(\\);/g\" /private/tmp/claude-501/-Users-dhiraj-Documents-Applications-Poshan-PoshanForLife/821e0a2b-cf38-48c6-80ed-db507c2bb9fb/scratchpad/driver/leads-check4.js)",
+      "Bash(node leads-check4.js)",
+      "Bash(sed -i '' \"s/await page.locator\\('a.row-link', { hasText: 'Playwright Test Lead' }\\).click\\(\\);/await page.locator\\('a.row-link', { hasText: 'Playwright Test Lead' }\\).first\\(\\).click\\(\\);/\" /private/tmp/claude-501/-Users-dhiraj-Documents-Applications-Poshan-PoshanForLife/821e0a2b-cf38-48c6-80ed-db507c2bb9fb/scratchpad/driver/leads-check4.js)",
+      "Bash(./mvnw -q test-compile)",
+      "Bash(./mvnw -q test -Dtest=LeadServiceTest)",
+      "Bash(awk -F'[ ,]+' '{run+=$3; fail+=$5; err+=$7} END {print \"Total:\", run, \"Failures:\", fail, \"Errors:\", err}')"
+    ]
+  }
+}

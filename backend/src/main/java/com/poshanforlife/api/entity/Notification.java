@@ -21,6 +21,7 @@ import lombok.Setter;
 public class Notification extends BaseEntity {
 
     public static final String TYPE_PATIENT_ASSIGNED = "PATIENT_ASSIGNED";
+    public static final String TYPE_LEAD_FOLLOWUP = "LEAD_FOLLOWUP";
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)

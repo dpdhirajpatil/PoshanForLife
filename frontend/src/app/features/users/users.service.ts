@@ -48,6 +48,13 @@ export class UsersService {
       .pipe(map((res) => res.data.filter((p) => p.isActive)));
   }
 
+  /** All active doctors, for the lead-assignment and practitioner-filter pickers. */
+  listDoctors(): Observable<UserDetail[]> {
+    return this.api
+      .getPaged<UserDetail[]>('/users', { role: 'DOCTOR', page: 1, limit: 500 })
+      .pipe(map((res) => res.data.filter((d) => d.isActive)));
+  }
+
   create(payload: CreateUserPayload): Observable<UserDetail> {
     return this.api.post<UserDetail>('/users', payload);
   }
