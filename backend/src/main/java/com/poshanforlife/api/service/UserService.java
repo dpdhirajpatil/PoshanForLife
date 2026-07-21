@@ -26,6 +26,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -42,6 +43,7 @@ public class UserService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+    private final SupabaseStorageService storageService;
 
     @Transactional(readOnly = true)
     public Page<UserDetailDto> list(Role role, String search, int page, int limit) {
@@ -176,6 +178,14 @@ public class UserService {
         user.setNotificationPrefs(user.getNotificationPrefs().merge(
                 request.inbodyReport(), request.patientAssigned(),
                 request.processingErrors(), request.systemAnnouncements()));
+        return userMapper.toDetailDto(user);
+    }
+
+    /** Self-only: uploads to the "avatars" folder (same public bucket as catalogue covers) and persists the URL. */
+    @Transactional
+    public UserDetailDto updateAvatar(UUID id, MultipartFile file) {
+        User user = find(id);
+        user.setAvatarUrl(storageService.uploadImage(file, "avatars"));
         return userMapper.toDetailDto(user);
     }
 

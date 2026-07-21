@@ -4,20 +4,9 @@ import { NAV_ITEMS } from '../core/config/nav-items';
 import { AppStateService } from '../core/services/app-state.service';
 import { AuthService } from '../core/services/auth.service';
 import { initials } from '../core/utils/initials';
+import { ROLE_BADGE_CLASSES, ROLE_BADGE_LABELS } from '../core/utils/role-badge';
 import { LeadsService } from '../features/leads/leads.service';
 import { SidebarTooltipDirective } from '../shared/sidebar-tooltip.directive';
-
-const ROLE_BADGE_CLASSES: Record<string, string> = {
-  ADMIN: 'bg-red-100 text-red-700',
-  DOCTOR: 'bg-primary-100 text-primary-700',
-  PATIENT: 'bg-primary-50 text-primary-600',
-};
-
-const ROLE_BADGE_LABELS: Record<string, string> = {
-  ADMIN: 'Admin',
-  DOCTOR: 'Practitioner',
-  PATIENT: 'Patient',
-};
 
 /**
  * The nav itself, rendered in two modes from one component: the fixed

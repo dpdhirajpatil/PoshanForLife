@@ -48,6 +48,8 @@ class UserServiceTest {
     private DoctorPatientRepository doctorPatientRepository;
     @Mock
     private RefreshTokenRepository refreshTokenRepository;
+    @Mock
+    private SupabaseStorageService storageService;
 
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -60,7 +62,7 @@ class UserServiceTest {
     @BeforeEach
     void setUp() throws Exception {
         userService = new UserService(userRepository, doctorPatientRepository,
-                refreshTokenRepository, passwordEncoder, new UserMapperImpl());
+                refreshTokenRepository, passwordEncoder, new UserMapperImpl(), storageService);
 
         doctor = newUser("Dr. Jones", "dr@poshanforlife.com", Role.DOCTOR, "Doc@1234");
         adminCaller = new AuthenticatedUser(UUID.randomUUID().toString(), "admin@x.com", Role.ADMIN);
@@ -198,6 +200,19 @@ class UserServiceTest {
         assertThat(dto.notificationPrefs().inbodyReport()).isFalse();
         assertThat(dto.notificationPrefs().patientAssigned()).isTrue();
         assertThat(dto.notificationPrefs().systemAnnouncements()).isTrue();
+    }
+
+    @Test
+    void updateAvatarUploadsToAvatarsFolderAndPersistsUrl() {
+        when(userRepository.findById(doctor.getId())).thenReturn(Optional.of(doctor));
+        org.springframework.web.multipart.MultipartFile file =
+                org.mockito.Mockito.mock(org.springframework.web.multipart.MultipartFile.class);
+        when(storageService.uploadImage(file, "avatars")).thenReturn("https://cdn.example/avatars/x.jpg");
+
+        var dto = userService.updateAvatar(doctor.getId(), file);
+
+        assertThat(dto.avatarUrl()).isEqualTo("https://cdn.example/avatars/x.jpg");
+        assertThat(doctor.getAvatarUrl()).isEqualTo("https://cdn.example/avatars/x.jpg");
     }
 
     private User newUser(String name, String email, Role role, String rawPassword) throws Exception {

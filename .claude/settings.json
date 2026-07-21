@@ -46,7 +46,9 @@
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d,indent=2\\)[:800]\\)\")",
       "Bash(pkill -f notif-check.js)",
       "Bash(node /tmp/notif-check2.js)",
-      "Bash(rm -f /tmp/notif-check*.js /tmp/debug-login.js)"
+      "Bash(rm -f /tmp/notif-check*.js /tmp/debug-login.js)",
+      "Bash(kill 74797)",
+      "Bash(rm -f /tmp/settings-check.js)"
     ],
     "additionalDirectories": [
       "/private/tmp",

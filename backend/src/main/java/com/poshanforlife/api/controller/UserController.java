@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -54,6 +55,12 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<UserDetailDto> create(@Valid @RequestBody CreateUserRequest request) {
         return ApiResponse.ok(userService.create(request));
+    }
+
+    /** Convenience alias for GET /{id} with the caller's own id — avoids the frontend needing its id ahead of a token refresh. */
+    @GetMapping("/me")
+    public ApiResponse<UserDetailDto> me(@AuthenticationPrincipal AuthenticatedUser caller) {
+        return ApiResponse.ok(userService.get(UUID.fromString(caller.id()), caller));
     }
 
     @GetMapping("/{id}")
@@ -103,5 +110,12 @@ public class UserController {
                                                               @Valid @RequestBody NotificationPrefsRequest request,
                                                               @AuthenticationPrincipal AuthenticatedUser caller) {
         return ApiResponse.ok(userService.updateNotificationPrefs(id, request, caller));
+    }
+
+    /** Self-only avatar upload — same public-bucket pattern as the catalogue cover-image upload. */
+    @PostMapping("/me/avatar")
+    public ApiResponse<UserDetailDto> uploadAvatar(@RequestParam("file") MultipartFile file,
+                                                   @AuthenticationPrincipal AuthenticatedUser caller) {
+        return ApiResponse.ok(userService.updateAvatar(UUID.fromString(caller.id()), file));
     }
 }

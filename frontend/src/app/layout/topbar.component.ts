@@ -10,6 +10,7 @@ import { AuthService } from '../core/services/auth.service';
 import { NotificationService } from '../core/services/notification.service';
 import { initials } from '../core/utils/initials';
 import { relativeTime } from '../core/utils/relative-time';
+import { ROLE_BADGE_CLASSES, ROLE_BADGE_LABELS } from '../core/utils/role-badge';
 
 const NOTIFICATION_POLL_MS = 60_000;
 
@@ -28,18 +29,6 @@ function notificationRoute(n: AppNotification): string[] | null {
       return null;
   }
 }
-
-const ROLE_BADGE_CLASSES: Record<string, string> = {
-  ADMIN: 'bg-red-100 text-red-700',
-  DOCTOR: 'bg-primary-100 text-primary-700',
-  PATIENT: 'bg-primary-50 text-primary-600',
-};
-
-const ROLE_BADGE_LABELS: Record<string, string> = {
-  ADMIN: 'Admin',
-  DOCTOR: 'Practitioner',
-  PATIENT: 'Patient',
-};
 
 /**
  * Fixed topbar: page title (longest-prefix route match) on the left, the
