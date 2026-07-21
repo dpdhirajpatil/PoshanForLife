@@ -20,7 +20,6 @@ import com.poshanforlife.api.entity.User;
 import com.poshanforlife.api.exception.ApiException;
 import com.poshanforlife.api.repository.LeadActivityRepository;
 import com.poshanforlife.api.repository.LeadRepository;
-import com.poshanforlife.api.repository.NotificationRepository;
 import com.poshanforlife.api.repository.ProgrammeRepository;
 import com.poshanforlife.api.repository.UserRepository;
 import com.poshanforlife.api.security.AuthenticatedUser;
@@ -59,7 +58,7 @@ class LeadServiceTest {
     @Mock
     private ProgrammeRepository programmeRepository;
     @Mock
-    private NotificationRepository notificationRepository;
+    private NotificationService notificationService;
     @Mock
     private PatientService patientService;
     @Mock
@@ -76,7 +75,7 @@ class LeadServiceTest {
     @BeforeEach
     void setUp() {
         leadService = new LeadService(leadRepository, leadActivityRepository, userRepository,
-                programmeRepository, notificationRepository, patientService, patientProgrammeService);
+                programmeRepository, notificationService, patientService, patientProgrammeService);
 
         admin = newUser("Admin", Role.ADMIN);
         doctor = newUser("Dr Priya", Role.DOCTOR);
@@ -255,10 +254,8 @@ class LeadServiceTest {
         leadService.scheduleFollowup(lead.getId(), request, adminCaller);
 
         assertThat(lead.getNextFollowupAt()).isNotNull();
-        ArgumentCaptor<Notification> notifCaptor = ArgumentCaptor.forClass(Notification.class);
-        verify(notificationRepository).save(notifCaptor.capture());
-        assertThat(notifCaptor.getValue().getUser()).isEqualTo(doctor);
-        assertThat(notifCaptor.getValue().getType()).isEqualTo(Notification.TYPE_LEAD_FOLLOWUP);
+        verify(notificationService).create(eq(doctor), eq(Notification.TYPE_LEAD_FOLLOWUP), any(), any(),
+                eq("lead"), eq(lead.getId()));
         verify(leadActivityRepository).save(any());
     }
 
@@ -271,7 +268,7 @@ class LeadServiceTest {
 
         leadService.scheduleFollowup(lead.getId(), request, adminCaller);
 
-        verify(notificationRepository, never()).save(any());
+        verify(notificationService, never()).create(any(), any(), any(), any(), any(), any());
     }
 
     private ConvertLeadRequest emptyConvertRequest() {

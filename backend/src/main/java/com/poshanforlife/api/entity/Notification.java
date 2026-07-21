@@ -9,10 +9,14 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.UUID;
+
 /**
- * Minimal in-app notification. Owned and extended by the notifications
- * feature prompt (delivery channels, read API, prefs integration); created
- * here so assignment events can already be recorded.
+ * In-app notification, created exclusively through NotificationService
+ * (never by constructing this entity directly elsewhere) so notificationPrefs
+ * gating stays centralized. relatedEntityType/Id are optional deep-link
+ * targets — e.g. type="lead"/id=the lead's id — resolved by the frontend
+ * into a route.
  */
 @Getter
 @Setter
@@ -22,6 +26,8 @@ public class Notification extends BaseEntity {
 
     public static final String TYPE_PATIENT_ASSIGNED = "PATIENT_ASSIGNED";
     public static final String TYPE_LEAD_FOLLOWUP = "LEAD_FOLLOWUP";
+    public static final String TYPE_PROCESSING_ERROR = "PROCESSING_ERROR";
+    public static final String TYPE_SYSTEM_ANNOUNCEMENT = "SYSTEM_ANNOUNCEMENT";
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
@@ -30,9 +36,18 @@ public class Notification extends BaseEntity {
     @Column(nullable = false, length = 64)
     private String type;
 
+    @Column(nullable = false, length = 255)
+    private String title;
+
     @Column(nullable = false, columnDefinition = "text")
     private String message;
 
     @Column(name = "is_read", nullable = false)
     private boolean read;
+
+    @Column(name = "related_entity_type", length = 32)
+    private String relatedEntityType;
+
+    @Column(name = "related_entity_id")
+    private UUID relatedEntityId;
 }

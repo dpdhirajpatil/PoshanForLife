@@ -11,6 +11,7 @@ import com.poshanforlife.api.dto.UserRefDto;
 import com.poshanforlife.api.entity.HealthRecord;
 import com.poshanforlife.api.entity.HealthRecordSource;
 import com.poshanforlife.api.entity.InBodyData;
+import com.poshanforlife.api.entity.Notification;
 import com.poshanforlife.api.entity.Report;
 import com.poshanforlife.api.entity.ReportStatus;
 import com.poshanforlife.api.entity.ReportType;
@@ -67,6 +68,7 @@ public class ReportService {
     private final ReportStorageService reportStorageService;
     private final PdfTextExtractionService pdfTextExtractionService;
     private final AnthropicExtractionService anthropicExtractionService;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public ReportListResult list(String status, String type, String search, LocalDate dateFrom,
@@ -191,6 +193,9 @@ public class ReportService {
             log.warn("InBody extraction failed for report {}", report.getId(), e);
             report.setStatus(ReportStatus.ERROR);
             reportRepository.save(report);
+            notificationService.create(creator, Notification.TYPE_PROCESSING_ERROR, "Report processing failed",
+                    "Extraction failed for " + report.getTitle() + " (" + patient.getName() + ")",
+                    "report", report.getId());
             throw e instanceof OcrExtractionException
                     ? e
                     : new OcrExtractionException("Could not extract data from this report", e);

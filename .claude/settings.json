@@ -36,10 +36,21 @@
       "Bash(node -e \"require\\('playwright'\\); console.log\\('ok'\\)\")",
       "Bash(node /private/tmp/claude-501/-Users-dhiraj-Documents-Applications-Poshan-PoshanForLife/821e0a2b-cf38-48c6-80ed-db507c2bb9fb/scratchpad/dashboard-check.js)",
       "Bash(node /tmp/debug-login.js)",
-      "Bash(rm -f /tmp/debug-login.js /tmp/dashboard-dark-check.js /tmp/login-debug.png)"
+      "Bash(rm -f /tmp/debug-login.js /tmp/dashboard-dark-check.js /tmp/login-debug.png)",
+      "Bash(./mvnw -q test -Dtest=NotificationServiceTest,AssignmentServiceTest,LeadServiceTest,ReportServiceTest)",
+      "Bash(break)",
+      "Bash(lsof -iTCP:8080 -sTCP:LISTEN)",
+      "Bash(lsof -iTCP:4200 -sTCP:LISTEN)",
+      "Bash(kill 54783)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('unreadCount:', d['data']['unreadCount']\\); print\\('all read:', all\\(n['read'] for n in d['data']['notifications']\\)\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d,indent=2\\)[:800]\\)\")",
+      "Bash(pkill -f notif-check.js)",
+      "Bash(node /tmp/notif-check2.js)",
+      "Bash(rm -f /tmp/notif-check*.js /tmp/debug-login.js)"
     ],
     "additionalDirectories": [
-      "/private/tmp"
+      "/private/tmp",
+      "/tmp"
     ]
   }
 }

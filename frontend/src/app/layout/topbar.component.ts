@@ -1,11 +1,33 @@
 import { CdkConnectedOverlay, CdkOverlayOrigin } from '@angular/cdk/overlay';
 import { Component, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
-import { filter } from 'rxjs';
+import { filter, interval } from 'rxjs';
 import { resolvePageTitle } from '../core/config/route-titles';
+import { AppNotification } from '../core/models/notification.model';
 import { AppStateService } from '../core/services/app-state.service';
 import { AuthService } from '../core/services/auth.service';
+import { NotificationService } from '../core/services/notification.service';
 import { initials } from '../core/utils/initials';
+import { relativeTime } from '../core/utils/relative-time';
+
+const NOTIFICATION_POLL_MS = 60_000;
+
+/** Maps a notification's deep-link target to a route; null = not navigable (panel just closes). */
+function notificationRoute(n: AppNotification): string[] | null {
+  if (!n.relatedEntityType || !n.relatedEntityId) return null;
+  switch (n.relatedEntityType) {
+    case 'lead':
+      return ['/leads', n.relatedEntityId];
+    case 'patient':
+      return ['/patients', n.relatedEntityId];
+    case 'report':
+      // Reports are dialog-based (no detail route) — land on the list page.
+      return ['/reports'];
+    default:
+      return null;
+  }
+}
 
 const ROLE_BADGE_CLASSES: Record<string, string> = {
   ADMIN: 'bg-red-100 text-red-700',
@@ -64,10 +86,44 @@ const ROLE_BADGE_LABELS: Record<string, string> = {
             (backdropClick)="notifOpen.set(false)"
           >
             <div
-              class="mt-2 w-72 rounded-xl border border-border bg-popover p-3 text-popover-foreground shadow-lg"
+              class="mt-2 w-80 rounded-xl border border-border bg-popover text-popover-foreground shadow-lg"
             >
-              <p class="text-sm font-semibold">Notifications</p>
-              <p class="mt-2 text-sm text-muted-foreground">No notifications yet.</p>
+              <div class="flex items-center justify-between border-b border-border p-3">
+                <p class="text-sm font-semibold">Notifications</p>
+                @if (unreadCount() > 0) {
+                  <button
+                    type="button"
+                    class="text-xs font-medium text-primary hover:underline"
+                    (click)="markAllRead()"
+                  >
+                    Mark all as read
+                  </button>
+                }
+              </div>
+              <div class="max-h-96 overflow-y-auto">
+                @if (notifications().length === 0) {
+                  <p class="p-3 text-sm text-muted-foreground">No notifications yet.</p>
+                } @else {
+                  @for (n of notifications(); track n.id) {
+                    <button
+                      type="button"
+                      class="flex w-full items-start gap-2 border-b border-border p-3 text-left last:border-b-0 hover:bg-muted"
+                      (click)="openNotification(n)"
+                    >
+                      @if (!n.read) {
+                        <span class="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-primary"></span>
+                      } @else {
+                        <span class="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full"></span>
+                      }
+                      <div class="min-w-0 flex-1">
+                        <p class="truncate text-sm font-medium text-foreground">{{ n.title }}</p>
+                        <p class="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{{ n.message }}</p>
+                        <p class="mt-1 text-[11px] text-muted-foreground">{{ timeAgo(n.createdAt) }}</p>
+                      </div>
+                    </button>
+                  }
+                }
+              </div>
             </div>
           </ng-template>
 
@@ -138,11 +194,13 @@ const ROLE_BADGE_LABELS: Record<string, string> = {
 export class TopbarComponent {
   protected readonly appState = inject(AppStateService);
   protected readonly auth = inject(AuthService);
+  private readonly notificationService = inject(NotificationService);
   private readonly router = inject(Router);
 
   protected readonly notifOpen = signal(false);
   protected readonly avatarOpen = signal(false);
   protected readonly unreadCount = signal(0);
+  protected readonly notifications = signal<AppNotification[]>([]);
 
   protected readonly menuPositions = [
     { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top' } as const,
@@ -167,6 +225,38 @@ export class TopbarComponent {
   constructor() {
     this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe(() => {
       this.pageTitle.set(resolvePageTitle(this.router.url));
+      this.loadNotifications();
+    });
+
+    this.loadNotifications();
+    interval(NOTIFICATION_POLL_MS)
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => this.loadNotifications());
+  }
+
+  protected timeAgo(iso: string): string {
+    return relativeTime(iso);
+  }
+
+  protected markAllRead(): void {
+    this.notificationService.markAllRead().subscribe(() => {
+      this.notifications.update((list) => list.map((n) => ({ ...n, read: true })));
+      this.unreadCount.set(0);
+    });
+  }
+
+  protected openNotification(n: AppNotification): void {
+    this.notifOpen.set(false);
+    const route = notificationRoute(n);
+    if (route) {
+      this.router.navigate(route);
+    }
+  }
+
+  private loadNotifications(): void {
+    this.notificationService.list(20).subscribe((res) => {
+      this.notifications.set(res.notifications);
+      this.unreadCount.set(res.unreadCount);
     });
   }
 

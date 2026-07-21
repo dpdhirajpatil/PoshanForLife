@@ -11,7 +11,6 @@ import com.poshanforlife.api.exception.ApiException;
 import com.poshanforlife.api.exception.ErrorCode;
 import com.poshanforlife.api.exception.ResourceNotFoundException;
 import com.poshanforlife.api.repository.DoctorPatientRepository;
-import com.poshanforlife.api.repository.NotificationRepository;
 import com.poshanforlife.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,7 +29,7 @@ public class AssignmentService {
 
     private final DoctorPatientRepository doctorPatientRepository;
     private final UserRepository userRepository;
-    private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public List<AssignmentDto> list(UUID doctorId, UUID patientId) {
@@ -70,11 +69,8 @@ public class AssignmentService {
         assignment.setPatient(patient);
         assignment = doctorPatientRepository.save(assignment);
 
-        Notification notification = new Notification();
-        notification.setUser(doctor);
-        notification.setType(Notification.TYPE_PATIENT_ASSIGNED);
-        notification.setMessage("You've been assigned patient " + patient.getName());
-        notificationRepository.save(notification);
+        notificationService.create(doctor, Notification.TYPE_PATIENT_ASSIGNED, "New patient assigned",
+                "You've been assigned patient " + patient.getName(), "patient", patient.getId());
 
         return toDto(assignment);
     }

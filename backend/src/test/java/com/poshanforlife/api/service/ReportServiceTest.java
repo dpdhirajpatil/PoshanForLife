@@ -6,6 +6,7 @@ import com.poshanforlife.api.dto.UpdateReportRequest;
 import com.poshanforlife.api.entity.HealthRecord;
 import com.poshanforlife.api.entity.HealthRecordSource;
 import com.poshanforlife.api.entity.InBodyData;
+import com.poshanforlife.api.entity.Notification;
 import com.poshanforlife.api.entity.Report;
 import com.poshanforlife.api.entity.ReportStatus;
 import com.poshanforlife.api.entity.ReportType;
@@ -65,6 +66,8 @@ class ReportServiceTest {
     private PdfTextExtractionService pdfTextExtractionService;
     @Mock
     private AnthropicExtractionService anthropicExtractionService;
+    @Mock
+    private NotificationService notificationService;
 
     private ReportService reportService;
 
@@ -78,7 +81,7 @@ class ReportServiceTest {
     void setUp() {
         reportService = new ReportService(reportRepository, healthRecordRepository, userRepository,
                 doctorPatientRepository, reportStorageService, pdfTextExtractionService,
-                anthropicExtractionService);
+                anthropicExtractionService, notificationService);
 
         admin = newUser("Admin", Role.ADMIN);
         doctor = newUser("Dr Priya", Role.DOCTOR);
@@ -269,6 +272,8 @@ class ReportServiceTest {
         Report savedFinal = reportCaptor.getAllValues().get(reportCaptor.getAllValues().size() - 1);
         assertThat(savedFinal.getStatus()).isEqualTo(ReportStatus.ERROR);
         verify(healthRecordRepository, never()).save(any());
+        verify(notificationService).create(eq(admin), eq(Notification.TYPE_PROCESSING_ERROR), any(), any(),
+                eq("report"), eq(savedFinal.getId()));
     }
 
     private Report existingReport(ReportStatus status) {

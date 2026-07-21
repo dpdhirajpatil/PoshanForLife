@@ -8,7 +8,6 @@ import com.poshanforlife.api.entity.User;
 import com.poshanforlife.api.exception.ApiException;
 import com.poshanforlife.api.exception.ErrorCode;
 import com.poshanforlife.api.repository.DoctorPatientRepository;
-import com.poshanforlife.api.repository.NotificationRepository;
 import com.poshanforlife.api.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +23,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,7 +36,7 @@ class AssignmentServiceTest {
     @Mock
     private UserRepository userRepository;
     @Mock
-    private NotificationRepository notificationRepository;
+    private NotificationService notificationService;
 
     private AssignmentService assignmentService;
 
@@ -45,7 +45,7 @@ class AssignmentServiceTest {
 
     @BeforeEach
     void setUp() {
-        assignmentService = new AssignmentService(doctorPatientRepository, userRepository, notificationRepository);
+        assignmentService = new AssignmentService(doctorPatientRepository, userRepository, notificationService);
         doctor = newUser("Dr. Jones", Role.DOCTOR);
         patient = newUser("Pat Kumar", Role.PATIENT);
     }
@@ -66,11 +66,10 @@ class AssignmentServiceTest {
 
         assertThat(dto.doctor().name()).isEqualTo("Dr. Jones");
         assertThat(dto.patient().name()).isEqualTo("Pat Kumar");
-        ArgumentCaptor<Notification> saved = ArgumentCaptor.forClass(Notification.class);
-        verify(notificationRepository).save(saved.capture());
-        assertThat(saved.getValue().getUser()).isSameAs(doctor);
-        assertThat(saved.getValue().getType()).isEqualTo(Notification.TYPE_PATIENT_ASSIGNED);
-        assertThat(saved.getValue().getMessage()).contains("Pat Kumar");
+        ArgumentCaptor<String> messageCaptor = ArgumentCaptor.forClass(String.class);
+        verify(notificationService).create(eq(doctor), eq(Notification.TYPE_PATIENT_ASSIGNED), any(),
+                messageCaptor.capture(), eq("patient"), eq(patient.getId()));
+        assertThat(messageCaptor.getValue()).contains("Pat Kumar");
     }
 
     @Test
@@ -84,7 +83,7 @@ class AssignmentServiceTest {
                 new CreateAssignmentRequest(doctor.getId(), patient.getId())))
                 .isInstanceOfSatisfying(ApiException.class,
                         ex -> assertThat(ex.getCode()).isEqualTo(ErrorCode.ASSIGNMENT_CONFLICT));
-        verify(notificationRepository, never()).save(any());
+        verify(notificationService, never()).create(any(), any(), any(), any(), any(), any());
     }
 
     @Test

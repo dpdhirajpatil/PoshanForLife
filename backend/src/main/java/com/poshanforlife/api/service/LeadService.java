@@ -30,7 +30,6 @@ import com.poshanforlife.api.exception.ErrorCode;
 import com.poshanforlife.api.exception.ResourceNotFoundException;
 import com.poshanforlife.api.repository.LeadActivityRepository;
 import com.poshanforlife.api.repository.LeadRepository;
-import com.poshanforlife.api.repository.NotificationRepository;
 import com.poshanforlife.api.repository.ProgrammeRepository;
 import com.poshanforlife.api.repository.UserRepository;
 import com.poshanforlife.api.security.AuthenticatedUser;
@@ -67,7 +66,7 @@ public class LeadService {
     private final LeadActivityRepository leadActivityRepository;
     private final UserRepository userRepository;
     private final ProgrammeRepository programmeRepository;
-    private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
     private final PatientService patientService;
     private final PatientProgrammeService patientProgrammeService;
 
@@ -275,13 +274,11 @@ public class LeadService {
         leadActivityRepository.save(activity);
 
         if (lead.getAssignedPractitioner() != null) {
-            Notification notification = new Notification();
-            notification.setUser(lead.getAssignedPractitioner());
-            notification.setType(Notification.TYPE_LEAD_FOLLOWUP);
-            notification.setMessage(request.message() != null && !request.message().isBlank()
+            String message = request.message() != null && !request.message().isBlank()
                     ? request.message()
-                    : "Follow-up due for lead " + lead.getName() + " on " + request.followupAt().toLocalDate());
-            notificationRepository.save(notification);
+                    : "Follow-up due for lead " + lead.getName() + " on " + request.followupAt().toLocalDate();
+            notificationService.create(lead.getAssignedPractitioner(), Notification.TYPE_LEAD_FOLLOWUP,
+                    "Follow-up reminder", message, "lead", lead.getId());
         }
 
         List<LeadActivity> activities = leadActivityRepository.findByLeadIdOrderByCreatedAtAsc(id);
