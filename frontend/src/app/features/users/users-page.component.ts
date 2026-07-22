@@ -75,6 +75,7 @@ import { UsersService } from './users.service';
         <mat-progress-bar mode="indeterminate" />
       }
 
+      <div class="table-scroll">
       <table mat-table [dataSource]="users()">
         <ng-container matColumnDef="name">
           <th mat-header-cell *matHeaderCellDef>Name</th>
@@ -143,6 +144,7 @@ import { UsersService } from './users.service';
           </td>
         </tr>
       </table>
+      </div>
 
       <mat-paginator
         [length]="total()"
@@ -191,8 +193,10 @@ import { UsersService } from './users.service';
   styles: `
     .page-header {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
+      gap: 8px;
       margin-bottom: 16px;
     }
     .page-header h1 {
@@ -201,11 +205,12 @@ import { UsersService } from './users.service';
     }
     .filters {
       display: flex;
+      flex-wrap: wrap;
       gap: 16px;
       padding: 16px;
     }
     .search {
-      flex: 1;
+      flex: 1 1 220px;
       max-width: 420px;
     }
     table {

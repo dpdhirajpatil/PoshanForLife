@@ -187,6 +187,7 @@ type ViewMode = 'board' | 'table';
           }
         </div>
       } @else {
+        <div class="table-scroll">
         <table mat-table [dataSource]="leads()">
           <ng-container matColumnDef="name">
             <th mat-header-cell *matHeaderCellDef>Name</th>
@@ -245,6 +246,7 @@ type ViewMode = 'board' | 'table';
             </td>
           </tr>
         </table>
+        </div>
 
         <mat-paginator
           [length]="total()"
@@ -260,8 +262,10 @@ type ViewMode = 'board' | 'table';
   styles: `
     .page-header {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
+      gap: 8px;
       margin-bottom: 16px;
     }
     .page-header h1 {

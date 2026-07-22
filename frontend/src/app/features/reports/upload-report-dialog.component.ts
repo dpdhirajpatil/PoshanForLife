@@ -155,7 +155,7 @@ type Step = 'patient' | 'upload' | 'review';
   `,
   styles: `
     mat-dialog-content {
-      min-width: 560px;
+      width: 100%;
       max-width: 640px;
     }
     .full {
@@ -263,9 +263,9 @@ type Step = 'patient' | 'upload' | 'review';
       color: var(--muted-foreground);
     }
     .field-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
   `,
 })

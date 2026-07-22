@@ -190,7 +190,8 @@ const TYPE_TO_ROUTE: Record<ServiceType, CatalogueType> = {
   `,
   styles: `
     mat-stepper {
-      min-width: 560px;
+      width: 100%;
+      max-width: 560px;
     }
     .muted {
       color: var(--muted-foreground);
@@ -199,14 +200,14 @@ const TYPE_TO_ROUTE: Record<ServiceType, CatalogueType> = {
       margin-top: 0;
     }
     .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
     .assignment-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
       margin-top: 12px;
     }
     .item-list {

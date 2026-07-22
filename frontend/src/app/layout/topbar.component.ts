@@ -8,6 +8,7 @@ import { AppNotification } from '../core/models/notification.model';
 import { AppStateService } from '../core/services/app-state.service';
 import { AuthService } from '../core/services/auth.service';
 import { NotificationService } from '../core/services/notification.service';
+import { ThemeService } from '../core/services/theme.service';
 import { initials } from '../core/utils/initials';
 import { relativeTime } from '../core/utils/relative-time';
 import { ROLE_BADGE_CLASSES, ROLE_BADGE_LABELS } from '../core/utils/role-badge';
@@ -47,7 +48,18 @@ function notificationRoute(n: AppNotification): string[] | null {
       <div class="flex w-full items-center justify-between pl-12 pr-4 lg:pl-6">
         <h1 class="truncate font-display text-lg font-semibold text-foreground">{{ pageTitle() }}</h1>
 
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1 sm:gap-2">
+          <!-- Theme toggle -->
+          <button
+            type="button"
+            class="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+            [attr.aria-label]="theme.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+            [title]="theme.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+            (click)="theme.toggle()"
+          >
+            <span class="material-icons text-[20px] leading-none">{{ theme.isDark() ? 'light_mode' : 'dark_mode' }}</span>
+          </button>
+
           <!-- Notification bell -->
           <button
             type="button"
@@ -183,6 +195,7 @@ function notificationRoute(n: AppNotification): string[] | null {
 export class TopbarComponent {
   protected readonly appState = inject(AppStateService);
   protected readonly auth = inject(AuthService);
+  protected readonly theme = inject(ThemeService);
   private readonly notificationService = inject(NotificationService);
   private readonly router = inject(Router);
 

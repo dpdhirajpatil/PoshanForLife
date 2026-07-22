@@ -48,7 +48,18 @@
       "Bash(node /tmp/notif-check2.js)",
       "Bash(rm -f /tmp/notif-check*.js /tmp/debug-login.js)",
       "Bash(kill 74797)",
-      "Bash(rm -f /tmp/settings-check.js)"
+      "Bash(rm -f /tmp/settings-check.js)",
+      "Bash(node /tmp/audit1.js)",
+      "Bash(rm -f /private/tmp/claude-501/-Users-dhiraj-Documents-Applications-Poshan-PoshanForLife/821e0a2b-cf38-48c6-80ed-db507c2bb9fb/scratchpad/audit/*.png)",
+      "Bash(node /tmp/scroll-inspect2.js)",
+      "Bash(node /tmp/dialog-check.js)",
+      "Bash(node /tmp/grid-inspect6.js)",
+      "Bash(node /tmp/dialog-audit-all.js)",
+      "Bash(node /tmp/info-grid-check.js)",
+      "Bash(node /tmp/lead-detail-hcheck2.js)",
+      "Bash(sed -i '' 's/width: 375, height: 812/width: 768, height: 1024/' /tmp/full-hscan.js)",
+      "Bash(node /tmp/full-hscan.js)",
+      "Bash(rm -f /tmp/audit1.js /tmp/hcheck.js /tmp/scroll-inspect2.js /tmp/scroll-check.js /tmp/single-check.js /tmp/inspect.js /tmp/notif-check*.js /tmp/dialog-check*.js /tmp/dialog-scroll.js /tmp/dialog-audit-all.js /tmp/grid-inspect*.js /tmp/style-inspect.js /tmp/style-dump.js /tmp/users-recheck.js /tmp/info-grid-check.js /tmp/lead-detail-check.js /tmp/lead-detail-hcheck*.js /tmp/full-hscan.js /tmp/theme-toggle-check.js /tmp/login-debug.png 2>/dev/null *)"
     ],
     "additionalDirectories": [
       "/private/tmp",

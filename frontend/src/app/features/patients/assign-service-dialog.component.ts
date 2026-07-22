@@ -132,7 +132,7 @@ const TYPE_TO_ROUTE: Record<ServiceType, CatalogueType> = {
               <mat-datepicker #startPicker />
             </mat-form-field>
 
-            <mat-form-field appearance="outline">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
               <mat-label>Price (INR)</mat-label>
               <input matInput formControlName="priceInr" type="number" min="0" step="0.01" />
               <span matTextPrefix>₹&nbsp;</span>
@@ -181,7 +181,8 @@ const TYPE_TO_ROUTE: Record<ServiceType, CatalogueType> = {
   `,
   styles: `
     mat-stepper {
-      min-width: 620px;
+      width: 100%;
+      max-width: 620px;
     }
     .type-row {
       margin-bottom: 12px;
@@ -234,13 +235,13 @@ const TYPE_TO_ROUTE: Record<ServiceType, CatalogueType> = {
       white-space: nowrap;
     }
     .details-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
       margin-top: 8px;
     }
     .span-2 {
-      grid-column: span 2;
+      width: 100%;
     }
     .summary-line {
       margin: 4px 0 8px;

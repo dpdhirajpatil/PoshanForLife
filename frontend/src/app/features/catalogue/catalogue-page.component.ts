@@ -40,8 +40,10 @@ import { CatalogueTableComponent } from './catalogue-table.component';
   styles: `
     .page-header {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
+      gap: 8px;
       margin-bottom: 16px;
     }
     .page-header h1 {

@@ -90,7 +90,8 @@ export interface ManagePatientsDialogData {
   `,
   styles: `
     mat-dialog-content {
-      min-width: 440px;
+      width: 100%;
+      max-width: 440px;
       max-height: 60vh;
     }
     .center {

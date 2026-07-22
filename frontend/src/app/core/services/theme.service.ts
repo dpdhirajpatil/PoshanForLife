@@ -15,6 +15,8 @@ const STORAGE_KEY = 'theme';
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
   readonly theme = signal<Theme>(this.readStored());
+  /** The currently rendered light/dark state — resolves 'system' against the OS preference. Set correctly in the constructor, once `media` exists. */
+  readonly isDark = signal(false);
 
   private readonly media = window.matchMedia('(prefers-color-scheme: dark)');
 
@@ -33,12 +35,18 @@ export class ThemeService {
     this.applyClass(this.resolveIsDark(value));
   }
 
+  /** Quick toggle for a single icon button — flips between explicit light/dark (leaves 'system' if not currently active). */
+  toggle(): void {
+    this.setTheme(this.isDark() ? 'light' : 'dark');
+  }
+
   private resolveIsDark(theme: Theme): boolean {
     return theme === 'dark' || (theme === 'system' && this.media.matches);
   }
 
   private applyClass(isDark: boolean): void {
     document.documentElement.classList.toggle('dark', isDark);
+    this.isDark.set(isDark);
   }
 
   private readStored(): Theme {

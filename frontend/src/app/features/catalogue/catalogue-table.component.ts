@@ -97,6 +97,7 @@ import { CatalogueService } from './catalogue.service';
       <mat-progress-bar mode="indeterminate" />
     }
 
+    <div class="table-scroll">
     <table mat-table [dataSource]="items()">
       <ng-container matColumnDef="name">
         <th mat-header-cell *matHeaderCellDef>Name</th>
@@ -177,6 +178,7 @@ import { CatalogueService } from './catalogue.service';
         </td>
       </tr>
     </table>
+    </div>
 
     <mat-paginator
       [length]="total()"

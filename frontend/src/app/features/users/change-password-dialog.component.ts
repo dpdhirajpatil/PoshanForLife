@@ -101,7 +101,8 @@ function matchValidator(control: AbstractControl): ValidationErrors | null {
       display: flex;
       flex-direction: column;
       gap: 4px;
-      min-width: 360px;
+      width: 100%;
+      max-width: 360px;
       padding-top: 8px;
     }
   `,

@@ -150,3 +150,12 @@ h6,
 .font-display {
   font-family: var(--font-sora);
 }
+
+/* Shared horizontal-scroll wrapper for tables/boards that are wider than the
+   viewport on narrow screens — wrap the table/board in this instead of
+   letting it force the whole page to scroll sideways. */
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}

@@ -57,6 +57,7 @@ import { PatientProgrammesService } from './patient-programmes.service';
         <mat-progress-bar mode="indeterminate" />
       }
 
+      <div class="table-scroll">
       <table mat-table [dataSource]="assignments()">
         <ng-container matColumnDef="service">
           <th mat-header-cell *matHeaderCellDef>Service</th>
@@ -144,6 +145,7 @@ import { PatientProgrammesService } from './patient-programmes.service';
           </td>
         </tr>
       </table>
+      </div>
     </mat-card>
 
     <mat-menu #rowMenu="matMenu">

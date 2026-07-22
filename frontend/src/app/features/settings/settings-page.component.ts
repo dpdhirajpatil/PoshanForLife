@@ -14,6 +14,7 @@ import { NotificationPrefs, UserDetail } from '../../core/models/user.model';
 import { ToastService } from '../../core/services/toast.service';
 import { initials } from '../../core/utils/initials';
 import { ROLE_BADGE_CLASSES, ROLE_BADGE_LABELS } from '../../core/utils/role-badge';
+import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
 import { ChangePasswordDialogComponent } from '../users/change-password-dialog.component';
 import { UsersService } from '../users/users.service';
 
@@ -51,6 +52,7 @@ const PREF_LABELS: Record<keyof NotificationPrefs, string> = {
     MatProgressSpinnerModule,
     MatSlideToggleModule,
     MatDialogModule,
+    ThemeToggleComponent,
   ],
   template: `
     <div class="page-header">
@@ -100,7 +102,7 @@ const PREF_LABELS: Record<keyof NotificationPrefs, string> = {
               <input matInput formControlName="phone" />
             </mat-form-field>
 
-            <mat-form-field appearance="outline">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
               <mat-label>Email</mat-label>
               <input matInput [value]="u.email" disabled />
               <mat-hint>Email is your login identifier and can't be changed here.</mat-hint>
@@ -136,6 +138,12 @@ const PREF_LABELS: Record<keyof NotificationPrefs, string> = {
 
           <h2>Password</h2>
           <button mat-stroked-button type="button" (click)="openChangePassword(u)">Change password</button>
+        </mat-card>
+
+        <mat-card appearance="outlined" class="appearance-card">
+          <h2>Appearance</h2>
+          <p class="hint appearance-hint">Choose how Poshan for Life looks on this device.</p>
+          <app-theme-toggle />
         </mat-card>
 
         <mat-card appearance="outlined" class="prefs-card">
@@ -202,10 +210,15 @@ const PREF_LABELS: Record<keyof NotificationPrefs, string> = {
       height: 100%;
       object-fit: cover;
     }
-    .avatar-actions .hint {
+    .avatar-actions .hint,
+    .appearance-hint {
       margin: 6px 0 0;
       font-size: 0.75rem;
       color: var(--muted-foreground);
+    }
+    .appearance-card app-theme-toggle {
+      display: block;
+      margin-top: 12px;
     }
     .profile-form {
       display: flex;

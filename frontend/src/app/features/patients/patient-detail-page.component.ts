@@ -153,6 +153,7 @@ import { PatientsService } from './patients.service';
               </mat-card>
             } @else {
               <mat-card appearance="outlined">
+                <div class="table-scroll">
                 <table mat-table [dataSource]="p.healthRecords">
                   <ng-container matColumnDef="recordedAt">
                     <th mat-header-cell *matHeaderCellDef>Recorded</th>
@@ -175,6 +176,7 @@ import { PatientsService } from './patients.service';
                   <tr mat-header-row *matHeaderRowDef="recordColumns"></tr>
                   <tr mat-row *matRowDef="let row; columns: recordColumns"></tr>
                 </table>
+                </div>
               </mat-card>
             }
           </div>
@@ -255,9 +257,9 @@ import { PatientsService } from './patients.service';
       font-size: 0.85rem;
     }
     .info-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
       margin: 0;
     }
     .info-grid dt {

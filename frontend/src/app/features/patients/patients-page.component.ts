@@ -89,6 +89,7 @@ import { PatientsService } from './patients.service';
         <mat-progress-bar mode="indeterminate" />
       }
 
+      <div class="table-scroll">
       <table mat-table [dataSource]="patients()">
         <ng-container matColumnDef="name">
           <th mat-header-cell *matHeaderCellDef>Name</th>
@@ -153,6 +154,7 @@ import { PatientsService } from './patients.service';
           </td>
         </tr>
       </table>
+      </div>
 
       <mat-paginator
         [length]="total()"
@@ -186,8 +188,10 @@ import { PatientsService } from './patients.service';
   styles: `
     .page-header {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
+      gap: 8px;
       margin-bottom: 16px;
     }
     .page-header h1 {

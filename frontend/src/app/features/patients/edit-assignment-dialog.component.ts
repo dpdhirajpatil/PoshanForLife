@@ -42,7 +42,7 @@ export interface EditAssignmentDialogData {
 
     <mat-dialog-content>
       <form [formGroup]="form" class="grid" (ngSubmit)="save()">
-        <mat-form-field appearance="outline" class="span-2">
+        <mat-form-field appearance="outline" class="span-2" subscriptSizing="dynamic">
           <mat-label>Service</mat-label>
           <input matInput [value]="serviceLabel" disabled />
           <mat-hint>Cannot be changed — assign a new service instead</mat-hint>
@@ -64,7 +64,7 @@ export interface EditAssignmentDialogData {
           <mat-datepicker #startPicker />
         </mat-form-field>
 
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>End date</mat-label>
           <input matInput formControlName="endDate" [matDatepicker]="endPicker" />
           <mat-datepicker-toggle matIconSuffix [for]="endPicker" />
@@ -92,14 +92,15 @@ export interface EditAssignmentDialogData {
   `,
   styles: `
     .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
       padding-top: 8px;
-      min-width: 480px;
+      width: 100%;
+      max-width: 480px;
     }
     .span-2 {
-      grid-column: span 2;
+      width: 100%;
     }
     mat-select,
     mat-option {

@@ -93,7 +93,8 @@ export interface AssignPatientsDialogData {
       font-size: 0.85rem;
     }
     mat-dialog-content {
-      min-width: 440px;
+      width: 100%;
+      max-width: 440px;
       max-height: 60vh;
     }
   `,

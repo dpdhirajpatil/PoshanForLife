@@ -78,7 +78,7 @@ const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
           </mat-form-field>
 
           @if (!isEdit) {
-            <mat-form-field appearance="outline">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
               <mat-label>Password (optional)</mat-label>
               <input matInput formControlName="password" type="password" />
               <mat-hint>Leave blank to auto-generate a temporary password</mat-hint>
@@ -169,7 +169,8 @@ const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
   styles: `
     .patient-form {
       padding-top: 8px;
-      min-width: 560px;
+      width: 100%;
+      max-width: 560px;
     }
     .patient-form h3 {
       margin: 8px 0;
@@ -177,12 +178,12 @@ const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
       color: var(--muted-foreground);
     }
     .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
     .span-2 {
-      grid-column: span 2;
+      width: 100%;
     }
   `,
 })

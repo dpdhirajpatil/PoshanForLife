@@ -108,6 +108,7 @@ const PAYMENT_STATUSES: OrderPaymentStatus[] = ['paid', 'unpaid', 'pending'];
         <mat-progress-bar mode="indeterminate" />
       }
 
+      <div class="table-scroll">
       <table mat-table [dataSource]="orders()">
         <ng-container matColumnDef="patient">
           <th mat-header-cell *matHeaderCellDef>Patient</th>
@@ -188,6 +189,7 @@ const PAYMENT_STATUSES: OrderPaymentStatus[] = ['paid', 'unpaid', 'pending'];
           </td>
         </tr>
       </table>
+      </div>
 
       <mat-paginator
         [length]="total()"
@@ -202,8 +204,10 @@ const PAYMENT_STATUSES: OrderPaymentStatus[] = ['paid', 'unpaid', 'pending'];
   styles: `
     .page-header {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
+      gap: 8px;
       margin-bottom: 16px;
     }
     .page-header h1 {

@@ -221,9 +221,9 @@ import { ScheduleFollowupDialogComponent } from './schedule-followup-dialog.comp
       align-items: start;
     }
     .info-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
       margin: 0;
     }
     .info-grid dt {
@@ -238,15 +238,16 @@ import { ScheduleFollowupDialogComponent } from './schedule-followup-dialog.comp
     }
     .log-activity {
       display: flex;
+      flex-wrap: wrap;
       gap: 8px;
       margin-bottom: 16px;
       align-items: flex-start;
     }
     .type-select {
-      flex: 0 0 140px;
+      flex: 1 1 140px;
     }
     .description-input {
-      flex: 1;
+      flex: 3 1 200px;
     }
     .timeline {
       display: flex;

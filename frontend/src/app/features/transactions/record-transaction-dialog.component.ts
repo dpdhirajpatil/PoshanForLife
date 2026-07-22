@@ -156,7 +156,8 @@ const PAYMENT_TYPES: PaymentType[] = ['offline', 'online', 'credit'];
   `,
   styles: `
     mat-dialog-content {
-      min-width: 520px;
+      width: 100%;
+      max-width: 520px;
     }
     .full {
       width: 100%;
@@ -214,12 +215,12 @@ const PAYMENT_TYPES: PaymentType[] = ['offline', 'online', 'credit'];
       color: var(--muted-foreground);
     }
     .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
     .span-2 {
-      grid-column: span 2;
+      width: 100%;
     }
   `,
 })

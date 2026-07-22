@@ -129,6 +129,7 @@ const STATUSES: ReportStatus[] = ['pending', 'processing', 'done', 'error'];
         <mat-progress-bar mode="indeterminate" />
       }
 
+      <div class="table-scroll">
       <table mat-table [dataSource]="reports()">
         <ng-container matColumnDef="patient">
           <th mat-header-cell *matHeaderCellDef>Patient</th>
@@ -177,6 +178,7 @@ const STATUSES: ReportStatus[] = ['pending', 'processing', 'done', 'error'];
           </td>
         </tr>
       </table>
+      </div>
 
       <mat-paginator
         [length]="total()"
@@ -191,8 +193,10 @@ const STATUSES: ReportStatus[] = ['pending', 'processing', 'done', 'error'];
   styles: `
     .page-header {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
+      gap: 8px;
       margin-bottom: 16px;
     }
     .page-header h1 {
@@ -201,6 +205,7 @@ const STATUSES: ReportStatus[] = ['pending', 'processing', 'done', 'error'];
     }
     .header-actions {
       display: flex;
+      flex-wrap: wrap;
       gap: 8px;
     }
     .summary-row {

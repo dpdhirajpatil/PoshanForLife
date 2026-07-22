@@ -162,14 +162,16 @@ import { OrdersService } from './orders.service';
       display: grid;
       place-content: center;
       padding: 32px;
-      min-width: 480px;
+      width: 100%;
+      max-width: 480px;
     }
     .detail {
       display: flex;
       flex-direction: column;
       gap: 10px;
       padding: 8px 0;
-      min-width: 480px;
+      width: 100%;
+      max-width: 480px;
     }
     .row {
       display: flex;

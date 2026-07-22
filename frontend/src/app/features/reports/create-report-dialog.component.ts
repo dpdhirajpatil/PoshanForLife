@@ -110,7 +110,8 @@ const MANUAL_TYPES: ReportType[] = ['lab', 'prescription', 'other'];
   `,
   styles: `
     mat-dialog-content {
-      min-width: 480px;
+      width: 100%;
+      max-width: 480px;
     }
     .full {
       width: 100%;
@@ -163,12 +164,12 @@ const MANUAL_TYPES: ReportType[] = ['lab', 'prescription', 'other'];
       color: var(--muted-foreground);
     }
     .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
     .span-2 {
-      grid-column: span 2;
+      width: 100%;
     }
   `,
 })

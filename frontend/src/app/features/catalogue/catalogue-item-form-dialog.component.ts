@@ -59,7 +59,7 @@ export interface CatalogueItemFormDialogData {
             }
           </mat-form-field>
 
-          <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>Service code</mat-label>
             <input matInput formControlName="serviceCode" required />
             <mat-hint>Unique across programmes, sessions and challenges</mat-hint>
@@ -147,7 +147,8 @@ export interface CatalogueItemFormDialogData {
   styles: `
     .catalogue-form {
       padding-top: 8px;
-      min-width: 560px;
+      width: 100%;
+      max-width: 560px;
     }
     .catalogue-form h3 {
       margin: 16px 0 8px;
@@ -155,12 +156,12 @@ export interface CatalogueItemFormDialogData {
       color: var(--muted-foreground);
     }
     .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
     .span-2 {
-      grid-column: span 2;
+      width: 100%;
     }
     mat-select {
       text-transform: capitalize;

@@ -116,14 +116,15 @@ import { ReportsService } from './reports.service';
       display: grid;
       place-content: center;
       padding: 32px;
-      min-width: 480px;
+      width: 100%;
+      max-width: 480px;
     }
     .detail {
       display: flex;
       flex-direction: column;
       gap: 10px;
       padding: 8px 0;
-      min-width: 520px;
+      width: 100%;
       max-width: 620px;
     }
     .row {
@@ -190,9 +191,9 @@ import { ReportsService } from './reports.service';
       color: var(--muted-foreground);
     }
     .field-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
     .field {
       display: flex;

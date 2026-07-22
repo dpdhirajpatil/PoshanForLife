@@ -116,7 +116,8 @@ export interface UserFormDialogData {
       display: flex;
       flex-direction: column;
       gap: 4px;
-      min-width: 380px;
+      width: 100%;
+      max-width: 380px;
       padding-top: 8px;
     }
   `,
