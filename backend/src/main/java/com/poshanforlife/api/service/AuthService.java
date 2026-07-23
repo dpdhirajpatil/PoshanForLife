@@ -2,11 +2,19 @@ package com.poshanforlife.api.service;
 
 import com.poshanforlife.api.dto.AuthResponse;
 import com.poshanforlife.api.dto.LoginRequest;
+import com.poshanforlife.api.dto.SignupRequest;
+import com.poshanforlife.api.entity.Lead;
+import com.poshanforlife.api.entity.LeadSource;
+import com.poshanforlife.api.entity.LeadStage;
+import com.poshanforlife.api.entity.Notification;
 import com.poshanforlife.api.entity.RefreshToken;
+import com.poshanforlife.api.entity.Role;
 import com.poshanforlife.api.entity.User;
 import com.poshanforlife.api.exception.ApiException;
+import com.poshanforlife.api.exception.EmailConflictException;
 import com.poshanforlife.api.exception.ErrorCode;
 import com.poshanforlife.api.mapper.UserMapper;
+import com.poshanforlife.api.repository.LeadRepository;
 import com.poshanforlife.api.repository.RefreshTokenRepository;
 import com.poshanforlife.api.repository.UserRepository;
 import com.poshanforlife.api.security.JwtProperties;
@@ -34,12 +42,59 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final LeadRepository leadRepository;
+    private final NotificationService notificationService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final JwtProperties jwtProperties;
     private final UserMapper userMapper;
 
     private final SecureRandom secureRandom = new SecureRandom();
+
+    /**
+     * Mobile self-signup, PUBLIC (no auth required). Transactionally: creates
+     * a role=LEAD User, a linked Lead (source=mobile_app, stage=new — so the
+     * CRM/Leads feature sees this person immediately), notifies every active
+     * ADMIN, and issues the same token pair as login. The Lead's
+     * convertedPatient link is set to this same User from the start (not just
+     * on conversion) so LeadService.convert can promote it in place later
+     * instead of creating a duplicate account.
+     */
+    @Transactional
+    public AuthResponse signup(SignupRequest request) {
+        String email = normalize(request.email());
+        if (userRepository.existsByEmail(email)) {
+            throw new EmailConflictException(email);
+        }
+
+        User user = new User();
+        user.setName(request.name().trim());
+        user.setEmail(email);
+        user.setPasswordHash(passwordEncoder.encode(request.password()));
+        user.setRole(Role.LEAD);
+        user.setPhone(request.phone());
+        user = userRepository.save(user);
+
+        Lead lead = new Lead();
+        lead.setName(user.getName());
+        lead.setPhone(request.phone());
+        lead.setEmail(email);
+        lead.setCity(request.city());
+        lead.setSource(LeadSource.MOBILE_APP);
+        lead.setHealthGoal(request.healthGoal());
+        lead.setStage(LeadStage.NEW);
+        lead.setConvertedPatient(user);
+        lead.setCreatedBy(user);
+        lead = leadRepository.save(lead);
+
+        for (User admin : userRepository.findByRoleAndIsActiveTrue(Role.ADMIN)) {
+            notificationService.create(admin, Notification.TYPE_NEW_LEAD_SIGNUP,
+                    "New sign-up", user.getName() + " signed up via the mobile app",
+                    "lead", lead.getId());
+        }
+
+        return issueTokens(user);
+    }
 
     @Transactional
     public AuthResponse login(LoginRequest request) {

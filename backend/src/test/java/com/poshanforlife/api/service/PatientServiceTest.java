@@ -165,6 +165,34 @@ class PatientServiceTest {
     }
 
     @Test
+    void promoteExistingUser_switchesRoleAndCreatesProfileOnSameRow() {
+        User leadUser = newUser("Signup Lead", "lead@x.com", Role.LEAD);
+        when(userRepository.findById(leadUser.getId())).thenReturn(Optional.of(leadUser));
+
+        var detail = patientService.promoteExistingUser(leadUser.getId(),
+                new CreatePatientRequest("Signup Lead", "lead@x.com", null, "9000000000", null,
+                        Gender.MALE, null, null, null, null, null),
+                admin);
+
+        assertThat(leadUser.getRole()).isEqualTo(Role.PATIENT);
+        assertThat(detail.id()).isEqualTo(leadUser.getId().toString());
+        assertThat(detail.tempPassword()).isNull();
+        verify(patientProfileRepository).save(any(PatientProfile.class));
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void promoteExistingUser_nonLeadUserIs404() {
+        User patient = newUser("P", "p@x.com", Role.PATIENT);
+        when(userRepository.findById(patient.getId())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> patientService.promoteExistingUser(patient.getId(),
+                request("P", "p@x.com", "Passw0rd!", null), admin))
+                .isInstanceOfSatisfying(ApiException.class,
+                        ex -> assertThat(ex.getCode()).isEqualTo(ErrorCode.RESOURCE_NOT_FOUND));
+    }
+
+    @Test
     void updateCreatesProfileLazilyForLegacyPatients() {
         User patient = newUser("P", "p@x.com", Role.PATIENT);
         when(userRepository.findById(patient.getId())).thenReturn(Optional.of(patient));

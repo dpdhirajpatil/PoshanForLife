@@ -6,6 +6,7 @@ import com.poshanforlife.api.dto.CreateLeadActivityRequest;
 import com.poshanforlife.api.dto.CreateLeadRequest;
 import com.poshanforlife.api.dto.LeadDetailDto;
 import com.poshanforlife.api.dto.PatientDetailDto;
+import com.poshanforlife.api.dto.RequestConsultationRequest;
 import com.poshanforlife.api.dto.ScheduleFollowupRequest;
 import com.poshanforlife.api.dto.UpdateLeadRequest;
 import com.poshanforlife.api.entity.CatalogueItemType;
@@ -224,6 +225,70 @@ class LeadServiceTest {
         ArgumentCaptor<LeadActivity> captor = ArgumentCaptor.forClass(LeadActivity.class);
         verify(leadActivityRepository).save(captor.capture());
         assertThat(captor.getValue().getActivityType()).isEqualTo(LeadActivityType.CONVERTED);
+    }
+
+    @Test
+    void convert_selfSignupLead_promotesExistingUserInsteadOfCreatingNew() {
+        User leadUser = newUser("Signup Lead", Role.LEAD);
+        Lead lead = existingLead(null);
+        lead.setEmail("lead@example.com");
+        lead.setConvertedPatient(leadUser);
+        when(leadRepository.findById(lead.getId())).thenReturn(Optional.of(lead));
+        when(patientService.promoteExistingUser(eq(leadUser.getId()), any(), eq(adminCaller)))
+                .thenReturn(patientDetail(leadUser.getId()));
+        when(userRepository.getReferenceById(leadUser.getId())).thenReturn(leadUser);
+
+        ConvertLeadResponseDto result = leadService.convert(lead.getId(), emptyConvertRequest(), adminCaller);
+
+        assertThat(result.patientId()).isEqualTo(leadUser.getId().toString());
+        assertThat(lead.getStage()).isEqualTo(LeadStage.CONVERTED);
+        assertThat(lead.getConvertedPatient()).isEqualTo(leadUser);
+        verify(patientService, never()).create(any(), any());
+    }
+
+    @Test
+    void requestConsultation_notifiesAssignedPractitioner() {
+        User leadUser = newUser("Signup Lead", Role.LEAD);
+        Lead lead = existingLead(doctor);
+        lead.setConvertedPatient(leadUser);
+        when(leadRepository.findByConvertedPatientId(leadUser.getId())).thenReturn(Optional.of(lead));
+        when(userRepository.getReferenceById(leadUser.getId())).thenReturn(leadUser);
+        AuthenticatedUser leadCaller = new AuthenticatedUser(leadUser.getId().toString(), leadUser.getEmail(), Role.LEAD);
+
+        leadService.requestConsultation(new RequestConsultationRequest("Morning", "Please call"), leadCaller);
+
+        verify(notificationService).create(eq(doctor), eq(Notification.TYPE_CONSULTATION_REQUEST),
+                any(), any(), eq("lead"), eq(lead.getId()));
+        ArgumentCaptor<LeadActivity> captor = ArgumentCaptor.forClass(LeadActivity.class);
+        verify(leadActivityRepository).save(captor.capture());
+        assertThat(captor.getValue().getActivityType()).isEqualTo(LeadActivityType.NOTE);
+        assertThat(captor.getValue().getDescription()).contains("Morning").contains("Please call");
+    }
+
+    @Test
+    void requestConsultation_noAssignedPractitioner_notifiesAllActiveAdmins() {
+        User leadUser = newUser("Signup Lead", Role.LEAD);
+        Lead lead = existingLead(null);
+        lead.setConvertedPatient(leadUser);
+        when(leadRepository.findByConvertedPatientId(leadUser.getId())).thenReturn(Optional.of(lead));
+        when(userRepository.getReferenceById(leadUser.getId())).thenReturn(leadUser);
+        when(userRepository.findByRoleAndIsActiveTrue(Role.ADMIN)).thenReturn(List.of(admin));
+        AuthenticatedUser leadCaller = new AuthenticatedUser(leadUser.getId().toString(), leadUser.getEmail(), Role.LEAD);
+
+        leadService.requestConsultation(new RequestConsultationRequest(null, null), leadCaller);
+
+        verify(notificationService).create(eq(admin), eq(Notification.TYPE_CONSULTATION_REQUEST),
+                any(), any(), eq("lead"), eq(lead.getId()));
+    }
+
+    @Test
+    void requestConsultation_noLinkedLead_throwsNotFound() {
+        UUID callerId = UUID.randomUUID();
+        when(leadRepository.findByConvertedPatientId(callerId)).thenReturn(Optional.empty());
+        AuthenticatedUser leadCaller = new AuthenticatedUser(callerId.toString(), "x@poshan.test", Role.LEAD);
+
+        assertThatThrownBy(() -> leadService.requestConsultation(new RequestConsultationRequest(null, null), leadCaller))
+                .isInstanceOf(com.poshanforlife.api.exception.ResourceNotFoundException.class);
     }
 
     @Test

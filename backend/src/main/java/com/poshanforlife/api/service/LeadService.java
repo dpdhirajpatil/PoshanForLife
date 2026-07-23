@@ -11,6 +11,7 @@ import com.poshanforlife.api.dto.LeadDetailDto;
 import com.poshanforlife.api.dto.LeadListItemDto;
 import com.poshanforlife.api.dto.LeadSummaryDto;
 import com.poshanforlife.api.dto.PatientDetailDto;
+import com.poshanforlife.api.dto.RequestConsultationRequest;
 import com.poshanforlife.api.dto.ScheduleFollowupRequest;
 import com.poshanforlife.api.dto.ServiceRefDto;
 import com.poshanforlife.api.dto.UpdateLeadRequest;
@@ -223,8 +224,14 @@ public class LeadService {
         CreatePatientRequest patientRequest = new CreatePatientRequest(
                 name, email, null, phone, request.dateOfBirth(), lead.getGender(),
                 request.bloodGroup(), request.heightCm(), null, null, assignedDoctorId);
-        PatientDetailDto createdPatient = patientService.create(patientRequest, caller);
-        UUID patientId = UUID.fromString(createdPatient.id());
+
+        // A mobile self-signup lead already has a linked User (role LEAD) —
+        // promote that same row instead of creating a duplicate account.
+        User linkedUser = lead.getConvertedPatient();
+        PatientDetailDto patient = linkedUser != null && linkedUser.getRole() == Role.LEAD
+                ? patientService.promoteExistingUser(linkedUser.getId(), patientRequest, caller)
+                : patientService.create(patientRequest, caller);
+        UUID patientId = UUID.fromString(patient.id());
 
         if (request.assignServiceId() != null) {
             if (request.serviceType() == null) {
@@ -283,6 +290,44 @@ public class LeadService {
 
         List<LeadActivity> activities = leadActivityRepository.findByLeadIdOrderByCreatedAtAsc(id);
         return toDetail(lead, activities);
+    }
+
+    /**
+     * POST /leads/me/request-consultation (LEAD-only, self). Appends a NOTE
+     * activity to the caller's own linked Lead and notifies the assigned
+     * practitioner if one exists, else every active ADMIN (the lead has no
+     * practitioner yet to page directly).
+     */
+    @Transactional
+    public void requestConsultation(RequestConsultationRequest request, AuthenticatedUser caller) {
+        UUID callerId = UUID.fromString(caller.id());
+        Lead lead = leadRepository.findByConvertedPatientId(callerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lead", callerId));
+
+        String description = "Consultation requested"
+                + (request.preferredContactTime() != null && !request.preferredContactTime().isBlank()
+                    ? " — preferred time: " + request.preferredContactTime() : "")
+                + (request.message() != null && !request.message().isBlank()
+                    ? " — " + request.message() : "");
+        LeadActivity activity = new LeadActivity();
+        activity.setLead(lead);
+        activity.setActivityType(LeadActivityType.NOTE);
+        activity.setDescription(description);
+        activity.setCreatedBy(userRepository.getReferenceById(callerId));
+        leadActivityRepository.save(activity);
+
+        String message = request.message() != null && !request.message().isBlank()
+                ? request.message()
+                : lead.getName() + " requested a consultation";
+        if (lead.getAssignedPractitioner() != null) {
+            notificationService.create(lead.getAssignedPractitioner(), Notification.TYPE_CONSULTATION_REQUEST,
+                    "Consultation requested", message, "lead", lead.getId());
+        } else {
+            for (User admin : userRepository.findByRoleAndIsActiveTrue(Role.ADMIN)) {
+                notificationService.create(admin, Notification.TYPE_CONSULTATION_REQUEST,
+                        "Consultation requested", message, "lead", lead.getId());
+            }
+        }
     }
 
     // ---- helpers -----------------------------------------------------------

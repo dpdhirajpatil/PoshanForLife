@@ -88,25 +88,7 @@ public class PatientService {
             throw new EmailConflictException(email);
         }
 
-        UUID callerId = UUID.fromString(caller.id());
-        UUID doctorToAssign;
-        if (caller.role() == Role.DOCTOR) {
-            if (request.assignedDoctorId() != null && !request.assignedDoctorId().equals(callerId)) {
-                throw new ApiException(ErrorCode.VALIDATION_ERROR,
-                        "Doctors cannot assign patients to another doctor");
-            }
-            doctorToAssign = callerId;
-        } else {
-            doctorToAssign = request.assignedDoctorId();
-        }
-
-        User doctor = null;
-        if (doctorToAssign != null) {
-            doctor = userRepository.findById(doctorToAssign)
-                    .filter(u -> u.getRole() == Role.DOCTOR)
-                    .orElseThrow(() -> new ApiException(ErrorCode.VALIDATION_ERROR,
-                            "assignedDoctorId does not refer to a DOCTOR user"));
-        }
+        User doctor = resolveDoctorToAssign(request.assignedDoctorId(), caller);
 
         String tempPassword = null;
         String password = request.password();
@@ -143,6 +125,50 @@ public class PatientService {
             doctorPatientRepository.save(link);
         }
         return toDetail(user, profile, tempPassword);
+    }
+
+    /**
+     * The conversion path for a mobile self-signup lead: promotes the SAME
+     * User row (role LEAD -> PATIENT) instead of creating a duplicate — the
+     * account already has a real password the person chose, so it's left
+     * untouched, and no temp password is generated. Called by
+     * LeadService.convert when the lead already has a linked LEAD user.
+     */
+    @Transactional
+    public PatientDetailDto promoteExistingUser(UUID userId, CreatePatientRequest request, AuthenticatedUser caller) {
+        User user = userRepository.findById(userId)
+                .filter(u -> u.getRole() == Role.LEAD)
+                .orElseThrow(() -> new ResourceNotFoundException("Lead account", userId));
+
+        String email = request.email().trim().toLowerCase(Locale.ROOT);
+        if (!email.equals(user.getEmail()) && userRepository.existsByEmail(email)) {
+            throw new EmailConflictException(email);
+        }
+
+        User doctor = resolveDoctorToAssign(request.assignedDoctorId(), caller);
+
+        user.setName(request.name().trim());
+        user.setEmail(email);
+        user.setRole(Role.PATIENT);
+        user.setPhone(request.phone());
+        user.setDateOfBirth(request.dateOfBirth());
+
+        PatientProfile profile = new PatientProfile();
+        profile.setUser(user);
+        profile.setGender(request.gender());
+        profile.setBloodGroup(request.bloodGroup());
+        profile.setHeightCm(request.heightCm());
+        profile.setEmergencyContact(request.emergencyContact());
+        profile.setMedicalHistory(request.medicalHistory());
+        patientProfileRepository.save(profile);
+
+        if (doctor != null) {
+            DoctorPatient link = new DoctorPatient();
+            link.setDoctor(doctor);
+            link.setPatient(user);
+            doctorPatientRepository.save(link);
+        }
+        return toDetail(user, profile, null);
     }
 
     @Transactional(readOnly = true)
@@ -227,6 +253,29 @@ public class PatientService {
         return userRepository.findById(id)
                 .filter(u -> u.getRole() == Role.PATIENT)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient", id));
+    }
+
+    /** Shared by create() and promoteExistingUser(): DOCTOR is always self-assigned; ADMIN may pick anyone. */
+    private User resolveDoctorToAssign(UUID assignedDoctorId, AuthenticatedUser caller) {
+        UUID callerId = UUID.fromString(caller.id());
+        UUID doctorToAssign;
+        if (caller.role() == Role.DOCTOR) {
+            if (assignedDoctorId != null && !assignedDoctorId.equals(callerId)) {
+                throw new ApiException(ErrorCode.VALIDATION_ERROR,
+                        "Doctors cannot assign patients to another doctor");
+            }
+            doctorToAssign = callerId;
+        } else {
+            doctorToAssign = assignedDoctorId;
+        }
+
+        if (doctorToAssign == null) {
+            return null;
+        }
+        return userRepository.findById(doctorToAssign)
+                .filter(u -> u.getRole() == Role.DOCTOR)
+                .orElseThrow(() -> new ApiException(ErrorCode.VALIDATION_ERROR,
+                        "assignedDoctorId does not refer to a DOCTOR user"));
     }
 
     private void requireAccess(UUID patientId, AuthenticatedUser caller) {

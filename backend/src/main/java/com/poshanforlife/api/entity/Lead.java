@@ -15,8 +15,12 @@ import java.time.Instant;
 
 /**
  * A CRM lead/contact moving through the sales pipeline (NEW..CONVERTED/LOST).
- * convertedPatient links to the User created by the convert flow — null until
- * (and unless) this lead is converted. interestedProgramme is purely
+ * convertedPatient links to this lead's User account — set at creation time
+ * for a mobile self-signup lead (role LEAD, source=mobile_app) and swapped to
+ * point at the same row's promoted PATIENT role when staff convert it, or set
+ * for the first time to a brand-new User for a staff-originated lead that had
+ * no linked account before conversion. Null only for staff-originated leads
+ * that haven't been converted yet. interestedProgramme is purely
  * informational (which catalogue programme they asked about); the actual
  * service assignment created on conversion is independent of it.
  */

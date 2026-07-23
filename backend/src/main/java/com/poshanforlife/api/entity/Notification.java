@@ -28,6 +28,10 @@ public class Notification extends BaseEntity {
     public static final String TYPE_LEAD_FOLLOWUP = "LEAD_FOLLOWUP";
     public static final String TYPE_PROCESSING_ERROR = "PROCESSING_ERROR";
     public static final String TYPE_SYSTEM_ANNOUNCEMENT = "SYSTEM_ANNOUNCEMENT";
+    /** Mobile self-signup created a new lead — sent to every active ADMIN. */
+    public static final String TYPE_NEW_LEAD_SIGNUP = "NEW_LEAD_SIGNUP";
+    /** A signed-up lead asked to be contacted, via POST /leads/me/request-consultation. */
+    public static final String TYPE_CONSULTATION_REQUEST = "CONSULTATION_REQUEST";
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)

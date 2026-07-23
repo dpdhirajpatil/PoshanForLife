@@ -2,12 +2,15 @@ package com.poshanforlife.api.service;
 
 import com.poshanforlife.api.dto.AuthResponse;
 import com.poshanforlife.api.dto.LoginRequest;
+import com.poshanforlife.api.dto.SignupRequest;
+import com.poshanforlife.api.entity.Lead;
 import com.poshanforlife.api.entity.RefreshToken;
 import com.poshanforlife.api.entity.Role;
 import com.poshanforlife.api.entity.User;
 import com.poshanforlife.api.exception.ApiException;
 import com.poshanforlife.api.exception.ErrorCode;
 import com.poshanforlife.api.mapper.UserMapperImpl;
+import com.poshanforlife.api.repository.LeadRepository;
 import com.poshanforlife.api.repository.RefreshTokenRepository;
 import com.poshanforlife.api.repository.UserRepository;
 import com.poshanforlife.api.security.JwtProperties;
@@ -23,6 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.lang.reflect.Field;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,6 +34,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -43,6 +50,10 @@ class AuthServiceTest {
     private UserRepository userRepository;
     @Mock
     private RefreshTokenRepository refreshTokenRepository;
+    @Mock
+    private LeadRepository leadRepository;
+    @Mock
+    private NotificationService notificationService;
 
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final JwtService jwtService = new JwtService(JWT_PROPS);
@@ -52,8 +63,11 @@ class AuthServiceTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        authService = new AuthService(userRepository, refreshTokenRepository,
-                passwordEncoder, jwtService, JWT_PROPS, new UserMapperImpl());
+        authService = new AuthService(userRepository, refreshTokenRepository, leadRepository,
+                notificationService, passwordEncoder, jwtService, JWT_PROPS, new UserMapperImpl());
+        lenient().when(userRepository.save(any(User.class))).thenAnswer(inv -> withId(inv.getArgument(0)));
+        lenient().when(leadRepository.save(any(Lead.class))).thenAnswer(inv -> withId(inv.getArgument(0)));
+        lenient().when(userRepository.findByRoleAndIsActiveTrue(Role.ADMIN)).thenReturn(List.of());
 
         admin = new User();
         setId(admin, UUID.randomUUID());
@@ -61,6 +75,60 @@ class AuthServiceTest {
         admin.setEmail("admin@poshanforlife.com");
         admin.setPasswordHash(passwordEncoder.encode("Admin@123"));
         admin.setRole(Role.ADMIN);
+    }
+
+    @Test
+    void signupCreatesLeadUserAndLinkedLeadAndIssuesTokens() {
+        when(userRepository.existsByEmail("newlead@example.com")).thenReturn(false);
+        SignupRequest request = new SignupRequest("New Lead", "NewLead@Example.com ", "Passw0rd!",
+                "9000000000", "Pune", "Lose weight");
+
+        AuthResponse response = authService.signup(request);
+
+        assertThat(response.accessToken()).isNotBlank();
+        assertThat(response.refreshToken()).isNotBlank();
+        assertThat(response.user().email()).isEqualTo("newlead@example.com");
+        assertThat(response.user().role()).isEqualTo(Role.LEAD);
+        verify(refreshTokenRepository).save(any(RefreshToken.class));
+
+        ArgumentCaptor<Lead> leadCaptor = ArgumentCaptor.forClass(Lead.class);
+        verify(leadRepository).save(leadCaptor.capture());
+        Lead savedLead = leadCaptor.getValue();
+        assertThat(savedLead.getSource()).isEqualTo(com.poshanforlife.api.entity.LeadSource.MOBILE_APP);
+        assertThat(savedLead.getStage()).isEqualTo(com.poshanforlife.api.entity.LeadStage.NEW);
+        assertThat(savedLead.getEmail()).isEqualTo("newlead@example.com");
+        assertThat(savedLead.getCity()).isEqualTo("Pune");
+        assertThat(savedLead.getHealthGoal()).isEqualTo("Lose weight");
+        assertThat(savedLead.getConvertedPatient().getEmail()).isEqualTo("newlead@example.com");
+        assertThat(savedLead.getCreatedBy().getEmail()).isEqualTo("newlead@example.com");
+    }
+
+    @Test
+    void signupNotifiesEveryActiveAdmin() throws Exception {
+        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        User admin2 = new User();
+        setId(admin2, UUID.randomUUID());
+        admin2.setEmail("admin2@poshanforlife.com");
+        admin2.setRole(Role.ADMIN);
+        when(userRepository.findByRoleAndIsActiveTrue(Role.ADMIN)).thenReturn(List.of(admin, admin2));
+
+        authService.signup(new SignupRequest("New Lead", "newlead@example.com", "Passw0rd!", null, null, null));
+
+        verify(notificationService).create(eq(admin), eq(com.poshanforlife.api.entity.Notification.TYPE_NEW_LEAD_SIGNUP),
+                any(), any(), eq("lead"), any());
+        verify(notificationService).create(eq(admin2), eq(com.poshanforlife.api.entity.Notification.TYPE_NEW_LEAD_SIGNUP),
+                any(), any(), eq("lead"), any());
+    }
+
+    @Test
+    void signupWithTakenEmailFailsWithEmailConflict() {
+        when(userRepository.existsByEmail("taken@example.com")).thenReturn(true);
+
+        assertThatThrownBy(() -> authService.signup(
+                new SignupRequest("New Lead", "taken@example.com", "Passw0rd!", null, null, null)))
+                .isInstanceOfSatisfying(ApiException.class,
+                        ex -> assertThat(ex.getCode()).isEqualTo(ErrorCode.EMAIL_CONFLICT));
+        verify(leadRepository, never()).save(any());
     }
 
     @Test
@@ -148,5 +216,18 @@ class AuthServiceTest {
         Field idField = user.getClass().getSuperclass().getDeclaredField("id");
         idField.setAccessible(true);
         idField.set(user, id);
+    }
+
+    private static <T> T withId(T entity) {
+        try {
+            Field idField = entity.getClass().getSuperclass().getDeclaredField("id");
+            idField.setAccessible(true);
+            if (idField.get(entity) == null) {
+                idField.set(entity, UUID.randomUUID());
+            }
+            return entity;
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }

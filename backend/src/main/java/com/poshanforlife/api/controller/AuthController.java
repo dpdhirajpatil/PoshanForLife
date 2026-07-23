@@ -5,12 +5,15 @@ import com.poshanforlife.api.dto.ApiResponse;
 import com.poshanforlife.api.dto.AuthResponse;
 import com.poshanforlife.api.dto.LoginRequest;
 import com.poshanforlife.api.dto.RefreshTokenRequest;
+import com.poshanforlife.api.dto.SignupRequest;
 import com.poshanforlife.api.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
@@ -21,6 +24,13 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+
+    @PostMapping("/signup")
+    @ResponseStatus(HttpStatus.CREATED)
+    @RateLimit(requests = 10, windowSeconds = 60)
+    public ApiResponse<AuthResponse> signup(@Valid @RequestBody SignupRequest request) {
+        return ApiResponse.ok(authService.signup(request));
+    }
 
     @PostMapping("/login")
     @RateLimit(requests = 10, windowSeconds = 60)

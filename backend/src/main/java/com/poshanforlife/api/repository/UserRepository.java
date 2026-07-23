@@ -55,6 +55,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     long countByRoleAndIsActiveTrue(Role role);
 
+    /** Broadcast recipients — e.g. every active ADMIN, for new-lead-signup notifications. */
+    List<User> findByRoleAndIsActiveTrue(Role role);
+
     /** One row per active doctor, patientCount 0 for doctors with no assignments. */
     @Query("""
             select d.id as doctorId, d.name as doctorName, count(dp.id) as patientCount

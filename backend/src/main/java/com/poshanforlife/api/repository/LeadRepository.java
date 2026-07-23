@@ -11,9 +11,17 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface LeadRepository extends JpaRepository<Lead, UUID> {
+
+    /**
+     * The lead record linked to a self-signed-up user (role LEAD, or PATIENT
+     * after conversion) — how a LEAD caller finds "their own" lead for
+     * self-service actions like requesting a consultation.
+     */
+    Optional<Lead> findByConvertedPatientId(UUID userId);
 
     /**
      * search must be non-null — pass "" for no filter (null String params in
