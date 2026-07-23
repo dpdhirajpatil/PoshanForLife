@@ -19,6 +19,7 @@ import { PatientStats, PatientSummary, ageFrom } from '../../core/models/patient
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog.component';
+import { openSidePanel } from '../../shared/side-panel';
 import { PatientFormDialogComponent } from './patient-form-dialog.component';
 import { PatientsService } from './patients.service';
 
@@ -328,8 +329,7 @@ export class PatientsPageComponent {
   }
 
   protected openCreate(): void {
-    this.dialog
-      .open(PatientFormDialogComponent, { data: {} })
+    openSidePanel(this.dialog, PatientFormDialogComponent, { data: {} })
       .afterClosed()
       .subscribe((created) => {
         if (!created) return;
@@ -354,8 +354,7 @@ export class PatientsPageComponent {
     // fetch the full record so the medical section is pre-filled
     this.patientsService.get(summary.id).subscribe({
       next: (patient) => {
-        this.dialog
-          .open(PatientFormDialogComponent, { data: { patient } })
+        openSidePanel(this.dialog, PatientFormDialogComponent, { data: { patient } })
           .afterClosed()
           .subscribe((updated) => updated && this.load());
       },

@@ -28,6 +28,7 @@ import {
   LeadSummary,
 } from '../../core/models/lead.model';
 import { ToastService } from '../../core/services/toast.service';
+import { openSidePanel } from '../../shared/side-panel';
 import { CreateLeadDialogComponent } from './create-lead-dialog.component';
 import { LeadsService } from './leads.service';
 
@@ -571,8 +572,7 @@ export class LeadsPageComponent {
   }
 
   protected openCreate(): void {
-    this.dialog
-      .open(CreateLeadDialogComponent)
+    openSidePanel(this.dialog, CreateLeadDialogComponent)
       .afterClosed()
       .subscribe((created) => created && this.load());
   }

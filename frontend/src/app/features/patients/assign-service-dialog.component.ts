@@ -18,6 +18,7 @@ import { ApiError } from '../../core/models/api-response.model';
 import { CatalogueItem, CatalogueType } from '../../core/models/catalogue.model';
 import { PatientProgramme, ServiceType } from '../../core/models/patient-programme.model';
 import { ToastService } from '../../core/services/toast.service';
+import { SidePanelHandleComponent } from '../../shared/side-panel-handle.component';
 import { CatalogueService } from '../catalogue/catalogue.service';
 import { AssignmentReceiptComponent } from './assignment-receipt.component';
 import { AssignServicePayload, PatientProgrammesService } from './patient-programmes.service';
@@ -57,8 +58,10 @@ const TYPE_TO_ROUTE: Record<ServiceType, CatalogueType> = {
     MatProgressBarModule,
     MatProgressSpinnerModule,
     AssignmentReceiptComponent,
+    SidePanelHandleComponent,
   ],
   template: `
+    <app-side-panel-handle />
     <h2 mat-dialog-title>Assign a service to {{ data.patientName }}</h2>
 
     <mat-dialog-content>
@@ -182,7 +185,6 @@ const TYPE_TO_ROUTE: Record<ServiceType, CatalogueType> = {
   styles: `
     mat-stepper {
       width: 100%;
-      max-width: 620px;
     }
     .type-row {
       margin-bottom: 12px;

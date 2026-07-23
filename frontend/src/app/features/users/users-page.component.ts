@@ -19,6 +19,7 @@ import { Role, UserDetail } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog.component';
+import { openSidePanel } from '../../shared/side-panel';
 import { ManagePatientsDialogComponent } from '../assignments/manage-patients-dialog.component';
 import { AssignPatientsDialogComponent } from './assign-patients-dialog.component';
 import { ChangePasswordDialogComponent } from './change-password-dialog.component';
@@ -320,29 +321,27 @@ export class UsersPageComponent {
   }
 
   protected openCreate(): void {
-    this.dialog
-      .open(UserFormDialogComponent, { data: {} })
+    openSidePanel(this.dialog, UserFormDialogComponent, { data: {} })
       .afterClosed()
       .subscribe((created) => created && this.load());
   }
 
   protected openEdit(user: UserDetail): void {
-    this.dialog
-      .open(UserFormDialogComponent, { data: { user } })
+    openSidePanel(this.dialog, UserFormDialogComponent, { data: { user } })
       .afterClosed()
       .subscribe((updated) => updated && this.load());
   }
 
   protected openChangePassword(user: UserDetail): void {
-    this.dialog.open(ChangePasswordDialogComponent, { data: { user } });
+    openSidePanel(this.dialog, ChangePasswordDialogComponent, { data: { user } });
   }
 
   protected openAssignPatients(user: UserDetail): void {
-    this.dialog.open(AssignPatientsDialogComponent, { data: { doctor: user } });
+    openSidePanel(this.dialog, AssignPatientsDialogComponent, { data: { doctor: user } });
   }
 
   protected openManagePatients(user: UserDetail): void {
-    this.dialog.open(ManagePatientsDialogComponent, { data: { doctor: user } });
+    openSidePanel(this.dialog, ManagePatientsDialogComponent, { data: { doctor: user } });
   }
 
   protected deactivate(user: UserDetail): void {

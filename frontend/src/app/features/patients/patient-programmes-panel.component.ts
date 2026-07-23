@@ -15,6 +15,7 @@ import {
 } from '../../core/models/patient-programme.model';
 import { ToastService } from '../../core/services/toast.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog.component';
+import { openSidePanel } from '../../shared/side-panel';
 import {
   AssignServiceDialogComponent,
   AssignServiceDialogData,
@@ -301,13 +302,12 @@ export class PatientProgrammesPanelComponent implements OnInit {
   }
 
   protected openAssign(): void {
-    this.dialog
-      .open(AssignServiceDialogComponent, {
-        data: {
-          patientId: this.patientId(),
-          patientName: this.patientName(),
-        } satisfies AssignServiceDialogData,
-      })
+    openSidePanel(this.dialog, AssignServiceDialogComponent, {
+      data: {
+        patientId: this.patientId(),
+        patientName: this.patientName(),
+      } satisfies AssignServiceDialogData,
+    })
       .afterClosed()
       .subscribe((created) => created && this.load());
   }
@@ -317,13 +317,12 @@ export class PatientProgrammesPanelComponent implements OnInit {
   }
 
   protected openEdit(assignment: PatientProgramme): void {
-    this.dialog
-      .open(EditAssignmentDialogComponent, {
-        data: {
-          patientId: this.patientId(),
-          assignment,
-        } satisfies EditAssignmentDialogData,
-      })
+    openSidePanel(this.dialog, EditAssignmentDialogComponent, {
+      data: {
+        patientId: this.patientId(),
+        assignment,
+      } satisfies EditAssignmentDialogData,
+    })
       .afterClosed()
       .subscribe((updated) => updated && this.load());
   }

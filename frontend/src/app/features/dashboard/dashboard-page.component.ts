@@ -17,6 +17,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { ToastService } from '../../core/services/toast.service';
 import { CreateLeadDialogComponent } from '../leads/create-lead-dialog.component';
+import { openSidePanel } from '../../shared/side-panel';
 import { DashboardService } from './dashboard.service';
 
 const ACTIVITY_ICONS: Record<DashboardActivityType, string> = {
@@ -495,8 +496,7 @@ export class DashboardPageComponent {
   }
 
   protected openCreateLead(): void {
-    this.dialog
-      .open(CreateLeadDialogComponent)
+    openSidePanel(this.dialog, CreateLeadDialogComponent)
       .afterClosed()
       .subscribe((created) => created && this.load());
   }

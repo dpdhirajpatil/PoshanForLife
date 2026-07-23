@@ -19,6 +19,7 @@ import { CatalogueItem, CatalogueType } from '../../core/models/catalogue.model'
 import { ConvertLeadResponse, LeadDetail } from '../../core/models/lead.model';
 import { ServiceType } from '../../core/models/patient-programme.model';
 import { ToastService } from '../../core/services/toast.service';
+import { SidePanelHandleComponent } from '../../shared/side-panel-handle.component';
 import { CatalogueService } from '../catalogue/catalogue.service';
 import { LeadsService } from './leads.service';
 
@@ -55,8 +56,10 @@ const TYPE_TO_ROUTE: Record<ServiceType, CatalogueType> = {
     MatNativeDateModule,
     MatProgressBarModule,
     MatProgressSpinnerModule,
+    SidePanelHandleComponent,
   ],
   template: `
+    <app-side-panel-handle />
     <h2 mat-dialog-title>Convert {{ data.lead.name }} to a patient</h2>
 
     <mat-dialog-content>
@@ -191,7 +194,6 @@ const TYPE_TO_ROUTE: Record<ServiceType, CatalogueType> = {
   styles: `
     mat-stepper {
       width: 100%;
-      max-width: 560px;
     }
     .muted {
       color: var(--muted-foreground);

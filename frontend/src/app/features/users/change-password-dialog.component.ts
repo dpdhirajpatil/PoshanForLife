@@ -10,6 +10,7 @@ import { UserDetail } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { applyServerFieldErrors } from '../../core/utils/form-errors';
+import { SidePanelHandleComponent } from '../../shared/side-panel-handle.component';
 import { UsersService } from './users.service';
 
 export interface ChangePasswordDialogData {
@@ -41,8 +42,10 @@ function matchValidator(control: AbstractControl): ValidationErrors | null {
     MatInputModule,
     MatButtonModule,
     MatProgressSpinnerModule,
+    SidePanelHandleComponent,
   ],
   template: `
+    <app-side-panel-handle />
     <h2 mat-dialog-title>
       {{ isSelf ? 'Change your password' : 'Reset password — ' + data.user.name }}
     </h2>
@@ -102,7 +105,6 @@ function matchValidator(control: AbstractControl): ValidationErrors | null {
       flex-direction: column;
       gap: 4px;
       width: 100%;
-      max-width: 360px;
       padding-top: 8px;
     }
   `,

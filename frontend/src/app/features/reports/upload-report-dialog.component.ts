@@ -13,6 +13,7 @@ import { ApiError } from '../../core/models/api-response.model';
 import { PatientSummary } from '../../core/models/patient.model';
 import { InBodyData } from '../../core/models/report.model';
 import { ToastService } from '../../core/services/toast.service';
+import { SidePanelHandleComponent } from '../../shared/side-panel-handle.component';
 import { PatientsService } from '../patients/patients.service';
 import { INBODY_FIELD_GROUPS } from './inbody-field-groups';
 import { ReportsService } from './reports.service';
@@ -40,8 +41,10 @@ type Step = 'patient' | 'upload' | 'review';
     MatInputModule,
     MatProgressBarModule,
     MatProgressSpinnerModule,
+    SidePanelHandleComponent,
   ],
   template: `
+    <app-side-panel-handle />
     <h2 mat-dialog-title>Upload InBody report</h2>
 
     <mat-dialog-content>
@@ -156,7 +159,6 @@ type Step = 'patient' | 'upload' | 'review';
   styles: `
     mat-dialog-content {
       width: 100%;
-      max-width: 640px;
     }
     .full {
       width: 100%;

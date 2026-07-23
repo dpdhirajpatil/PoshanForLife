@@ -18,6 +18,7 @@ import { debounceTime, merge } from 'rxjs';
 import { ApiError } from '../../core/models/api-response.model';
 import { ReportListItem, ReportStats, ReportStatus, ReportType } from '../../core/models/report.model';
 import { ToastService } from '../../core/services/toast.service';
+import { openSidePanel } from '../../shared/side-panel';
 import { CreateReportDialogComponent } from './create-report-dialog.component';
 import { ReportDetailDialogComponent } from './report-detail-dialog.component';
 import { ReportsService } from './reports.service';
@@ -355,15 +356,13 @@ export class ReportsPageComponent {
   }
 
   protected openUpload(): void {
-    this.dialog
-      .open(UploadReportDialogComponent)
+    openSidePanel(this.dialog, UploadReportDialogComponent)
       .afterClosed()
       .subscribe((created) => created && this.load());
   }
 
   protected openCreate(): void {
-    this.dialog
-      .open(CreateReportDialogComponent)
+    openSidePanel(this.dialog, CreateReportDialogComponent)
       .afterClosed()
       .subscribe((created) => created && this.load());
   }

@@ -15,6 +15,7 @@ import { ApiError } from '../../core/models/api-response.model';
 import { OrderListItem } from '../../core/models/order.model';
 import { PaymentType, TransactionType } from '../../core/models/patient-programme.model';
 import { ToastService } from '../../core/services/toast.service';
+import { SidePanelHandleComponent } from '../../shared/side-panel-handle.component';
 import { OrdersService } from '../orders/orders.service';
 import { CreateTransactionPayload, TransactionsService } from './transactions.service';
 
@@ -43,8 +44,10 @@ const PAYMENT_TYPES: PaymentType[] = ['offline', 'online', 'credit'];
     MatIconModule,
     MatProgressBarModule,
     MatProgressSpinnerModule,
+    SidePanelHandleComponent,
   ],
   template: `
+    <app-side-panel-handle />
     <h2 mat-dialog-title>Record manual transaction</h2>
 
     <mat-dialog-content>
@@ -157,7 +160,6 @@ const PAYMENT_TYPES: PaymentType[] = ['offline', 'online', 'credit'];
   styles: `
     mat-dialog-content {
       width: 100%;
-      max-width: 520px;
     }
     .full {
       width: 100%;

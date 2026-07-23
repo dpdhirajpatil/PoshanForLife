@@ -168,3 +168,29 @@ h6,
 .mat-mdc-form-field .mdc-notched-outline__notch {
   border-right-color: transparent !important;
 }
+
+/* Side-panel form dialogs (opened via shared/side-panel.ts's openSidePanel)
+   — full-height, flush against the right edge, resizable via
+   SidePanelHandleComponent. Width/height/position themselves come from the
+   MatDialogConfig passed at open() time; this just makes the panel look
+   like a panel instead of a centered card, and makes the header/content/
+   actions stack correctly at full height. */
+.cdk-overlay-pane.side-panel {
+  margin: 0 !important;
+}
+.side-panel .mat-mdc-dialog-container {
+  height: 100%;
+}
+.side-panel .mdc-dialog__surface {
+  height: 100%;
+  max-height: 100vh;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.side-panel mat-dialog-content,
+.side-panel .mat-mdc-dialog-content {
+  flex: 1 1 auto;
+  max-height: none !important;
+}

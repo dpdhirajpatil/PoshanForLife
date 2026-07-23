@@ -11,6 +11,7 @@ import { RouterLink } from '@angular/router';
 import { ApiError } from '../../core/models/api-response.model';
 import { PatientDetail, ageFrom } from '../../core/models/patient.model';
 import { ToastService } from '../../core/services/toast.service';
+import { openSidePanel } from '../../shared/side-panel';
 import { AssignedDoctorsPanelComponent } from '../assignments/assigned-doctors-panel.component';
 import { PatientFormDialogComponent } from './patient-form-dialog.component';
 import { PatientProgrammesPanelComponent } from './patient-programmes-panel.component';
@@ -315,8 +316,7 @@ export class PatientDetailPageComponent implements OnInit {
   protected openEdit(): void {
     const current = this.patient();
     if (!current) return;
-    this.dialog
-      .open(PatientFormDialogComponent, { data: { patient: current } })
+    openSidePanel(this.dialog, PatientFormDialogComponent, { data: { patient: current } })
       .afterClosed()
       .subscribe((updated) => updated && this.load(current.id));
   }

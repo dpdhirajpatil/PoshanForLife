@@ -16,6 +16,7 @@ import {
 } from '../../core/models/catalogue.model';
 import { ToastService } from '../../core/services/toast.service';
 import { applyServerFieldErrors } from '../../core/utils/form-errors';
+import { SidePanelHandleComponent } from '../../shared/side-panel-handle.component';
 import { CatalogueService, SaveCatalogueItemPayload } from './catalogue.service';
 import { CoverImageUploadComponent } from './cover-image-upload.component';
 
@@ -42,8 +43,10 @@ export interface CatalogueItemFormDialogData {
     MatButtonModule,
     MatProgressSpinnerModule,
     CoverImageUploadComponent,
+    SidePanelHandleComponent,
   ],
   template: `
+    <app-side-panel-handle />
     <h2 mat-dialog-title>{{ isEdit ? 'Edit' : 'Add' }} {{ meta.singular }}</h2>
 
     <mat-dialog-content>
@@ -148,7 +151,6 @@ export interface CatalogueItemFormDialogData {
     .catalogue-form {
       padding-top: 8px;
       width: 100%;
-      max-width: 560px;
     }
     .catalogue-form h3 {
       margin: 16px 0 8px;

@@ -13,6 +13,7 @@ import { ApiError } from '../../core/models/api-response.model';
 import { UserDetail } from '../../core/models/user.model';
 import { ToastService } from '../../core/services/toast.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog.component';
+import { SidePanelHandleComponent } from '../../shared/side-panel-handle.component';
 import { UsersService } from '../users/users.service';
 import { Assignment, AssignmentsService } from './assignments.service';
 
@@ -38,8 +39,10 @@ export interface ManagePatientsDialogData {
     MatInputModule,
     MatAutocompleteModule,
     MatProgressSpinnerModule,
+    SidePanelHandleComponent,
   ],
   template: `
+    <app-side-panel-handle />
     <h2 mat-dialog-title>Patients of {{ data.doctor.name }}</h2>
 
     <mat-dialog-content>
@@ -91,8 +94,6 @@ export interface ManagePatientsDialogData {
   styles: `
     mat-dialog-content {
       width: 100%;
-      max-width: 440px;
-      max-height: 60vh;
     }
     .center {
       display: grid;

@@ -11,6 +11,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { ApiError } from '../../core/models/api-response.model';
 import { AssignmentStatus, PatientProgramme } from '../../core/models/patient-programme.model';
 import { ToastService } from '../../core/services/toast.service';
+import { SidePanelHandleComponent } from '../../shared/side-panel-handle.component';
 import { PatientProgrammesService } from './patient-programmes.service';
 
 export interface EditAssignmentDialogData {
@@ -36,8 +37,10 @@ export interface EditAssignmentDialogData {
     MatDatepickerModule,
     MatNativeDateModule,
     MatProgressSpinnerModule,
+    SidePanelHandleComponent,
   ],
   template: `
+    <app-side-panel-handle />
     <h2 mat-dialog-title>Edit assignment</h2>
 
     <mat-dialog-content>
@@ -97,7 +100,6 @@ export interface EditAssignmentDialogData {
       gap: 8px;
       padding-top: 8px;
       width: 100%;
-      max-width: 480px;
     }
     .span-2 {
       width: 100%;

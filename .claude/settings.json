@@ -91,7 +91,9 @@
       "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c \"delete from notifications where related_entity_id = '9227cdc1-e7e3-452f-b11b-692fe29b8c3c';\")",
       "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c \"update leads set converted_patient_id = null where id = '9227cdc1-e7e3-452f-b11b-692fe29b8c3c';\")",
       "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c \"delete from leads where id = '9227cdc1-e7e3-452f-b11b-692fe29b8c3c';\")",
-      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c \"delete from refresh_tokens where user_id = '78ffab96-ade6-46ba-95f9-9b012f980aa7';\")"
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c \"delete from refresh_tokens where user_id = '78ffab96-ade6-46ba-95f9-9b012f980aa7';\")",
+      "Bash(sed -i '' \"s/Assign service/Assign a service/\" shot-panel3.js)",
+      "Bash(node shot-panel3.js)"
     ],
     "additionalDirectories": [
       "/private/tmp",

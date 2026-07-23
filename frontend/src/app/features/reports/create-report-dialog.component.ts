@@ -14,6 +14,7 @@ import { ApiError } from '../../core/models/api-response.model';
 import { PatientSummary } from '../../core/models/patient.model';
 import { ReportType } from '../../core/models/report.model';
 import { ToastService } from '../../core/services/toast.service';
+import { SidePanelHandleComponent } from '../../shared/side-panel-handle.component';
 import { PatientsService } from '../patients/patients.service';
 import { ReportsService } from './reports.service';
 
@@ -33,8 +34,10 @@ const MANUAL_TYPES: ReportType[] = ['lab', 'prescription', 'other'];
     MatIconModule,
     MatProgressBarModule,
     MatProgressSpinnerModule,
+    SidePanelHandleComponent,
   ],
   template: `
+    <app-side-panel-handle />
     <h2 mat-dialog-title>Create report</h2>
 
     <mat-dialog-content>
@@ -111,7 +114,6 @@ const MANUAL_TYPES: ReportType[] = ['lab', 'prescription', 'other'];
   styles: `
     mat-dialog-content {
       width: 100%;
-      max-width: 480px;
     }
     .full {
       width: 100%;

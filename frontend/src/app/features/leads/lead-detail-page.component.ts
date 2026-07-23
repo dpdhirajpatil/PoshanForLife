@@ -21,6 +21,7 @@ import {
   LeadStage,
 } from '../../core/models/lead.model';
 import { ToastService } from '../../core/services/toast.service';
+import { openSidePanel } from '../../shared/side-panel';
 import { ConvertLeadDialogComponent } from './convert-lead-dialog.component';
 import { LeadsService } from './leads.service';
 import { ScheduleFollowupDialogComponent } from './schedule-followup-dialog.component';
@@ -359,8 +360,9 @@ export class LeadDetailPageComponent implements OnInit {
   protected openScheduleFollowup(): void {
     const current = this.lead();
     if (!current) return;
-    this.dialog
-      .open(ScheduleFollowupDialogComponent, { data: { leadId: current.id, leadName: current.name } })
+    openSidePanel(this.dialog, ScheduleFollowupDialogComponent, {
+      data: { leadId: current.id, leadName: current.name },
+    })
       .afterClosed()
       .subscribe((updated) => updated && this.load(current.id));
   }
@@ -368,8 +370,7 @@ export class LeadDetailPageComponent implements OnInit {
   protected openConvert(): void {
     const current = this.lead();
     if (!current) return;
-    this.dialog
-      .open(ConvertLeadDialogComponent, { data: { lead: current } })
+    openSidePanel(this.dialog, ConvertLeadDialogComponent, { data: { lead: current } })
       .afterClosed()
       .subscribe((result) => {
         if (!result) return;

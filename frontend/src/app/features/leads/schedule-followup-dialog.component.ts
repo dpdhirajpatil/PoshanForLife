@@ -10,6 +10,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ApiError } from '../../core/models/api-response.model';
 import { LeadDetail } from '../../core/models/lead.model';
 import { ToastService } from '../../core/services/toast.service';
+import { SidePanelHandleComponent } from '../../shared/side-panel-handle.component';
 import { LeadsService } from './leads.service';
 
 export interface ScheduleFollowupDialogData {
@@ -30,8 +31,10 @@ export interface ScheduleFollowupDialogData {
     MatDatepickerModule,
     MatNativeDateModule,
     MatProgressSpinnerModule,
+    SidePanelHandleComponent,
   ],
   template: `
+    <app-side-panel-handle />
     <h2 mat-dialog-title>Schedule follow-up for {{ data.leadName }}</h2>
 
     <mat-dialog-content>
@@ -70,7 +73,6 @@ export interface ScheduleFollowupDialogData {
   styles: `
     mat-dialog-content {
       width: 100%;
-      max-width: 420px;
     }
     .grid {
       display: flex;

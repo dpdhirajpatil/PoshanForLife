@@ -25,6 +25,7 @@ import {
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog.component';
+import { openSidePanel } from '../../shared/side-panel';
 import {
   CatalogueItemFormDialogComponent,
   CatalogueItemFormDialogData,
@@ -366,19 +367,17 @@ export class CatalogueTableComponent {
   }
 
   protected openCreate(): void {
-    this.dialog
-      .open(CatalogueItemFormDialogComponent, {
-        data: { type: this.type() } satisfies CatalogueItemFormDialogData,
-      })
+    openSidePanel(this.dialog, CatalogueItemFormDialogComponent, {
+      data: { type: this.type() } satisfies CatalogueItemFormDialogData,
+    })
       .afterClosed()
       .subscribe((created) => created && this.load());
   }
 
   protected openEdit(item: CatalogueItem): void {
-    this.dialog
-      .open(CatalogueItemFormDialogComponent, {
-        data: { type: this.type(), item } satisfies CatalogueItemFormDialogData,
-      })
+    openSidePanel(this.dialog, CatalogueItemFormDialogComponent, {
+      data: { type: this.type(), item } satisfies CatalogueItemFormDialogData,
+    })
       .afterClosed()
       .subscribe((updated) => updated && this.load());
   }

@@ -13,6 +13,7 @@ import { Gender } from '../../core/models/patient.model';
 import { UserDetail } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
+import { SidePanelHandleComponent } from '../../shared/side-panel-handle.component';
 import { UsersService } from '../users/users.service';
 import { LeadsService } from './leads.service';
 
@@ -29,8 +30,10 @@ import { LeadsService } from './leads.service';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    SidePanelHandleComponent,
   ],
   template: `
+    <app-side-panel-handle />
     <h2 mat-dialog-title>Add lead</h2>
 
     <mat-dialog-content>
@@ -123,7 +126,6 @@ import { LeadsService } from './leads.service';
   styles: `
     mat-dialog-content {
       width: 100%;
-      max-width: 560px;
     }
     .grid {
       display: flex;

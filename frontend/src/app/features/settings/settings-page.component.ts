@@ -12,6 +12,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { ApiError } from '../../core/models/api-response.model';
 import { NotificationPrefs, UserDetail } from '../../core/models/user.model';
 import { ToastService } from '../../core/services/toast.service';
+import { openSidePanel } from '../../shared/side-panel';
 import { initials } from '../../core/utils/initials';
 import { ROLE_BADGE_CLASSES, ROLE_BADGE_LABELS } from '../../core/utils/role-badge';
 import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
@@ -366,7 +367,7 @@ export class SettingsPageComponent {
   }
 
   protected openChangePassword(user: UserDetail): void {
-    this.dialog.open(ChangePasswordDialogComponent, { data: { user } });
+    openSidePanel(this.dialog, ChangePasswordDialogComponent, { data: { user } });
   }
 
   protected togglePref(key: keyof NotificationPrefs, checked: boolean): void {

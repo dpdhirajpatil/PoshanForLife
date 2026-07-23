@@ -12,6 +12,7 @@ import { ApiError } from '../../core/models/api-response.model';
 import { Role, UserDetail } from '../../core/models/user.model';
 import { ToastService } from '../../core/services/toast.service';
 import { applyServerFieldErrors } from '../../core/utils/form-errors';
+import { SidePanelHandleComponent } from '../../shared/side-panel-handle.component';
 import { UsersService } from './users.service';
 
 export interface UserFormDialogData {
@@ -32,8 +33,10 @@ export interface UserFormDialogData {
     MatDatepickerModule,
     MatNativeDateModule,
     MatProgressSpinnerModule,
+    SidePanelHandleComponent,
   ],
   template: `
+    <app-side-panel-handle />
     <h2 mat-dialog-title>{{ isEdit ? 'Edit user' : 'Add user' }}</h2>
 
     <mat-dialog-content>
@@ -117,7 +120,6 @@ export interface UserFormDialogData {
       flex-direction: column;
       gap: 4px;
       width: 100%;
-      max-width: 380px;
       padding-top: 8px;
     }
   `,

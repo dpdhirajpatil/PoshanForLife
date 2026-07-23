@@ -14,6 +14,7 @@ import { UserDetail } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { applyServerFieldErrors } from '../../core/utils/form-errors';
+import { SidePanelHandleComponent } from '../../shared/side-panel-handle.component';
 import { UsersService } from '../users/users.service';
 import { CreatePatientPayload, PatientsService } from './patients.service';
 
@@ -42,8 +43,10 @@ const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
     MatDatepickerModule,
     MatNativeDateModule,
     MatProgressSpinnerModule,
+    SidePanelHandleComponent,
   ],
   template: `
+    <app-side-panel-handle />
     <h2 mat-dialog-title>{{ isEdit ? 'Edit patient' : 'Add patient' }}</h2>
 
     <mat-dialog-content>
@@ -170,7 +173,6 @@ const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
     .patient-form {
       padding-top: 8px;
       width: 100%;
-      max-width: 560px;
     }
     .patient-form h3 {
       margin: 8px 0;

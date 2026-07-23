@@ -25,6 +25,7 @@ import {
 import { TransactionListItem, TransactionTotals } from '../../core/models/transaction.model';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
+import { openSidePanel } from '../../shared/side-panel';
 import { UserDetail } from '../../core/models/user.model';
 import { UsersService } from '../users/users.service';
 import { RecordTransactionDialogComponent } from './record-transaction-dialog.component';
@@ -416,8 +417,7 @@ export class TransactionsPageComponent {
   }
 
   protected openRecordTransaction(): void {
-    this.dialog
-      .open(RecordTransactionDialogComponent)
+    openSidePanel(this.dialog, RecordTransactionDialogComponent)
       .afterClosed()
       .subscribe((created) => created && this.load());
   }

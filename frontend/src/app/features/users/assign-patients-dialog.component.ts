@@ -11,6 +11,7 @@ import { forkJoin } from 'rxjs';
 import { ApiError } from '../../core/models/api-response.model';
 import { UserDetail } from '../../core/models/user.model';
 import { ToastService } from '../../core/services/toast.service';
+import { SidePanelHandleComponent } from '../../shared/side-panel-handle.component';
 import { UsersService } from './users.service';
 
 export interface AssignPatientsDialogData {
@@ -32,8 +33,10 @@ export interface AssignPatientsDialogData {
     MatListModule,
     MatButtonModule,
     MatProgressSpinnerModule,
+    SidePanelHandleComponent,
   ],
   template: `
+    <app-side-panel-handle />
     <h2 mat-dialog-title>Assigned patients — {{ data.doctor.name }}</h2>
 
     <mat-dialog-content>
@@ -94,8 +97,6 @@ export interface AssignPatientsDialogData {
     }
     mat-dialog-content {
       width: 100%;
-      max-width: 440px;
-      max-height: 60vh;
     }
   `,
 })
