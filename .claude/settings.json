@@ -66,7 +66,9 @@
       "Bash(sed -i '' \"s/const props = rule.rule.style.cssText;/const props = \\(rule.rule.style.cssProperties||[]\\).map\\(p=>p.name+':'+p.value\\).join\\(';'\\);/\" inspect2.js)",
       "Bash(node inspect2.js)",
       "Bash(sed -i '' \"s/if \\(props.includes\\('position'\\)\\) {/if \\(props.includes\\('top'\\) || props.includes\\('position'\\)\\) {/\" inspect2.js)",
-      "Bash(node shot3.js)"
+      "Bash(node shot3.js)",
+      "Bash(grep -n \"^\\\\.table-scroll\\\\|^$\" /Users/dhiraj/Documents/Applications/Poshan/PoshanForLife/frontend/src/styles.scss)",
+      "Bash(node inspect5.js)"
     ],
     "additionalDirectories": [
       "/private/tmp",

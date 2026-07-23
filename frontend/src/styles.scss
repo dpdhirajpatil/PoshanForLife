@@ -159,3 +159,12 @@ h6,
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
+
+/* Angular Material's outlined form-field CSS makes the notch piece's left
+   border transparent (so it doesn't create a seam next to the leading
+   corner piece) but has no matching rule for the right border, so it
+   renders fully visible — a stray vertical line splitting every outlined
+   field where the floating label sits. Mirror the left-side fix. */
+.mat-mdc-form-field .mdc-notched-outline__notch {
+  border-right-color: transparent !important;
+}
