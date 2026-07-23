@@ -235,7 +235,7 @@ const STATUSES: ReportStatus[] = ['pending', 'processing', 'done', 'error'];
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
-      padding: 16px 16px 4px;
+      padding: 24px 16px 4px;
     }
     .search {
       flex: 1 1 260px;

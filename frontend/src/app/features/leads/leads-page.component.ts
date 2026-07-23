@@ -303,7 +303,7 @@ type ViewMode = 'board' | 'table';
       flex-wrap: wrap;
       align-items: center;
       gap: 12px;
-      padding: 16px 16px 4px;
+      padding: 24px 16px 4px;
     }
     .search {
       flex: 1 1 220px;

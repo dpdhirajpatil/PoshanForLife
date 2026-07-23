@@ -1,7 +1,9 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { ChartConfiguration, ChartData } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
@@ -14,6 +16,7 @@ import {
 import { AuthService } from '../../core/services/auth.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { ToastService } from '../../core/services/toast.service';
+import { CreateLeadDialogComponent } from '../leads/create-lead-dialog.component';
 import { DashboardService } from './dashboard.service';
 
 const ACTIVITY_ICONS: Record<DashboardActivityType, string> = {
@@ -36,10 +39,24 @@ function cssVar(name: string): string {
 @Component({
   selector: 'app-dashboard-page',
   standalone: true,
-  imports: [DatePipe, RouterLink, MatCardModule, MatIconModule, BaseChartDirective],
+  imports: [
+    DatePipe,
+    RouterLink,
+    MatButtonModule,
+    MatCardModule,
+    MatDialogModule,
+    MatIconModule,
+    BaseChartDirective,
+  ],
   template: `
     <div class="page-header">
       <h1>Dashboard</h1>
+      @if (!isDoctor()) {
+        <button mat-flat-button color="primary" (click)="openCreateLead()">
+          <mat-icon>person_add</mat-icon>
+          Add lead
+        </button>
+      }
     </div>
 
     @if (loading()) {
@@ -389,6 +406,7 @@ export class DashboardPageComponent {
   private readonly authService = inject(AuthService);
   private readonly themeService = inject(ThemeService);
   private readonly toast = inject(ToastService);
+  private readonly dialog = inject(MatDialog);
 
   protected readonly skeletonKpis = [1, 2, 3, 4, 5, 6];
   protected readonly skeletonCharts = [1, 2, 3];
@@ -474,6 +492,13 @@ export class DashboardPageComponent {
 
   protected activityIcon(item: DashboardActivity): string {
     return ACTIVITY_ICONS[item.type];
+  }
+
+  protected openCreateLead(): void {
+    this.dialog
+      .open(CreateLeadDialogComponent)
+      .afterClosed()
+      .subscribe((created) => created && this.load());
   }
 
   protected attentionLabel(patient: AttentionPatient): string {

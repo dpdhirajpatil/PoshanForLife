@@ -219,7 +219,7 @@ import { PatientsService } from './patients.service';
       font-size: 0.85rem;
     }
     .filters {
-      padding: 16px;
+      padding: 24px 16px 16px;
     }
     .search {
       width: 100%;

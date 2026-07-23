@@ -212,7 +212,7 @@ import { CatalogueService } from './catalogue.service';
       display: flex;
       align-items: center;
       gap: 16px;
-      padding: 16px;
+      padding: 24px 16px 16px;
       flex-wrap: wrap;
     }
     .search {

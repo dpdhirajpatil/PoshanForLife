@@ -207,7 +207,7 @@ import { UsersService } from './users.service';
       display: flex;
       flex-wrap: wrap;
       gap: 16px;
-      padding: 16px;
+      padding: 24px 16px 16px;
     }
     .search {
       flex: 1 1 220px;
