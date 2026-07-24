@@ -51,6 +51,9 @@ app:
     bucket: ${SUPABASE_STORAGE_BUCKET:covers}
     # Private bucket for report/InBody PDFs — never made public; served via signed URLs.
     reports-bucket: ${SUPABASE_REPORTS_BUCKET:poshan-reports}
+    # Private bucket for generated estimate/invoice PDFs — served via signed URLs
+    # (longer TTL than reports, since these get shared onward over WhatsApp).
+    documents-bucket: ${SUPABASE_DOCUMENTS_BUCKET:poshan-documents}
   anthropic:
     api-key: ${ANTHROPIC_API_KEY:}
     model: ${ANTHROPIC_MODEL:claude-sonnet-5}

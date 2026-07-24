@@ -93,7 +93,10 @@
       "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c \"delete from leads where id = '9227cdc1-e7e3-452f-b11b-692fe29b8c3c';\")",
       "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c \"delete from refresh_tokens where user_id = '78ffab96-ade6-46ba-95f9-9b012f980aa7';\")",
       "Bash(sed -i '' \"s/Assign service/Assign a service/\" shot-panel3.js)",
-      "Bash(node shot-panel3.js)"
+      "Bash(node shot-panel3.js)",
+      "Bash(awk 'NR>1{print $2}')",
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c \"select id, document_number from documents order by created_at desc limit 5;\")",
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c \"delete from documents where id in \\('ac17af2e-3c34-4042-85d3-d4e6d243b1f8','216927c7-675a-42bf-953d-4be3298cf4ea'\\);\")"
     ],
     "additionalDirectories": [
       "/private/tmp",
