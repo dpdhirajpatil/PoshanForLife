@@ -96,7 +96,10 @@
       "Bash(node shot-panel3.js)",
       "Bash(awk 'NR>1{print $2}')",
       "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c \"select id, document_number from documents order by created_at desc limit 5;\")",
-      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c \"delete from documents where id in \\('ac17af2e-3c34-4042-85d3-d4e6d243b1f8','216927c7-675a-42bf-953d-4be3298cf4ea'\\);\")"
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c \"delete from documents where id in \\('ac17af2e-3c34-4042-85d3-d4e6d243b1f8','216927c7-675a-42bf-953d-4be3298cf4ea'\\);\")",
+      "Bash(./mvnw -DskipTests test-compile)",
+      "Bash(./mvnw -q -DskipTests clean test-compile)",
+      "Bash(./mvnw -q -DskipTests=false test)"
     ],
     "additionalDirectories": [
       "/private/tmp",

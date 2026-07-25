@@ -38,6 +38,10 @@ public class User extends BaseEntity {
     @Column(name = "avatar_url", length = 512)
     private String avatarUrl;
 
+    /** Set by the Android app on login and again on onNewToken; null = push disabled for this user. */
+    @Column(name = "fcm_token", length = 255)
+    private String fcmToken;
+
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 

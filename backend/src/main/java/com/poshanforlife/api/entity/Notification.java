@@ -32,6 +32,8 @@ public class Notification extends BaseEntity {
     public static final String TYPE_NEW_LEAD_SIGNUP = "NEW_LEAD_SIGNUP";
     /** A signed-up lead asked to be contacted, via POST /leads/me/request-consultation. */
     public static final String TYPE_CONSULTATION_REQUEST = "CONSULTATION_REQUEST";
+    /** An InBody PDF finished processing successfully — sent to the patient's assigned doctor(s). */
+    public static final String TYPE_INBODY_REPORT = "INBODY_REPORT";
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)

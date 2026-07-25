@@ -92,6 +92,13 @@
             <version>3.0.3</version>
         </dependency>
 
+        <!-- FCM push notifications (Android app is native Kotlin, not Expo) -->
+        <dependency>
+            <groupId>com.google.firebase</groupId>
+            <artifactId>firebase-admin</artifactId>
+            <version>9.4.3</version>
+        </dependency>
+
         <!-- OpenAPI / Swagger UI -->
         <dependency>
             <groupId>org.springdoc</groupId>

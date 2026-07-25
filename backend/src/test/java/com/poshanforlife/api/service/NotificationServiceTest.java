@@ -31,6 +31,9 @@ class NotificationServiceTest {
     @Mock
     private NotificationRepository notificationRepository;
 
+    @Mock
+    private FcmPushService fcmPushService;
+
     private NotificationService notificationService;
 
     private User recipient;
@@ -38,7 +41,7 @@ class NotificationServiceTest {
 
     @BeforeEach
     void setUp() {
-        notificationService = new NotificationService(notificationRepository);
+        notificationService = new NotificationService(notificationRepository, fcmPushService);
         recipient = newUser("Dr Priya", Role.DOCTOR);
         caller = new AuthenticatedUser(recipient.getId().toString(), "doctor@poshan.test", Role.DOCTOR);
     }

@@ -97,7 +97,7 @@ class UserServiceTest {
         when(userRepository.findById(doctor.getId())).thenReturn(Optional.of(doctor));
 
         var dto = userService.update(doctor.getId(),
-                new UpdateUserRequest("New Name", "12345", null, null, null), doctorCaller);
+                new UpdateUserRequest("New Name", "12345", null, null, null, null), doctorCaller);
 
         assertThat(dto.name()).isEqualTo("New Name");
         assertThat(dto.phone()).isEqualTo("12345");
@@ -106,7 +106,7 @@ class UserServiceTest {
     @Test
     void nonAdminSelfUpdateSendingAdminFieldsIsRejected() {
         assertThatThrownBy(() -> userService.update(doctor.getId(),
-                new UpdateUserRequest(null, null, Role.ADMIN, null, null), doctorCaller))
+                new UpdateUserRequest(null, null, Role.ADMIN, null, null, null), doctorCaller))
                 .isInstanceOfSatisfying(ApiException.class,
                         ex -> assertThat(ex.getCode()).isEqualTo(ErrorCode.VALIDATION_ERROR));
     }

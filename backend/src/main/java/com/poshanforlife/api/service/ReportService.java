@@ -8,6 +8,7 @@ import com.poshanforlife.api.dto.ReportStatsDto;
 import com.poshanforlife.api.dto.ReportUploadResponseDto;
 import com.poshanforlife.api.dto.UpdateReportRequest;
 import com.poshanforlife.api.dto.UserRefDto;
+import com.poshanforlife.api.entity.DoctorPatient;
 import com.poshanforlife.api.entity.HealthRecord;
 import com.poshanforlife.api.entity.HealthRecordSource;
 import com.poshanforlife.api.entity.InBodyData;
@@ -183,6 +184,11 @@ public class ReportService {
                     ? List.of("Only " + result.extractedFieldCount() + " of " + InBodyData.totalFieldCount()
                         + " expected fields were found in this report — please review the values below before saving.")
                     : List.of();
+
+            for (DoctorPatient dp : doctorPatientRepository.findByPatientId(patient.getId())) {
+                notificationService.create(dp.getDoctor(), Notification.TYPE_INBODY_REPORT, "InBody report ready",
+                        "A new InBody report is ready for " + patient.getName(), "report", report.getId());
+            }
 
             return new ReportUploadResponseDto(report.getId().toString(), healthRecord.getId().toString(),
                     result.parsedData(), reportStorageService.createSignedUrl(objectPath),

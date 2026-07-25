@@ -77,7 +77,9 @@ public class UserService {
      * Admin may update name, phone, role, isActive, dateOfBirth.
      * A non-admin self-update may only change name + phone; any other field
      * present in the body is REJECTED with 422 VALIDATION_ERROR (documented
-     * choice: explicit rejection instead of silently ignoring).
+     * choice: explicit rejection instead of silently ignoring). fcmToken is
+     * the exception — it's self-registration data, allowed for self or admin
+     * alongside name/phone, same as the rest of that pair.
      */
     @Transactional
     public UserDetailDto update(UUID id, UpdateUserRequest request, AuthenticatedUser caller) {
@@ -93,6 +95,7 @@ public class UserService {
         User user = find(id);
         if (request.name() != null) user.setName(request.name().trim());
         if (request.phone() != null) user.setPhone(request.phone());
+        if (request.fcmToken() != null) user.setFcmToken(request.fcmToken().isBlank() ? null : request.fcmToken());
         if (isAdmin) {
             if (request.role() != null) user.setRole(request.role());
             if (request.isActive() != null) user.setActive(request.isActive());

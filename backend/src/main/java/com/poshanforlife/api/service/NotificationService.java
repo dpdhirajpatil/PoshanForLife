@@ -31,11 +31,14 @@ public class NotificationService {
     private static final int MAX_LIMIT = 50;
 
     private final NotificationRepository notificationRepository;
+    private final FcmPushService fcmPushService;
 
     /**
      * Creates a notification for {@code recipient}, unless their prefs opt out
      * of this type's category. relatedEntityType/Id may both be null when the
-     * notification has no deep-link target.
+     * notification has no deep-link target. If the recipient has a registered
+     * fcmToken, also fires an FCM push (async, fire-and-forget — see
+     * FcmPushService) so the same prefs gate covers in-app and push.
      */
     @Transactional
     public void create(User recipient, String type, String title, String message,
@@ -51,6 +54,10 @@ public class NotificationService {
         notification.setRelatedEntityType(relatedEntityType);
         notification.setRelatedEntityId(relatedEntityId);
         notificationRepository.save(notification);
+
+        if (recipient.getFcmToken() != null && !recipient.getFcmToken().isBlank()) {
+            fcmPushService.send(recipient.getFcmToken(), title, message, relatedEntityType, relatedEntityId);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -75,6 +82,7 @@ public class NotificationService {
             case Notification.TYPE_PATIENT_ASSIGNED -> prefs.patientAssigned();
             case Notification.TYPE_PROCESSING_ERROR -> prefs.processingErrors();
             case Notification.TYPE_SYSTEM_ANNOUNCEMENT -> prefs.systemAnnouncements();
+            case Notification.TYPE_INBODY_REPORT -> prefs.inbodyReport();
             default -> true;
         };
     }

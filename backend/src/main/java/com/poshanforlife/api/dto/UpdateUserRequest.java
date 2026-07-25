@@ -7,13 +7,16 @@ import java.time.LocalDate;
 
 /**
  * PATCH body — all fields optional; absent (null) fields are left unchanged.
- * name/phone: self or admin. role/isActive/dateOfBirth: admin only — a
- * non-admin sending them gets 422 VALIDATION_ERROR (rejected, not ignored).
+ * name/phone/fcmToken: self or admin. role/isActive/dateOfBirth: admin only —
+ * a non-admin sending them gets 422 VALIDATION_ERROR (rejected, not ignored).
+ * fcmToken is sent by the Android app on login and on FirebaseMessagingService
+ * .onNewToken(); an empty string clears it (e.g. on logout).
  */
 public record UpdateUserRequest(
         @Size(min = 2, max = 255) String name,
         @Size(max = 32) String phone,
         Role role,
         Boolean isActive,
-        LocalDate dateOfBirth) {
+        LocalDate dateOfBirth,
+        @Size(max = 255) String fcmToken) {
 }
