@@ -1,0 +1,6 @@
+<resources>
+    <!-- Compose owns all real theming (see ui/theme/Theme.kt) — this base
+         theme only needs to exist so the manifest has something to point at
+         before the first composable draws. -->
+    <style name="Theme.PoshanForLife" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>
