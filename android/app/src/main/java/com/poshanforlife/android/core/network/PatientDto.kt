@@ -22,14 +22,21 @@ data class HealthRecordDto(
     val bmi: Double? = null,
 )
 
-/** serviceType/status/etc. all exist server-side too; status is the lowercase wire enum ("active"/"completed"/"cancelled"). */
+/**
+ * serviceType is the lowercase wire enum ("programme"/"session"/"challenge");
+ * status is ("active"/"completed"/"cancelled"). Backend's full DTO also has
+ * assignedBy/order/createdAt/updatedAt — omitted here, unused by any screen.
+ */
 @Serializable
 data class PatientProgrammeDto(
     val id: String,
+    val serviceType: String? = null,
     val catalogueItem: ServiceRefDto? = null,
     val startDate: String? = null,
     val endDate: String? = null,
+    val priceInr: Double? = null,
     val status: String,
+    val notes: String? = null,
     val assignedDoctor: UserRefDto? = null,
 )
 

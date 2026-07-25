@@ -11,6 +11,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.poshanforlife.android.feature.RootRoutes
+import com.poshanforlife.android.feature.patient.programmes.ProgrammeDetailScreen
+import com.poshanforlife.android.feature.patient.programmes.ProgrammesListScreen
 import com.poshanforlife.android.feature.patient.reports.ReportDetailScreen
 import com.poshanforlife.android.feature.patient.reports.ReportsListScreen
 import com.poshanforlife.android.feature.patient.track.GoalsScreen
@@ -22,15 +24,17 @@ import com.poshanforlife.android.ui.components.RoleScaffold
 private const val ROOT = "patient/root"
 private const val GOALS_ROUTE = "patient/goals"
 private const val REPORT_DETAIL_ROUTE = "patient/reports/{reportId}"
+private const val PROGRAMME_DETAIL_ROUTE = "patient/programmes/{patientId}/{programmeId}"
 
 private const val HOME_ROUTE = "patient/home"
 private const val TRACK_ROUTE = "patient/track"
+private const val PROGRAMMES_ROUTE = "patient/programmes"
 private const val REPORTS_ROUTE = "patient/reports"
 
 private val items = listOf(
     BottomNavItem(HOME_ROUTE, "Home", Icons.Filled.Home),
     BottomNavItem(TRACK_ROUTE, "Track", Icons.Filled.Timeline),
-    BottomNavItem("patient/programmes", "Programmes", Icons.AutoMirrored.Filled.MenuBook),
+    BottomNavItem(PROGRAMMES_ROUTE, "Programmes", Icons.AutoMirrored.Filled.MenuBook),
     BottomNavItem(REPORTS_ROUTE, "Reports", Icons.Filled.Description),
     BottomNavItem("patient/profile", "Profile", Icons.Filled.Person),
 )
@@ -45,6 +49,11 @@ fun NavGraphBuilder.patientGraph(navController: NavController) {
                         onConnectHealthConnect = { /* TODO: wired up in AN-11 */ },
                         onOpenGoals = { navController.navigate(GOALS_ROUTE) },
                     )
+                    PROGRAMMES_ROUTE -> ProgrammesListScreen(
+                        onOpenProgramme = { patientId, programmeId ->
+                            navController.navigate("patient/programmes/$patientId/$programmeId")
+                        },
+                    )
                     REPORTS_ROUTE -> ReportsListScreen(
                         onOpenReport = { reportId -> navController.navigate("patient/reports/$reportId") },
                     )
@@ -58,6 +67,9 @@ fun NavGraphBuilder.patientGraph(navController: NavController) {
         }
         composable(REPORT_DETAIL_ROUTE) {
             ReportDetailScreen()
+        }
+        composable(PROGRAMME_DETAIL_ROUTE) {
+            ProgrammeDetailScreen()
         }
     }
 }

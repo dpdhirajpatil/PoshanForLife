@@ -15,6 +15,11 @@ interface PatientRepository {
     /** Null data means "no active programme" (not an error). */
     suspend fun getActiveProgramme(patientId: String): Result<PatientProgrammeDto?>
 
+    /** All of a patient's programme/session/challenge assignments, newest first. */
+    suspend fun getProgrammes(patientId: String): Result<List<PatientProgrammeDto>>
+
+    suspend fun getProgramme(patientId: String, ppId: String): Result<PatientProgrammeDto>
+
     /** Empty list means "nothing outstanding" (not an error). */
     suspend fun getPendingInvoices(patientId: String): Result<List<DocumentListItemDto>>
 }

@@ -12,4 +12,10 @@ interface PatientApi {
     /** No status/limit query support server-side — filter+pick client-side (see PatientRepositoryImpl). */
     @GET("api/v1/patients/{patientId}/programmes")
     suspend fun getProgrammes(@Path("patientId") patientId: String): Response<ApiResponse<List<PatientProgrammeDto>>>
+
+    @GET("api/v1/patients/{patientId}/programmes/{ppId}")
+    suspend fun getProgramme(
+        @Path("patientId") patientId: String,
+        @Path("ppId") ppId: String,
+    ): Response<ApiResponse<PatientProgrammeDto>>
 }

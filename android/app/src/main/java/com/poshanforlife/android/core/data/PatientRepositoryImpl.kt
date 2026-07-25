@@ -40,6 +40,12 @@ class PatientRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getProgrammes(patientId: String): Result<List<PatientProgrammeDto>> =
+        safeApiCall(json) { patientApi.getProgrammes(patientId) }
+
+    override suspend fun getProgramme(patientId: String, ppId: String): Result<PatientProgrammeDto> =
+        safeApiCall(json) { patientApi.getProgramme(patientId, ppId) }
+
     override suspend fun getPendingInvoices(patientId: String): Result<List<DocumentListItemDto>> =
         safeApiCall(json) {
             documentApi.list(patientId = patientId, type = "invoice", status = "sent", limit = 10)

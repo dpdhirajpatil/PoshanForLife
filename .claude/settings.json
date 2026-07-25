@@ -176,7 +176,10 @@
       "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -h localhost -p 5432 -U dhiraj -d poshan_api -c \"update reports set file_url='6d19b06a-dabf-51cc-8f72-c6ce7c6fba3e/cc410520-c6c1-485a-81d3-84e4dff0085a.pdf' where id='da9d84da-bbbc-42a0-8060-6ae6aba81c10';\")",
       "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -h localhost -p 5432 -U dhiraj -d poshan_api -c \"select id, status, confidence from reports where type='INBODY';\")",
       "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -h localhost -p 5432 -U dhiraj -d poshan_api -c \"select id, file_url, confidence from reports where id='da9d84da-bbbc-42a0-8060-6ae6aba81c10';\")",
-      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -h localhost -p 5432 -U dhiraj -d poshan_api -c \"select id, email, role from users where role='PATIENT' limit 5;\")"
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -h localhost -p 5432 -U dhiraj -d poshan_api -c \"select id, email, role from users where role='PATIENT' limit 5;\")",
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -h localhost -p 5432 -U dhiraj -d poshan_api -c \"select pp.id, pp.service_type, pp.status, u.email from patient_programmes pp join users u on u.id=pp.patient_id order by u.email;\")",
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -h localhost -p 5432 -U dhiraj -d poshan_api -c 'update users set password_hash='\\\\''$2y$10$fNZClnI7L7Mt8M5oFsbqQ.obPaRxSBmma3FqWRHDtwkXTaTXovmdy'\\\\'' where email='\\\\''neha.kapoor@example.com'\\\\'';')",
+      "Bash(/Users/dhiraj/Library/Android/sdk/platform-tools/adb emu *)"
     ],
     "additionalDirectories": [
       "/private/tmp",
