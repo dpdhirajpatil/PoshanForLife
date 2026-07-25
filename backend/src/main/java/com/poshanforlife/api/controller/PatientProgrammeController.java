@@ -5,6 +5,7 @@ import com.poshanforlife.api.dto.CreatePatientProgrammeRequest;
 import com.poshanforlife.api.dto.PatientProgrammeDto;
 import com.poshanforlife.api.dto.UpdatePatientProgrammeRequest;
 import com.poshanforlife.api.security.AdminOrDoctor;
+import com.poshanforlife.api.security.AdminOrDoctorOrPatient;
 import com.poshanforlife.api.security.AuthenticatedUser;
 import com.poshanforlife.api.service.PatientProgrammeService;
 import jakarta.validation.Valid;
@@ -26,18 +27,21 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Service assignments for a patient. ADMIN sees every patient; DOCTOR only
- * their assigned patients (enforced in the service layer for every endpoint).
+ * Service assignments for a patient. list and get are ADMIN+DOCTOR+PATIENT
+ * (DOCTOR scoped to their assigned patients, PATIENT force-scoped to their
+ * own record — see PatientProgrammeService); create, update and delete
+ * remain ADMIN+DOCTOR only — a patient never assigns/edits/removes their
+ * own assignments.
  */
 @RestController
 @RequestMapping("/api/v1/patients/{patientId}/programmes")
 @RequiredArgsConstructor
-@AdminOrDoctor
 public class PatientProgrammeController {
 
     private final PatientProgrammeService patientProgrammeService;
 
     @GetMapping
+    @AdminOrDoctorOrPatient
     public ApiResponse<List<PatientProgrammeDto>> list(
             @PathVariable UUID patientId,
             @AuthenticationPrincipal AuthenticatedUser caller) {
@@ -45,6 +49,7 @@ public class PatientProgrammeController {
     }
 
     @PostMapping
+    @AdminOrDoctor
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<PatientProgrammeDto> create(
             @PathVariable UUID patientId,
@@ -54,6 +59,7 @@ public class PatientProgrammeController {
     }
 
     @GetMapping("/{ppId}")
+    @AdminOrDoctorOrPatient
     public ApiResponse<PatientProgrammeDto> get(
             @PathVariable UUID patientId,
             @PathVariable UUID ppId,
@@ -62,6 +68,7 @@ public class PatientProgrammeController {
     }
 
     @PatchMapping("/{ppId}")
+    @AdminOrDoctor
     public ApiResponse<PatientProgrammeDto> update(
             @PathVariable UUID patientId,
             @PathVariable UUID ppId,
@@ -71,6 +78,7 @@ public class PatientProgrammeController {
     }
 
     @DeleteMapping("/{ppId}")
+    @AdminOrDoctor
     public ApiResponse<Map<String, Boolean>> delete(
             @PathVariable UUID patientId,
             @PathVariable UUID ppId,

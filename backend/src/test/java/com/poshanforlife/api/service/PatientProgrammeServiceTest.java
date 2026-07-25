@@ -18,6 +18,7 @@ import com.poshanforlife.api.entity.TransactionType;
 import com.poshanforlife.api.entity.User;
 import com.poshanforlife.api.exception.ApiException;
 import com.poshanforlife.api.exception.ErrorCode;
+import com.poshanforlife.api.exception.ResourceNotFoundException;
 import com.poshanforlife.api.repository.ChallengeRepository;
 import com.poshanforlife.api.repository.DoctorPatientRepository;
 import com.poshanforlife.api.repository.OrderRepository;
@@ -77,7 +78,9 @@ class PatientProgrammeServiceTest {
 
     private User admin;
     private User patient;
+    private User otherPatient;
     private AuthenticatedUser adminCaller;
+    private AuthenticatedUser patientCaller;
 
     @BeforeEach
     void setUp() {
@@ -90,9 +93,12 @@ class PatientProgrammeServiceTest {
                 transactionFactory);
         admin = newUser("Admin", Role.ADMIN);
         patient = newUser("Pat Kumar", Role.PATIENT);
+        otherPatient = newUser("Someone Else", Role.PATIENT);
         adminCaller = new AuthenticatedUser(admin.getId().toString(), "admin@poshan.test", Role.ADMIN);
+        patientCaller = new AuthenticatedUser(patient.getId().toString(), "patient@poshan.test", Role.PATIENT);
 
         lenient().when(userRepository.findById(patient.getId())).thenReturn(Optional.of(patient));
+        lenient().when(userRepository.findById(otherPatient.getId())).thenReturn(Optional.of(otherPatient));
         lenient().when(userRepository.getReferenceById(admin.getId())).thenReturn(admin);
         lenient().when(patientProgrammeRepository.save(any(PatientProgramme.class)))
                 .thenAnswer(inv -> withId(inv.getArgument(0)));
@@ -215,6 +221,45 @@ class PatientProgrammeServiceTest {
         assertThatThrownBy(() -> service.create(patient.getId(),
                 request(CatalogueItemType.SESSION, UUID.randomUUID(), null, null), doctorCaller))
                 .isInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test
+    void patientCanListOwnAssignments() {
+        when(patientProgrammeRepository.findByPatientIdOrderByCreatedAtDesc(patient.getId()))
+                .thenReturn(List.of());
+        lenient().when(orderRepository.findByPatientProgrammeIdIn(any())).thenReturn(List.of());
+
+        List<PatientProgrammeDto> result = service.list(patient.getId(), patientCaller);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void patientCannotListAnotherPatientsAssignments_returns404NotForbidden() {
+        assertThatThrownBy(() -> service.list(otherPatient.getId(), patientCaller))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .isNotInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test
+    void patientCanReadOwnAssignmentDetail() {
+        PatientProgramme pp = assignment();
+        when(patientProgrammeRepository.findById(pp.getId())).thenReturn(Optional.of(pp));
+        when(orderRepository.findByPatientProgrammeId(pp.getId())).thenReturn(Optional.empty());
+
+        PatientProgrammeDto dto = service.get(patient.getId(), pp.getId(), patientCaller);
+
+        assertThat(dto.id()).isEqualTo(pp.getId().toString());
+    }
+
+    @Test
+    void patientCannotReadAnotherPatientsAssignmentDetail_returns404NotForbidden() {
+        PatientProgramme pp = assignment();
+        pp.setPatient(otherPatient);
+
+        assertThatThrownBy(() -> service.get(otherPatient.getId(), pp.getId(), patientCaller))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .isNotInstanceOf(AccessDeniedException.class);
     }
 
     @Test

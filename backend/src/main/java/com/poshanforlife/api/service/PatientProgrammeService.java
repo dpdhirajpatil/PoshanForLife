@@ -47,7 +47,12 @@ import java.util.UUID;
 /**
  * Service assignments: the cross-entity flow that links a patient, a
  * published catalogue item, an order and (for priced items) an activation
- * transaction — all created atomically in one DB transaction.
+ * transaction — all created atomically in one DB transaction. Reads (list,
+ * get) are ADMIN+DOCTOR+PATIENT — DOCTOR scoped to their assigned patients,
+ * PATIENT force-scoped to their own record only. Writes (create, update,
+ * delete) remain ADMIN+DOCTOR only — a PATIENT never assigns/edits/removes
+ * their own assignments (see PatientProgrammeController's method-level
+ * annotations).
  */
 @Service
 @RequiredArgsConstructor
@@ -230,7 +235,19 @@ public class PatientProgrammeService {
                 .orElseThrow(() -> new ResourceNotFoundException("Assignment", ppId));
     }
 
+    /**
+     * DOCTOR is scoped to their assigned patients (403 otherwise). PATIENT
+     * is scoped to their own record only, and — unlike DOCTOR — gets a
+     * plain 404 (not 403) on a mismatch: this must not confirm to the
+     * caller whether a different patient's assignments exist, the same
+     * reasoning as ReportService#get. In practice this branch only ever
+     * runs for {@link #list} and {@link #get}: create/update/delete are
+     * PATIENT-blocked at the controller before reaching this method.
+     */
     private void requireAccess(UUID patientId, AuthenticatedUser caller) {
+        if (caller.role() == Role.PATIENT && !patientId.toString().equals(caller.id())) {
+            throw new ResourceNotFoundException("Patient", patientId);
+        }
         if (caller.role() == Role.DOCTOR
                 && !doctorPatientRepository.existsByDoctorIdAndPatientId(
                         UUID.fromString(caller.id()), patientId)) {
