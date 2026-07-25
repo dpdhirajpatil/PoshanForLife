@@ -12,12 +12,15 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.poshanforlife.android.feature.RootRoutes
 import com.poshanforlife.android.ui.components.BottomNavItem
+import com.poshanforlife.android.ui.components.PlaceholderScreen
 import com.poshanforlife.android.ui.components.RoleScaffold
 
 private const val ROOT = "patient/root"
 
+private const val HOME_ROUTE = "patient/home"
+
 private val items = listOf(
-    BottomNavItem("patient/home", "Home", Icons.Filled.Home),
+    BottomNavItem(HOME_ROUTE, "Home", Icons.Filled.Home),
     BottomNavItem("patient/track", "Track", Icons.Filled.Timeline),
     BottomNavItem("patient/programmes", "Programmes", Icons.AutoMirrored.Filled.MenuBook),
     BottomNavItem("patient/reports", "Reports", Icons.Filled.Description),
@@ -27,7 +30,13 @@ private val items = listOf(
 fun NavGraphBuilder.patientGraph(navController: NavController) {
     navigation(startDestination = ROOT, route = RootRoutes.PATIENT_GRAPH) {
         composable(ROOT) {
-            RoleScaffold(items = items)
+            RoleScaffold(items = items) { route ->
+                if (route == HOME_ROUTE) {
+                    DashboardScreen()
+                } else {
+                    PlaceholderScreen(label = items.first { it.route == route }.label)
+                }
+            }
         }
     }
 }

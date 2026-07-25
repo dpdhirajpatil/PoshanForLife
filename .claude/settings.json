@@ -142,7 +142,13 @@
       "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c \"delete from users where email='admin@poshanforlife.com';\")",
       "Bash(python3 -c \"import bcrypt; print\\(bcrypt.hashpw\\(b'Admin@123', bcrypt.gensalt\\(\\)\\).decode\\(\\)\\)\")",
       "Bash(htpasswd -nbBC 10 admin Admin@123)",
-      "Bash(pkill -f \"spring-boot:run\")"
+      "Bash(pkill -f \"spring-boot:run\")",
+      "Bash(xargs -I{} echo {})",
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c \"select id, name, email, role from users where role='PATIENT' limit 5;\")",
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c ' *)",
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c \"select id, document_number, status, total, patient_id from documents where patient_id='906e7a85-8cab-5c24-941e-333d846f07ef' limit 5;\")",
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c \"\\\\d documents\")",
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c \"select id, document_type, status, document_number from documents where patient_id='906e7a85-8cab-5c24-941e-333d846f07ef';\")"
     ],
     "additionalDirectories": [
       "/private/tmp",

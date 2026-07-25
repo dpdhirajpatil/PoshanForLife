@@ -4,7 +4,10 @@ import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFact
 import com.poshanforlife.android.BuildConfig
 import com.poshanforlife.android.core.network.AuthApi
 import com.poshanforlife.android.core.network.AuthInterceptor
+import com.poshanforlife.android.core.network.DocumentApi
+import com.poshanforlife.android.core.network.PatientApi
 import com.poshanforlife.android.core.network.TokenAuthenticator
+import com.poshanforlife.android.core.network.UserApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -81,4 +84,16 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideAuthApi(retrofit: Retrofit): AuthApi = retrofit.create(AuthApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideUserApi(retrofit: Retrofit): UserApi = retrofit.create(UserApi::class.java)
+
+    @Provides
+    @Singleton
+    fun providePatientApi(retrofit: Retrofit): PatientApi = retrofit.create(PatientApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideDocumentApi(retrofit: Retrofit): DocumentApi = retrofit.create(DocumentApi::class.java)
 }

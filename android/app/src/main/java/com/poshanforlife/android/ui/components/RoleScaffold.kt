@@ -11,7 +11,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -24,9 +23,19 @@ data class BottomNavItem(val route: String, val label: String, val icon: ImageVe
  * own internal NavHost of tabs, so each role graph is a single destination in
  * the outer AppNavGraph (see feature/{patient,practitioner,admin,lead}) while
  * still getting normal back-stack behavior (save/restoreState) between tabs.
+ *
+ * content defaults to a generic PlaceholderScreen per tab; callers with a real
+ * screen for one or more routes (e.g. patientGraph's DashboardScreen for
+ * "patient/home") pass their own content and branch on the route themselves.
  */
 @Composable
-fun RoleScaffold(items: List<BottomNavItem>, modifier: Modifier = Modifier) {
+fun RoleScaffold(
+    items: List<BottomNavItem>,
+    modifier: Modifier = Modifier,
+    content: @Composable (route: String) -> Unit = { route ->
+        PlaceholderScreen(label = items.first { it.route == route }.label)
+    },
+) {
     val tabNavController = rememberNavController()
 
     Scaffold(
@@ -57,7 +66,7 @@ fun RoleScaffold(items: List<BottomNavItem>, modifier: Modifier = Modifier) {
             startDestination = items.first().route,
             modifier = Modifier.padding(padding),
         ) {
-            items.forEach { item -> tab(item.route) { PlaceholderScreen(label = item.label) } }
+            items.forEach { item -> tab(item.route) { content(item.route) } }
         }
     }
 }
