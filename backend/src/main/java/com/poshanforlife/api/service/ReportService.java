@@ -47,8 +47,11 @@ import java.util.UUID;
 
 /**
  * Manual report records (LAB/PRESCRIPTION/OTHER) plus the AI-powered InBody
- * PDF upload pipeline. Reads are ADMIN+DOCTOR (DOCTOR scoped to their
- * patients); writes vary per endpoint (see ReportController).
+ * PDF upload pipeline. Reads (list, get) are ADMIN+DOCTOR+PATIENT — DOCTOR
+ * scoped to their assigned patients, PATIENT force-scoped to their own
+ * record only. Writes (create, upload, update, delete) remain ADMIN+DOCTOR
+ * only — a PATIENT never creates/edits/deletes a report (see
+ * ReportController's method-level annotations).
  *
  * <p>Upload is deliberately NOT one single @Transactional method: the initial
  * PROCESSING row must survive even if extraction later fails (status=ERROR is
@@ -89,12 +92,18 @@ public class ReportService {
         Instant monthStart = LocalDate.now(ZoneOffset.UTC).withDayOfMonth(1)
                 .atStartOfDay(ZoneOffset.UTC).toInstant();
 
+        // DOCTOR is scoped to their assigned patients; PATIENT is force-scoped to their
+        // own record regardless of any patientId the caller might try to pass — a PATIENT
+        // has no notion of "someone else's reports" at this endpoint. Only one of the two
+        // is ever non-null since the two roles are mutually exclusive.
         UUID doctorId = caller.role() == Role.DOCTOR ? UUID.fromString(caller.id()) : null;
+        UUID patientId = caller.role() == Role.PATIENT ? UUID.fromString(caller.id()) : null;
 
         Pageable pageable = PageRequest.of(Math.max(page - 1, 0), limit, Sort.by("createdAt").descending());
-        Page<Report> result = reportRepository.search(statusFilter, typeFilter, doctorId, term, from, to, pageable);
+        Page<Report> result = reportRepository.search(statusFilter, typeFilter, doctorId, patientId,
+                term, from, to, pageable);
         ReportRepository.ReportStats stats = reportRepository.countStats(statusFilter, typeFilter, doctorId,
-                term, from, to, monthStart,
+                patientId, term, from, to, monthStart,
                 ReportStatus.PENDING, ReportStatus.PROCESSING, ReportStatus.DONE, ReportStatus.ERROR);
 
         return new ReportListResult(result.map(this::toListItem), toStatsDto(stats));
@@ -120,6 +129,12 @@ public class ReportService {
     @Transactional(readOnly = true)
     public ReportDetailDto get(UUID id, AuthenticatedUser caller) {
         Report report = findReport(id);
+        // A PATIENT gets a plain 404 (not 403) on someone else's report id — unlike the
+        // DOCTOR/ADMIN AccessDeniedException path below, this must not confirm to the
+        // caller that a report with that id exists for a patient other than themselves.
+        if (caller.role() == Role.PATIENT && !report.getPatient().getId().toString().equals(caller.id())) {
+            throw new ResourceNotFoundException("Report", id);
+        }
         requireAccess(report.getPatient().getId(), caller);
         return toDetail(report);
     }

@@ -103,7 +103,7 @@ public class DashboardService {
         Instant now = Instant.now();
         Instant monthStart = LocalDate.now(ZoneOffset.UTC).withDayOfMonth(1)
                 .atStartOfDay(ZoneOffset.UTC).toInstant();
-        ReportRepository.ReportStats reportStats = reportRepository.countStats(null, null, doctorId, "",
+        ReportRepository.ReportStats reportStats = reportRepository.countStats(null, null, doctorId, null, "",
                 epoch, now, monthStart, ReportStatus.PENDING, ReportStatus.PROCESSING, ReportStatus.DONE,
                 ReportStatus.ERROR);
         long pendingReviews = nz(reportStats.getPending()) + nz(reportStats.getProcessing());
@@ -192,7 +192,7 @@ public class DashboardService {
                 ? userRepository.search(Role.PATIENT, "", topNByCreatedDesc).getContent()
                 : userRepository.searchPatientsOfDoctor(doctorId, "", topN).getContent();
 
-        List<Report> recentReports = reportRepository.search(null, null, doctorId, "",
+        List<Report> recentReports = reportRepository.search(null, null, doctorId, null, "",
                 Instant.EPOCH, Instant.now(), topNByCreatedDesc).getContent();
 
         List<LeadActivity> recentStageChanges = leadActivityRepository.findRecentByType(

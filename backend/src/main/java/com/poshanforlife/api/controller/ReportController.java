@@ -9,6 +9,7 @@ import com.poshanforlife.api.dto.ReportUploadResponseDto;
 import com.poshanforlife.api.dto.UpdateReportRequest;
 import com.poshanforlife.api.security.AdminOnly;
 import com.poshanforlife.api.security.AdminOrDoctor;
+import com.poshanforlife.api.security.AdminOrDoctorOrPatient;
 import com.poshanforlife.api.security.AuthenticatedUser;
 import com.poshanforlife.api.service.ReportService;
 import jakarta.validation.Valid;
@@ -33,19 +34,20 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Manual report records + the AI-powered InBody PDF upload pipeline. GET,
- * create, upload and update are ADMIN+DOCTOR (DOCTOR scoped to their
- * patients); delete is ADMIN-only (hard delete).
+ * Manual report records + the AI-powered InBody PDF upload pipeline. list
+ * and get are ADMIN+DOCTOR+PATIENT (DOCTOR scoped to their patients, PATIENT
+ * force-scoped to their own record — see ReportService); create, upload and
+ * update remain ADMIN+DOCTOR only; delete is ADMIN-only (hard delete).
  */
 @RestController
 @RequestMapping("/api/v1/reports")
 @RequiredArgsConstructor
-@AdminOrDoctor
 public class ReportController {
 
     private final ReportService reportService;
 
     @GetMapping
+    @AdminOrDoctorOrPatient
     public ApiResponse<ReportListResponseDto> list(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String type,
@@ -62,6 +64,7 @@ public class ReportController {
     }
 
     @PostMapping
+    @AdminOrDoctor
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<ReportDetailDto> create(@Valid @RequestBody CreateReportRequest request,
                                                @AuthenticationPrincipal AuthenticatedUser caller) {
@@ -70,6 +73,7 @@ public class ReportController {
 
     /** RATE LIMITED to 10 requests per IP per hour. */
     @PostMapping("/upload")
+    @AdminOrDoctor
     @RateLimit(requests = 10, windowSeconds = 3600)
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<ReportUploadResponseDto> upload(@RequestParam("patientId") UUID patientId,
@@ -79,12 +83,14 @@ public class ReportController {
     }
 
     @GetMapping("/{id}")
+    @AdminOrDoctorOrPatient
     public ApiResponse<ReportDetailDto> get(@PathVariable UUID id,
                                             @AuthenticationPrincipal AuthenticatedUser caller) {
         return ApiResponse.ok(reportService.get(id, caller));
     }
 
     @PatchMapping("/{id}")
+    @AdminOrDoctor
     public ApiResponse<ReportDetailDto> update(@PathVariable UUID id,
                                                @Valid @RequestBody UpdateReportRequest request,
                                                @AuthenticationPrincipal AuthenticatedUser caller) {

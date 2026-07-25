@@ -17,9 +17,12 @@ public interface ReportRepository extends JpaRepository<Report, UUID> {
 
     /**
      * search must be non-null — pass "" for no filter (null String params in
-     * lower()/concat() bind as bytea on Postgres). status/type/doctorId
-     * null = unfiltered. Keep the WHERE clause in sync with {@link #countStats}
-     * below — same predicate, aggregated instead of paged.
+     * lower()/concat() bind as bytea on Postgres). status/type/doctorId/
+     * patientId null = unfiltered. doctorId scopes a DOCTOR caller to their
+     * assigned patients; patientId scopes a PATIENT caller to their own
+     * reports only — callers pass at most one of the two (see
+     * ReportService#list). Keep the WHERE clause in sync with
+     * {@link #countStats} below — same predicate, aggregated instead of paged.
      */
     @EntityGraph(attributePaths = {"patient", "createdBy"})
     @Query("""
@@ -28,6 +31,7 @@ public interface ReportRepository extends JpaRepository<Report, UUID> {
               and (:type is null or r.type = :type)
               and (:doctorId is null or exists (select 1 from DoctorPatient dp
                    where dp.doctor.id = :doctorId and dp.patient.id = r.patient.id))
+              and (:patientId is null or r.patient.id = :patientId)
               and (:search = ''
                    or lower(r.title) like lower(concat('%', :search, '%'))
                    or lower(r.patient.name) like lower(concat('%', :search, '%'))
@@ -37,6 +41,7 @@ public interface ReportRepository extends JpaRepository<Report, UUID> {
     Page<Report> search(@Param("status") ReportStatus status,
                         @Param("type") ReportType type,
                         @Param("doctorId") UUID doctorId,
+                        @Param("patientId") UUID patientId,
                         @Param("search") String search,
                         @Param("from") Instant from,
                         @Param("to") Instant to,
@@ -61,6 +66,7 @@ public interface ReportRepository extends JpaRepository<Report, UUID> {
               and (:type is null or r.type = :type)
               and (:doctorId is null or exists (select 1 from DoctorPatient dp
                    where dp.doctor.id = :doctorId and dp.patient.id = r.patient.id))
+              and (:patientId is null or r.patient.id = :patientId)
               and (:search = ''
                    or lower(r.title) like lower(concat('%', :search, '%'))
                    or lower(r.patient.name) like lower(concat('%', :search, '%'))
@@ -70,6 +76,7 @@ public interface ReportRepository extends JpaRepository<Report, UUID> {
     ReportStats countStats(@Param("status") ReportStatus status,
                           @Param("type") ReportType type,
                           @Param("doctorId") UUID doctorId,
+                          @Param("patientId") UUID patientId,
                           @Param("search") String search,
                           @Param("from") Instant from,
                           @Param("to") Instant to,

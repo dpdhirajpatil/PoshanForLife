@@ -97,7 +97,7 @@ class DashboardServiceTest {
         LeadRepository.LeadStats leadStats = leadStats(4L);
         when(patientService.stats(adminCaller)).thenReturn(new PatientStatsDto(12, 5, BigDecimal.valueOf(22.5), null));
         when(userRepository.countByRoleAndIsActiveTrue(Role.DOCTOR)).thenReturn(3L);
-        when(reportRepository.countStats(isNull(), isNull(), isNull(), eq(""), any(), any(), any(),
+        when(reportRepository.countStats(isNull(), isNull(), isNull(), isNull(), eq(""), any(), any(), any(),
                 any(), any(), any(), any())).thenReturn(reportStats);
         when(leadRepository.countStats(isNull(), isNull(), eq(""), any(), any(), any(),
                 any(), any(), any(), any(), any(), any())).thenReturn(leadStats);
@@ -120,7 +120,7 @@ class DashboardServiceTest {
         LeadRepository.LeadStats leadStats = leadStats(1L);
         when(patientService.stats(doctorCaller)).thenReturn(new PatientStatsDto(4, 2, BigDecimal.valueOf(24.0), null));
         when(userRepository.countByRoleAndIsActiveTrue(Role.DOCTOR)).thenReturn(3L);
-        when(reportRepository.countStats(isNull(), isNull(), eq(doctorId), eq(""), any(), any(), any(),
+        when(reportRepository.countStats(isNull(), isNull(), eq(doctorId), isNull(), eq(""), any(), any(), any(),
                 any(), any(), any(), any())).thenReturn(reportStats);
         when(leadRepository.countStats(eq(doctorId), isNull(), eq(""), any(), any(), any(),
                 any(), any(), any(), any(), any(), any())).thenReturn(leadStats);
@@ -233,7 +233,7 @@ class DashboardServiceTest {
 
         when(userRepository.search(eq(Role.PATIENT), eq(""), any()))
                 .thenReturn(new PageImpl<>(List.of(newPatient)));
-        when(reportRepository.search(isNull(), isNull(), isNull(), eq(""), any(), any(), any()))
+        when(reportRepository.search(isNull(), isNull(), isNull(), isNull(), eq(""), any(), any(), any()))
                 .thenReturn(new PageImpl<>(List.of(report)));
         when(leadActivityRepository.findRecentByType(eq(LeadActivityType.STAGE_CHANGE), isNull(), any()))
                 .thenReturn(List.of(stageChange));
@@ -306,13 +306,13 @@ class DashboardServiceTest {
         when(userRepository.countByRoleAndIsActiveTrue(Role.DOCTOR)).thenReturn(1L);
         ReportRepository.ReportStats reportStats = reportStats(0L, 0L, 0L, 0L, 0L);
         LeadRepository.LeadStats leadStats = leadStats(0L);
-        when(reportRepository.countStats(isNull(), isNull(), eq(doctorId), eq(""), any(), any(), any(),
+        when(reportRepository.countStats(isNull(), isNull(), eq(doctorId), isNull(), eq(""), any(), any(), any(),
                 any(), any(), any(), any())).thenReturn(reportStats);
         when(leadRepository.countStats(eq(doctorId), isNull(), eq(""), any(), any(), any(),
                 any(), any(), any(), any(), any(), any())).thenReturn(leadStats);
         lenient().when(userRepository.searchPatientsOfDoctor(eq(doctorId), eq(""), any()))
                 .thenReturn(new PageImpl<>(List.of()));
-        lenient().when(reportRepository.search(isNull(), isNull(), eq(doctorId), eq(""), any(), any(), any()))
+        lenient().when(reportRepository.search(isNull(), isNull(), eq(doctorId), isNull(), eq(""), any(), any(), any()))
                 .thenReturn(new PageImpl<>(List.of()));
         lenient().when(leadActivityRepository.findRecentByType(eq(LeadActivityType.STAGE_CHANGE), eq(doctorId), any()))
                 .thenReturn(List.of());
@@ -331,12 +331,12 @@ class DashboardServiceTest {
         when(userRepository.countByRoleAndIsActiveTrue(Role.DOCTOR)).thenReturn(0L);
         ReportRepository.ReportStats reportStats = reportStats(0L, 0L, 0L, 0L, 0L);
         LeadRepository.LeadStats leadStats = leadStats(0L);
-        when(reportRepository.countStats(isNull(), isNull(), isNull(), eq(""), any(), any(), any(),
+        when(reportRepository.countStats(isNull(), isNull(), isNull(), isNull(), eq(""), any(), any(), any(),
                 any(), any(), any(), any())).thenReturn(reportStats);
         when(leadRepository.countStats(isNull(), isNull(), eq(""), any(), any(), any(),
                 any(), any(), any(), any(), any(), any())).thenReturn(leadStats);
         lenient().when(userRepository.search(eq(Role.PATIENT), eq(""), any())).thenReturn(new PageImpl<>(List.of()));
-        lenient().when(reportRepository.search(isNull(), isNull(), isNull(), eq(""), any(), any(), any()))
+        lenient().when(reportRepository.search(isNull(), isNull(), isNull(), isNull(), eq(""), any(), any(), any()))
                 .thenReturn(new PageImpl<>(List.of()));
         lenient().when(leadActivityRepository.findRecentByType(eq(LeadActivityType.STAGE_CHANGE), isNull(), any()))
                 .thenReturn(List.of());

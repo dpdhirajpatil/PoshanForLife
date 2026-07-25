@@ -14,6 +14,7 @@ import com.poshanforlife.api.entity.Role;
 import com.poshanforlife.api.entity.User;
 import com.poshanforlife.api.exception.ApiException;
 import com.poshanforlife.api.exception.OcrExtractionException;
+import com.poshanforlife.api.exception.ResourceNotFoundException;
 import com.poshanforlife.api.repository.DoctorPatientRepository;
 import com.poshanforlife.api.repository.HealthRecordRepository;
 import com.poshanforlife.api.repository.ReportRepository;
@@ -43,6 +44,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -74,8 +76,10 @@ class ReportServiceTest {
     private User admin;
     private User doctor;
     private User patient;
+    private User otherPatient;
     private AuthenticatedUser adminCaller;
     private AuthenticatedUser doctorCaller;
+    private AuthenticatedUser patientCaller;
 
     @BeforeEach
     void setUp() {
@@ -86,8 +90,10 @@ class ReportServiceTest {
         admin = newUser("Admin", Role.ADMIN);
         doctor = newUser("Dr Priya", Role.DOCTOR);
         patient = newUser("Pat Kumar", Role.PATIENT);
+        otherPatient = newUser("Someone Else", Role.PATIENT);
         adminCaller = new AuthenticatedUser(admin.getId().toString(), "admin@poshan.test", Role.ADMIN);
         doctorCaller = new AuthenticatedUser(doctor.getId().toString(), "doctor@poshan.test", Role.DOCTOR);
+        patientCaller = new AuthenticatedUser(patient.getId().toString(), "patient@poshan.test", Role.PATIENT);
 
         lenient().when(userRepository.getReferenceById(admin.getId())).thenReturn(admin);
         lenient().when(userRepository.getReferenceById(doctor.getId())).thenReturn(doctor);
@@ -135,6 +141,42 @@ class ReportServiceTest {
     }
 
     @Test
+    void patientCanReadOwnReport() {
+        Report report = existingReport(ReportStatus.DONE);
+        when(reportRepository.findById(report.getId())).thenReturn(Optional.of(report));
+
+        ReportDetailDto dto = reportService.get(report.getId(), patientCaller);
+
+        assertThat(dto.id()).isEqualTo(report.getId().toString());
+        verify(doctorPatientRepository, never()).existsByDoctorIdAndPatientId(any(), any());
+    }
+
+    @Test
+    void patientCannotReadAnotherPatientsReport_returns404NotForbidden() {
+        Report report = existingReport(ReportStatus.DONE);
+        report.setPatient(otherPatient);
+        when(reportRepository.findById(report.getId())).thenReturn(Optional.of(report));
+
+        assertThatThrownBy(() -> reportService.get(report.getId(), patientCaller))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .isNotInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test
+    void list_forcesPatientCallerToOwnRecordOnly() {
+        Page<Report> page = new PageImpl<>(List.of(), PageRequest.of(0, 10), 0);
+        when(reportRepository.search(any(), any(), isNull(), eq(patient.getId()), eq(""), any(), any(), any()))
+                .thenReturn(page);
+        ReportRepository.ReportStats stats = mock(ReportRepository.ReportStats.class);
+        when(reportRepository.countStats(any(), any(), isNull(), eq(patient.getId()), eq(""), any(), any(), any(),
+                any(), any(), any(), any())).thenReturn(stats);
+
+        reportService.list(null, null, null, null, null, 1, 10, patientCaller);
+
+        verify(reportRepository).search(any(), any(), isNull(), eq(patient.getId()), eq(""), any(), any(), any());
+    }
+
+    @Test
     void update_appliesOnlyProvidedFields() {
         Report report = existingReport(ReportStatus.DONE);
         when(reportRepository.findById(report.getId())).thenReturn(Optional.of(report));
@@ -178,7 +220,7 @@ class ReportServiceTest {
     void list_computesStatsOverWholeFilteredSetNotJustPage() {
         Report r = existingReport(ReportStatus.DONE);
         Page<Report> page = new PageImpl<>(List.of(r), PageRequest.of(0, 1), 5);
-        when(reportRepository.search(any(), any(), any(), eq(""), any(), any(), any())).thenReturn(page);
+        when(reportRepository.search(any(), any(), any(), any(), eq(""), any(), any(), any())).thenReturn(page);
         ReportRepository.ReportStats stats = mock(ReportRepository.ReportStats.class);
         when(stats.getTotal()).thenReturn(5L);
         when(stats.getPending()).thenReturn(1L);
@@ -186,7 +228,7 @@ class ReportServiceTest {
         when(stats.getDone()).thenReturn(3L);
         when(stats.getError()).thenReturn(1L);
         when(stats.getThisMonth()).thenReturn(2L);
-        when(reportRepository.countStats(any(), any(), any(), eq(""), any(), any(), any(),
+        when(reportRepository.countStats(any(), any(), any(), any(), eq(""), any(), any(), any(),
                 any(), any(), any(), any())).thenReturn(stats);
 
         ReportService.ReportListResult result = reportService.list(null, null, null, null, null,

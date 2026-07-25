@@ -175,7 +175,8 @@
       "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -h localhost -p 5432 -U dhiraj -d poshan_api -c \"update reports set file_url=NULL where id='da9d84da-bbbc-42a0-8060-6ae6aba81c10';\")",
       "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -h localhost -p 5432 -U dhiraj -d poshan_api -c \"update reports set file_url='6d19b06a-dabf-51cc-8f72-c6ce7c6fba3e/cc410520-c6c1-485a-81d3-84e4dff0085a.pdf' where id='da9d84da-bbbc-42a0-8060-6ae6aba81c10';\")",
       "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -h localhost -p 5432 -U dhiraj -d poshan_api -c \"select id, status, confidence from reports where type='INBODY';\")",
-      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -h localhost -p 5432 -U dhiraj -d poshan_api -c \"select id, file_url, confidence from reports where id='da9d84da-bbbc-42a0-8060-6ae6aba81c10';\")"
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -h localhost -p 5432 -U dhiraj -d poshan_api -c \"select id, file_url, confidence from reports where id='da9d84da-bbbc-42a0-8060-6ae6aba81c10';\")",
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -h localhost -p 5432 -U dhiraj -d poshan_api -c \"select id, email, role from users where role='PATIENT' limit 5;\")"
     ],
     "additionalDirectories": [
       "/private/tmp",
