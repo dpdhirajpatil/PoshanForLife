@@ -4,6 +4,8 @@ import com.poshanforlife.android.core.data.AuthRepository
 import com.poshanforlife.android.core.data.AuthRepositoryImpl
 import com.poshanforlife.android.core.data.PatientRepository
 import com.poshanforlife.android.core.data.PatientRepositoryImpl
+import com.poshanforlife.android.core.data.ReportRepository
+import com.poshanforlife.android.core.data.ReportRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -21,4 +23,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindPatientRepository(impl: PatientRepositoryImpl): PatientRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindReportRepository(impl: ReportRepositoryImpl): ReportRepository
 }

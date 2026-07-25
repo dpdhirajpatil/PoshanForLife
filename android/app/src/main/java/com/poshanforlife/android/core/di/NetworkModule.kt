@@ -6,6 +6,7 @@ import com.poshanforlife.android.core.network.AuthApi
 import com.poshanforlife.android.core.network.AuthInterceptor
 import com.poshanforlife.android.core.network.DocumentApi
 import com.poshanforlife.android.core.network.PatientApi
+import com.poshanforlife.android.core.network.ReportApi
 import com.poshanforlife.android.core.network.TokenAuthenticator
 import com.poshanforlife.android.core.network.UserApi
 import dagger.Module
@@ -96,4 +97,8 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideDocumentApi(retrofit: Retrofit): DocumentApi = retrofit.create(DocumentApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideReportApi(retrofit: Retrofit): ReportApi = retrofit.create(ReportApi::class.java)
 }
