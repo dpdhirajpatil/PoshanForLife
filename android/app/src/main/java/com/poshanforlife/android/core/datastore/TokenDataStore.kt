@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.poshanforlife.android.core.network.UserDto
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -33,6 +34,10 @@ class TokenDataStore @Inject constructor(
     private object Keys {
         val ACCESS_TOKEN = stringPreferencesKey("access_token")
         val REFRESH_TOKEN = stringPreferencesKey("refresh_token")
+        val USER_ID = stringPreferencesKey("user_id")
+        val USER_NAME = stringPreferencesKey("user_name")
+        val USER_EMAIL = stringPreferencesKey("user_email")
+        val USER_ROLE = stringPreferencesKey("user_role")
     }
 
     suspend fun saveTokens(access: String, refresh: String) {
@@ -50,6 +55,30 @@ class TokenDataStore @Inject constructor(
         .catch { e -> if (e is IOException) emit(emptyPreferences()) else throw e }
         .map { prefs -> prefs[Keys.REFRESH_TOKEN] }
 
+    /** Cached alongside the tokens so AuthViewModel can derive role without a network round trip on cold start. */
+    suspend fun saveUser(user: UserDto) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.USER_ID] = user.id
+            prefs[Keys.USER_NAME] = user.name
+            prefs[Keys.USER_EMAIL] = user.email
+            prefs[Keys.USER_ROLE] = user.role
+        }
+    }
+
+    /** Null once logged out (or before the first login) — the single source of truth AuthViewModel observes. */
+    fun currentUser(): Flow<UserDto?> = context.dataStore.data
+        .catch { e -> if (e is IOException) emit(emptyPreferences()) else throw e }
+        .map { prefs ->
+            val id = prefs[Keys.USER_ID] ?: return@map null
+            UserDto(
+                id = id,
+                name = prefs[Keys.USER_NAME].orEmpty(),
+                email = prefs[Keys.USER_EMAIL].orEmpty(),
+                role = prefs[Keys.USER_ROLE].orEmpty(),
+            )
+        }
+
+    /** Wipes tokens + cached user together — logout and failed-refresh both call this. */
     suspend fun clear() {
         context.dataStore.edit { it.clear() }
     }

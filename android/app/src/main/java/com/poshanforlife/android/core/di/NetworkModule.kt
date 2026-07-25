@@ -1,7 +1,10 @@
 package com.poshanforlife.android.core.di
 
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.poshanforlife.android.BuildConfig
+import com.poshanforlife.android.core.network.AuthApi
 import com.poshanforlife.android.core.network.AuthInterceptor
+import com.poshanforlife.android.core.network.TokenAuthenticator
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -11,7 +14,6 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import javax.inject.Singleton
 
 @Module
@@ -41,11 +43,22 @@ object NetworkModule {
     @Singleton
     fun provideOkHttpClient(
         authInterceptor: AuthInterceptor,
+        tokenAuthenticator: TokenAuthenticator,
         loggingInterceptor: HttpLoggingInterceptor,
     ): OkHttpClient = OkHttpClient.Builder()
         .addInterceptor(authInterceptor)
+        .authenticator(tokenAuthenticator)
         .addInterceptor(loggingInterceptor)
         .build()
+
+    /** No AuthInterceptor/Authenticator — used only by TokenAuthenticator to call /auth/refresh itself. */
+    @Provides
+    @Singleton
+    @RefreshHttpClient
+    fun provideRefreshOkHttpClient(loggingInterceptor: HttpLoggingInterceptor): OkHttpClient =
+        OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor)
+            .build()
 
     @Provides
     @Singleton
@@ -54,4 +67,18 @@ object NetworkModule {
         .client(okHttpClient)
         .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
         .build()
+
+    @Provides
+    @Singleton
+    @RefreshRetrofit
+    fun provideRefreshRetrofit(@RefreshHttpClient okHttpClient: OkHttpClient, json: Json): Retrofit =
+        Retrofit.Builder()
+            .baseUrl(BuildConfig.BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .build()
+
+    @Provides
+    @Singleton
+    fun provideAuthApi(retrofit: Retrofit): AuthApi = retrofit.create(AuthApi::class.java)
 }

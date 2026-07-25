@@ -5,15 +5,19 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.poshanforlife.android.feature.RootRoutes
-import com.poshanforlife.android.ui.components.PlaceholderScreen
 
 private const val LOGIN = "auth/login"
 
-/** Login/signup — real screens land in AN-02 alongside AuthViewModel. */
-fun NavGraphBuilder.authGraph(navController: NavController) {
+/**
+ * authViewModel is the single shared instance created once in AppNavGraph
+ * (scoped to the Activity, not this destination) — LoginScreen calls
+ * login() on it, and AppNavGraph observes the same instance's uiState to
+ * decide when to swap to a role graph.
+ */
+fun NavGraphBuilder.authGraph(navController: NavController, authViewModel: AuthViewModel) {
     navigation(startDestination = LOGIN, route = RootRoutes.AUTH_GRAPH) {
         composable(LOGIN) {
-            PlaceholderScreen(label = "Auth")
+            LoginScreen(authViewModel = authViewModel)
         }
     }
 }

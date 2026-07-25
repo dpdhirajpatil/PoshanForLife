@@ -18,7 +18,7 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = PoshanGreen40,
+    primary = PoshanPrimaryGreen,
     secondary = PoshanGreenGrey40,
     tertiary = PoshanAmber40,
     error = PoshanError40,
