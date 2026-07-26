@@ -5,123 +5,195 @@
 @tailwind utilities;
 
 :root {
-  --font-sora: 'Sora', ui-sans-serif, sans-serif;
-  --font-plus-jakarta: 'Plus Jakarta Sans', ui-sans-serif, sans-serif;
+  // Generic names — swapping the real Gilroy/Alexander Lettering files in
+  // later only means changing these three declarations, never a component.
+  --font-display: 'Poppins', ui-sans-serif, sans-serif;
+  --font-body: 'Poppins', ui-sans-serif, sans-serif;
+  --font-accent: 'Alex Brush', cursive;
 
-  --color-brand: #2d8a68;
-  --color-accent: #f59e0b;
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  // ---- Brand palette (CI Guidelines, May 2025) — curated swatches, not a
+  // generated tonal ramp. Every semantic token below derives from these. ----
+
+  // Primary — Green family (dominant brand color)
+  --brand-green-darkest: #565825;
+  --brand-green-dark: #959636;
+  --brand-green: #dadf27; // core brand lime
+  --brand-green-light: #ddde76;
+  --brand-green-lightest: #eaebaa;
+
+  // Primary — Navy family (headings, primary text, dark surfaces)
+  --brand-navy-darkest: #262b64; // used for ALL headings in the brand guide
+  --brand-navy-dark: #497197;
+  --brand-navy: #326eb6;
+  --brand-navy-light: #99bbdd;
+  --brand-navy-lightest: #c1d7ec;
+
+  // Secondary families — one shade at a time for depth, never dominant
+  --brand-olive-900: #3f4e22;
+  --brand-olive-700: #6b893a;
+  --brand-olive-500: #91bc3f;
+  --brand-olive-300: #b5d272;
+  --brand-olive-100: #d3e4a9;
+
+  --brand-berry-900: #6c2338;
+  --brand-berry-700: #bd3e62;
+  --brand-berry-500: #f05685;
+  --brand-berry-300: #f48dad;
+  --brand-berry-100: #f7b7cc;
+
+  --brand-rust-900: #6a2f1e;
+  --brand-rust-700: #bc5035;
+  --brand-rust-500: #f26c4c;
+  --brand-rust-300: #f79c85;
+  --brand-rust-100: #fbc4b4;
+
+  --brand-gold-900: #6c5823;
+  --brand-gold-700: #ba962f;
+  --brand-gold-500: #ffcf42;
+  --brand-gold-300: #fedd7e;
+  --brand-gold-100: #fceaaf;
+
+  // Accent families — small decorative elements only
+  --brand-plum-900: #6c3f60;
+  --brand-plum-700: #ba6da7;
+  --brand-plum-500: #e89cc4;
+  --brand-plum-300: #f1bad5;
+  --brand-plum-100: #f8d5e5;
+
+  --brand-indigo-900: #383b6b;
+  --brand-indigo-700: #6568af;
+  --brand-indigo-500: #8488c2;
+  --brand-indigo-300: #b1b1d9;
+  --brand-indigo-100: #d1cfe8;
+
+  // ---- Semantic tokens — light theme ----
+  --background: #ffffff;
+  --foreground: var(--brand-navy-darkest);
   --card: #ffffff;
-  --card-foreground: #0f172a;
+  --card-foreground: var(--brand-navy-darkest);
   --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --primary: #2d8a68;
-  --primary-foreground: #f8fafc;
-  --secondary: #e2e8f0;
-  --secondary-foreground: #0f172a;
-  --muted: #eef2f7;
-  --muted-foreground: #64748b;
-  --accent: #f59e0b;
-  --accent-foreground: #3f2a00;
-  --destructive: #dc2626;
-  --destructive-foreground: #f8fafc;
-  --border: #d8e1ea;
-  --input: #d8e1ea;
-  --ring: #4dc49a;
-  --chart-1: #2d8a68;
-  --chart-2: #4dc49a;
-  --chart-3: #f59e0b;
-  --chart-4: #226b4f;
-  --chart-5: #94a3b8;
-  --radius: 0.875rem;
+  --popover-foreground: var(--brand-navy-darkest);
+  --primary: var(--brand-green);
+  --primary-foreground: var(--brand-navy-darkest); // dark text on bright lime reads better than white
+  --secondary: var(--brand-navy-lightest);
+  --secondary-foreground: var(--brand-navy-darkest);
+  --muted: #f7f8ef; // a near-white tint of the green family, not gray
+  --muted-foreground: var(--brand-green-dark);
+  --accent: var(--brand-gold-500); // small highlights/badges per the CI guide
+  --accent-foreground: var(--brand-navy-darkest);
+  --destructive: var(--brand-berry-700); // brand-appropriate "error" color, not a generic red
+  --destructive-foreground: #ffffff;
+  --border: var(--brand-navy-lightest);
+  --input: var(--brand-navy-lightest);
+  --ring: var(--brand-green);
+  --radius: 1rem; // generously rounded throughout, per the brand guide's visual language
+
+  // Fallback targets for a couple of call sites that read these numeric
+  // shades directly as CSS vars (Tailwind's own `primary-100`/`primary-700`
+  // utilities read the config, not these — this is only for raw `var()`
+  // usage in inline component styles).
+  --primary-100: var(--brand-green-lightest);
+  --primary-700: var(--brand-green-dark);
+
+  // Sidebar surface — same semantic family as card/popover, kept distinct
+  // so the nav rail can be tuned independently of page cards.
   --sidebar: #ffffff;
-  --sidebar-foreground: #0f172a;
-  --sidebar-primary: #2d8a68;
-  --sidebar-primary-foreground: #f8fafc;
-  --sidebar-accent: #f0fdf7;
-  --sidebar-accent-foreground: #226b4f;
-  --sidebar-border: #d8e1ea;
-  --sidebar-ring: #4dc49a;
+  --sidebar-foreground: var(--brand-navy-darkest);
+  --sidebar-primary: var(--brand-green);
+  --sidebar-primary-foreground: var(--brand-navy-darkest);
+  --sidebar-accent: var(--muted);
+  --sidebar-accent-foreground: var(--brand-green-dark);
+  --sidebar-border: var(--brand-navy-lightest);
+  --sidebar-ring: var(--brand-green);
 
-  --app-gradient: radial-gradient(circle at top left, rgb(45 138 104 / 0.12), transparent 32%),
-    radial-gradient(circle at top right, rgb(245 158 11 / 0.14), transparent 22%);
+  // Multi-series chart palette — spread across the brand families instead
+  // of a generic gray/blue chart scale.
+  --chart-1: var(--brand-green);
+  --chart-2: var(--brand-navy);
+  --chart-3: var(--brand-gold-500);
+  --chart-4: var(--brand-berry-500);
+  --chart-5: var(--brand-rust-500);
 
-  /* Status/role/type badge palette — shared by every chip-style indicator
-     (role, status, payment, assignment, catalogue, report badges) so a
-     single place controls light/dark contrast instead of per-component hex. */
-  --badge-green-bg: #e8f5e9;
-  --badge-green-fg: #2e7d32;
-  --badge-blue-bg: #e3f2fd;
-  --badge-blue-fg: #1565c0;
-  --badge-purple-bg: #ede7f6;
-  --badge-purple-fg: #5e35b1;
-  --badge-amber-bg: #fff8e1;
-  --badge-amber-fg: #b26a00;
-  --badge-red-bg: #fbe9e7;
-  --badge-red-fg: #c62828;
-  --badge-grey-bg: #eceff1;
-  --badge-grey-fg: #455a64;
-  --badge-orange-bg: #fff3e0;
-  --badge-orange-fg: #e65100;
+  // Status/role/type badge palette — shared by every chip-style indicator
+  // (role, status, payment, assignment, catalogue, report badges), each
+  // pair drawn from a distinct brand family so no two statuses collide.
+  --badge-green-bg: #f2f3d9;
+  --badge-green-fg: var(--brand-green-darkest);
+  --badge-blue-bg: #eef4fa; // closest brand family to "blue" is navy
+  --badge-blue-fg: var(--brand-navy-darkest);
+  --badge-purple-bg: #ece9f6; // closest brand family to "purple" is indigo
+  --badge-purple-fg: var(--brand-indigo-900);
+  --badge-amber-bg: #fff6dd; // closest brand family to "amber" is gold
+  --badge-amber-fg: var(--brand-gold-900);
+  --badge-red-bg: #fce4ec; // closest brand family to "red" is berry
+  --badge-red-fg: var(--brand-berry-900);
+  --badge-grey-bg: #eef1f7; // neutral/inactive — a navy tint, never literal gray
+  --badge-grey-fg: var(--brand-navy-dark);
+  --badge-orange-bg: #fde8e0; // closest brand family to "orange" is rust
+  --badge-orange-fg: var(--brand-rust-900);
 
-  /* Subtle primary-tinted highlight for selected list rows/cards. */
-  --primary-tint: rgb(45 138 104 / 0.07);
+  // Subtle primary-tinted highlight for selected list rows/cards.
+  --primary-tint: rgb(218 223 39 / 0.1);
 }
 
 .dark {
-  --background: #0f172a;
-  --foreground: #f1f5f9;
-  --card: #1e293b;
-  --card-foreground: #f1f5f9;
-  --popover: #1e293b;
-  --popover-foreground: #f1f5f9;
-  --primary: #34a87e;
-  --primary-foreground: #ffffff;
-  --secondary: #334155;
-  --secondary-foreground: #f1f5f9;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-  --accent: #f59e0b;
-  --accent-foreground: #3f2a00;
-  --destructive: #ef4444;
+  // Not specified in the CI guide (only a "logo on dark background" variant
+  // is shown: the gray wordmark becomes white, the lime stays lime) —
+  // derived from that cue plus the no-black rule.
+  --background: var(--brand-navy-darkest); // a real brand color, never black
+  --foreground: #f5f6ec; // an off-white, green-tinted white
+  --card: #323768; // brand-navy-darkest, lightened for card elevation
+  --card-foreground: #f5f6ec;
+  --popover: #323768;
+  --popover-foreground: #f5f6ec;
+  --primary: var(--brand-green); // stays exactly as bright — matches the logo's dark-bg treatment
+  --primary-foreground: var(--brand-navy-darkest);
+  --secondary: #3d437a;
+  --secondary-foreground: #f5f6ec;
+  --muted: #2d3270;
+  --muted-foreground: var(--brand-green-light);
+  --accent: var(--brand-gold-300); // lighter gold for better contrast on dark navy
+  --accent-foreground: var(--brand-navy-darkest);
+  --destructive: var(--brand-berry-500);
   --destructive-foreground: #ffffff;
-  --border: #334155;
-  --input: #334155;
-  --ring: #34a87e;
-  --chart-1: #34a87e;
-  --chart-2: #4dc49a;
-  --chart-3: #f59e0b;
-  --chart-4: #7dd9b8;
-  --chart-5: #64748b;
-  --sidebar: #1e293b;
-  --sidebar-foreground: #f1f5f9;
-  --sidebar-primary: #34a87e;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #0f2d1f;
-  --sidebar-accent-foreground: #7dd9b8;
-  --sidebar-border: #334155;
-  --sidebar-ring: #34a87e;
+  --border: #3d437a;
+  --input: #3d437a;
+  --ring: var(--brand-green);
 
-  --app-gradient: radial-gradient(circle at top left, rgb(52 168 126 / 0.08), transparent 32%),
-    radial-gradient(circle at top right, rgb(245 158 11 / 0.06), transparent 22%);
+  --primary-100: var(--brand-green-lightest);
+  --primary-700: var(--brand-green-light);
 
-  --badge-green-bg: rgb(52 168 126 / 0.18);
-  --badge-green-fg: #6ee7b7;
-  --badge-blue-bg: rgb(59 130 246 / 0.18);
-  --badge-blue-fg: #93c5fd;
-  --badge-purple-bg: rgb(168 85 247 / 0.18);
-  --badge-purple-fg: #d8b4fe;
-  --badge-amber-bg: rgb(245 158 11 / 0.18);
-  --badge-amber-fg: #fcd34d;
-  --badge-red-bg: rgb(239 68 68 / 0.18);
-  --badge-red-fg: #fca5a5;
-  --badge-grey-bg: rgb(148 163 184 / 0.18);
-  --badge-grey-fg: #cbd5e1;
-  --badge-orange-bg: rgb(249 115 22 / 0.18);
-  --badge-orange-fg: #fdba74;
+  --sidebar: #323768;
+  --sidebar-foreground: #f5f6ec;
+  --sidebar-primary: var(--brand-green);
+  --sidebar-primary-foreground: var(--brand-navy-darkest);
+  --sidebar-accent: #2d3270;
+  --sidebar-accent-foreground: var(--brand-green-light);
+  --sidebar-border: #3d437a;
+  --sidebar-ring: var(--brand-green);
 
-  --primary-tint: rgb(52 168 126 / 0.14);
+  --chart-1: var(--brand-green);
+  --chart-2: var(--brand-navy-light);
+  --chart-3: var(--brand-gold-300);
+  --chart-4: var(--brand-berry-300);
+  --chart-5: var(--brand-rust-300);
+
+  --badge-green-bg: rgb(149 150 54 / 0.25);
+  --badge-green-fg: var(--brand-green-light);
+  --badge-blue-bg: rgb(50 110 182 / 0.25);
+  --badge-blue-fg: var(--brand-navy-light);
+  --badge-purple-bg: rgb(132 136 194 / 0.25);
+  --badge-purple-fg: var(--brand-indigo-300);
+  --badge-amber-bg: rgb(255 207 66 / 0.2);
+  --badge-amber-fg: var(--brand-gold-300);
+  --badge-red-bg: rgb(240 86 133 / 0.22);
+  --badge-red-fg: var(--brand-berry-300);
+  --badge-grey-bg: rgb(61 67 122 / 0.45);
+  --badge-grey-fg: var(--brand-navy-light);
+  --badge-orange-bg: rgb(242 108 76 / 0.22);
+  --badge-orange-fg: var(--brand-rust-300);
+
+  --primary-tint: rgb(218 223 39 / 0.16);
 }
 
 html,
@@ -131,24 +203,39 @@ body {
 
 body {
   margin: 0;
-  font-family: var(--font-plus-jakarta);
+  font-family: var(--font-body);
   background-color: var(--background);
-  background-image: var(--app-gradient);
-  background-attachment: fixed;
   color: var(--foreground);
   transition:
     background-color 0.2s ease,
     color 0.2s ease;
 }
 
+// Gilroy Heavy is always-caps in the brand guide — its Poppins substitute
+// gets the same treatment on major headings. H3-H6 use the Medium weight
+// without a forced case (the guide allows either there).
 h1,
-h2,
+h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
 h3,
 h4,
 h5,
 h6,
 .font-display {
-  font-family: var(--font-sora);
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+// The script accent font — a single decorative word/flourish, never
+// load-bearing for comprehension. The brand guide explicitly forbids
+// all-caps on this font, so this class never sets text-transform.
+.font-accent {
+  font-family: var(--font-accent);
+  font-weight: 400;
 }
 
 /* Shared horizontal-scroll wrapper for tables/boards that are wider than the

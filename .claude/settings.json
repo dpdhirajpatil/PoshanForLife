@@ -203,7 +203,13 @@
       "Bash(file *.ttf)",
       "Bash(lsof -iTCP -sTCP:LISTEN -P)",
       "Bash(xargs -I{} sh -c 'echo \"--- {} ---\"; grep -i \"url\\\\|username\\\\|datasource\" {}')",
-      "Bash(pkill -f spring-boot:run)"
+      "Bash(pkill -f spring-boot:run)",
+      "Bash(curl -s -o /dev/null -w \"backend health: %{http_code}\\\\n\" http://localhost:8080/v3/api-docs)",
+      "Bash(curl -s -o /dev/null -w \"frontend: %{http_code}\\\\n\" http://localhost:4200/)",
+      "Bash(sed -i '' 's/hover:bg-red-50 hover:text-red-600/hover:bg-brand-berry-100 hover:text-destructive/g' src/app/layout/sidebar.component.ts)",
+      "Bash(sed -i '' 's/text-destructive hover:bg-red-50/text-destructive hover:bg-brand-berry-100/g' src/app/layout/topbar.component.ts)",
+      "Bash(curl -s http://localhost:4200/)",
+      "Bash(curl -s http://localhost:4200/styles.css)"
     ],
     "additionalDirectories": [
       "/private/tmp",

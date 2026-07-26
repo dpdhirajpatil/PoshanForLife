@@ -178,7 +178,7 @@ function notificationRoute(n: AppNotification): string[] | null {
                 <div class="my-1.5 border-t border-border"></div>
                 <button
                   type="button"
-                  class="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm text-destructive hover:bg-red-50"
+                  class="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm text-destructive hover:bg-brand-berry-100"
                   (click)="signOut()"
                 >
                   <span class="material-icons text-[18px] leading-none">logout</span>

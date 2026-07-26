@@ -26,14 +26,17 @@ import { SidebarTooltipDirective } from '../shared/sidebar-tooltip.directive';
       <div class="flex h-[60px] shrink-0 items-center justify-between border-b border-border px-3">
         <div class="flex min-w-0 items-center gap-2.5">
           <div
-            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary-600 text-white"
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground"
           >
             <span class="material-icons text-[20px] leading-none">eco</span>
           </div>
           @if (showLabels()) {
             <div class="flex min-w-0 items-baseline gap-1 overflow-hidden whitespace-nowrap">
               <span class="font-display font-semibold text-foreground">Poshan</span>
-              <span class="font-display font-light text-primary-600">for Life</span>
+              <!-- The CI guide's "logo on light background" cue: "for life" stays in the
+                   brand lime, and — as the one deliberate accent-font flourish in the
+                   whole nav — set in the script typeface, never uppercased. -->
+              <span class="font-accent text-lg leading-none text-brand-green-dark">for life</span>
             </div>
           }
         </div>
@@ -83,7 +86,7 @@ import { SidebarTooltipDirective } from '../shared/sidebar-tooltip.directive';
             }
             @if (item.path === '/leads' && followupTodayCount() > 0) {
               <span
-                class="ml-auto flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-accent-500 px-1 text-[11px] font-semibold text-white"
+                class="ml-auto flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-accent px-1 text-[11px] font-semibold text-accent-foreground"
                 [class.absolute]="!showLabels()"
                 [class.right-1]="!showLabels()"
                 [class.top-1]="!showLabels()"
@@ -119,7 +122,7 @@ import { SidebarTooltipDirective } from '../shared/sidebar-tooltip.directive';
           </div>
           <button
             type="button"
-            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-red-50 hover:text-red-600"
+            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-brand-berry-100 hover:text-destructive"
             appSidebarTooltip="Sign out"
             [enabled]="!showLabels()"
             (click)="auth.logout()"
@@ -141,7 +144,7 @@ import { SidebarTooltipDirective } from '../shared/sidebar-tooltip.directive';
             </span>
             <button
               type="button"
-              class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-red-50 hover:text-red-600"
+              class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-brand-berry-100 hover:text-destructive"
               appSidebarTooltip="Sign out"
               [enabled]="true"
               (click)="auth.logout()"

@@ -1,86 +1,134 @@
-// Replaces the stock azure-blue Material theme with one built from this
-// app's own design tokens (frontend/tailwind.config.js / styles.scss), so
-// every Material component (buttons, tabs, selects, dialogs...) matches the
-// rest of the app instead of clashing with it. Angular Material's M2 theming
-// API needs literal hex values at compile time (it can't read our CSS custom
-// properties), so the palette below is a direct copy of the primary/saffron
-// scales — keep the two in sync if those tokens ever change.
+// Replaces the stock azure-blue Material theme with one built from the
+// "Poshan for Life" CI Guidelines (frontend/tailwind.config.js / styles.scss
+// hold the same tokens for non-Material components), so every Material
+// component (buttons, tabs, selects, dialogs...) matches the rest of the
+// app instead of clashing with it. Angular Material's M2 theming API needs
+// literal hex values at compile time (it can't read our CSS custom
+// properties), so the palettes below are a direct copy of the brand-green/
+// brand-gold/brand-berry swatches in styles.scss — keep them in sync if
+// those tokens ever change. Per the CI guide's hard "no black" rule, every
+// contrast value here is --brand-navy-darkest (#262b64) or white, never
+// rgba(black, ...).
 @use '@angular/material' as mat;
 
 @include mat.core();
 
+$navy-darkest: #262b64;
+
+// Built from the 5 curated green swatches (100/300/500/700/900 below are
+// verbatim brand colors); 50/200/400/600/800 fill Material's numeric gaps.
 $poshan-primary-palette: (
-  50: #f0fdf7,
-  100: #d8f5eb,
-  200: #b0ecd5,
-  300: #7dd9b8,
-  400: #4dc49a,
-  500: #34a87e,
-  600: #2d8a68,
-  700: #226b4f,
-  800: #1a5c44,
-  900: #0f3d2e,
-  A100: #d8f5eb,
-  A200: #7dd9b8,
-  A400: #34a87e,
-  A700: #226b4f,
+  50: #f7f8ef,
+  100: #eaebaa, // brand-green-lightest
+  200: #e4e690,
+  300: #ddde76, // brand-green-light
+  400: #cdd350,
+  500: #dadf27, // brand-green — the core brand lime
+  600: #b7bc2f,
+  700: #959636, // brand-green-dark
+  800: #75762d,
+  900: #565825, // brand-green-darkest
+  A100: #eaebaa,
+  A200: #ddde76,
+  A400: #dadf27,
+  A700: #959636,
   contrast: (
-    50: rgba(black, 0.87),
-    100: rgba(black, 0.87),
-    200: rgba(black, 0.87),
-    300: rgba(black, 0.87),
-    400: rgba(black, 0.87),
+    // The bright lime stays legible with dark navy text, not white, at
+    // every shade except the two darkest (which are dark enough for white).
+    50: $navy-darkest,
+    100: $navy-darkest,
+    200: $navy-darkest,
+    300: $navy-darkest,
+    400: $navy-darkest,
+    500: $navy-darkest,
+    600: $navy-darkest,
+    700: $navy-darkest,
+    800: white,
+    900: white,
+    A100: $navy-darkest,
+    A200: $navy-darkest,
+    A400: $navy-darkest,
+    A700: $navy-darkest,
+  ),
+);
+
+// Built from the 5 curated gold swatches — small-highlight/badge accent
+// per the CI guide, not a dominant color.
+$poshan-accent-palette: (
+  50: #fff6dd,
+  100: #fceaaf, // brand-gold-100
+  200: #fee1a0,
+  300: #fedd7e, // brand-gold-300
+  400: #ffd662,
+  500: #ffcf42, // brand-gold-500 — the core accent gold
+  600: #d9ae38,
+  700: #ba962f, // brand-gold-700
+  800: #8d7429,
+  900: #6c5823, // brand-gold-900
+  A100: #fceaaf,
+  A200: #fedd7e,
+  A400: #ffcf42,
+  A700: #ba962f,
+  contrast: (
+    50: $navy-darkest,
+    100: $navy-darkest,
+    200: $navy-darkest,
+    300: $navy-darkest,
+    400: $navy-darkest,
+    500: $navy-darkest,
+    600: $navy-darkest,
+    700: $navy-darkest,
+    800: $navy-darkest,
+    900: white,
+    A100: $navy-darkest,
+    A200: $navy-darkest,
+    A400: $navy-darkest,
+    A700: $navy-darkest,
+  ),
+);
+
+// Built from the 5 curated berry swatches — the CI guide's brand-appropriate
+// "error" color, replacing Material's stock red palette.
+$poshan-warn-palette: (
+  50: #fce4ec,
+  100: #f7b7cc, // brand-berry-100
+  200: #f5a3bf,
+  300: #f48dad, // brand-berry-300
+  400: #f2719c,
+  500: #f05685, // brand-berry-500
+  600: #d84876,
+  700: #bd3e62, // brand-berry-700 — matches --destructive in styles.scss
+  800: #8f3050,
+  900: #6c2338, // brand-berry-900
+  A100: #f7b7cc,
+  A200: #f48dad,
+  A400: #f05685,
+  A700: #bd3e62,
+  contrast: (
+    50: $navy-darkest,
+    100: $navy-darkest,
+    200: $navy-darkest,
+    300: $navy-darkest,
+    400: white,
     500: white,
     600: white,
     700: white,
     800: white,
     900: white,
-    A100: rgba(black, 0.87),
-    A200: rgba(black, 0.87),
+    A100: $navy-darkest,
+    A200: $navy-darkest,
     A400: white,
-    A700: white,
-  ),
-);
-
-$poshan-accent-palette: (
-  50: #fffbeb,
-  100: #fef3c7,
-  200: #fde68a,
-  300: #fde68a,
-  400: #fbbf24,
-  500: #f59e0b,
-  600: #d97706,
-  700: #d97706,
-  800: #d97706,
-  900: #d97706,
-  A100: #fef3c7,
-  A200: #fde68a,
-  A400: #fbbf24,
-  A700: #d97706,
-  contrast: (
-    50: rgba(black, 0.87),
-    100: rgba(black, 0.87),
-    200: rgba(black, 0.87),
-    300: rgba(black, 0.87),
-    400: rgba(black, 0.87),
-    500: rgba(black, 0.87),
-    600: white,
-    700: white,
-    800: white,
-    900: white,
-    A100: rgba(black, 0.87),
-    A200: rgba(black, 0.87),
-    A400: rgba(black, 0.87),
     A700: white,
   ),
 );
 
 $poshan-primary: mat.m2-define-palette($poshan-primary-palette);
 $poshan-accent: mat.m2-define-palette($poshan-accent-palette);
-$poshan-warn: mat.m2-define-palette(mat.$m2-red-palette);
+// Default at 700 so Material's warn fill matches --destructive (berry-700).
+$poshan-warn: mat.m2-define-palette($poshan-warn-palette, 700);
 
 $poshan-typography: mat.m2-define-typography-config(
-  $font-family: '"Plus Jakarta Sans", ui-sans-serif, sans-serif',
+  $font-family: '"Poppins", ui-sans-serif, sans-serif',
 );
 
 $poshan-light-theme: mat.m2-define-light-theme(
@@ -119,8 +167,9 @@ $poshan-dark-theme: mat.m2-define-dark-theme(
   // maps — it always forces Material's stock dark grey (#424242, "grey 800").
   // That leaves every "surface" component (dialogs, menus, selects, etc.)
   // showing a flat grey instead of this app's navy --card, clashing with the
-  // rest of the dark theme. Overriding the emitted custom properties directly
-  // is Material's supported customization path for exactly this case.
+  // rest of the dark theme (and violating the CI guide's no-black/no-gray
+  // rule). Overriding the emitted custom properties directly is Material's
+  // supported customization path for exactly this case.
   --mdc-dialog-container-color: var(--card);
   --mdc-elevated-card-container-color: var(--card);
   --mdc-outlined-card-container-color: var(--card);
