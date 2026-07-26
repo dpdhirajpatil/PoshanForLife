@@ -2,6 +2,7 @@ package com.poshanforlife.android.feature.patient
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
@@ -11,6 +12,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.poshanforlife.android.feature.RootRoutes
+import com.poshanforlife.android.feature.patient.appointments.AppointmentsListScreen
+import com.poshanforlife.android.feature.patient.appointments.BookAppointmentScreen
 import com.poshanforlife.android.feature.patient.programmes.ProgrammeDetailScreen
 import com.poshanforlife.android.feature.patient.programmes.ProgrammesListScreen
 import com.poshanforlife.android.feature.patient.reports.ReportDetailScreen
@@ -25,16 +28,20 @@ private const val ROOT = "patient/root"
 private const val GOALS_ROUTE = "patient/goals"
 private const val REPORT_DETAIL_ROUTE = "patient/reports/{reportId}"
 private const val PROGRAMME_DETAIL_ROUTE = "patient/programmes/{patientId}/{programmeId}"
+private const val BOOK_APPOINTMENT_ROUTE = "patient/appointments/book"
+private const val RESCHEDULE_APPOINTMENT_ROUTE = "patient/appointments/{appointmentId}/reschedule/{practitionerId}"
 
 private const val HOME_ROUTE = "patient/home"
 private const val TRACK_ROUTE = "patient/track"
 private const val PROGRAMMES_ROUTE = "patient/programmes"
+private const val APPOINTMENTS_ROUTE = "patient/appointments"
 private const val REPORTS_ROUTE = "patient/reports"
 
 private val items = listOf(
     BottomNavItem(HOME_ROUTE, "Home", Icons.Filled.Home),
     BottomNavItem(TRACK_ROUTE, "Track", Icons.Filled.Timeline),
     BottomNavItem(PROGRAMMES_ROUTE, "Programmes", Icons.AutoMirrored.Filled.MenuBook),
+    BottomNavItem(APPOINTMENTS_ROUTE, "Appointments", Icons.Filled.CalendarMonth),
     BottomNavItem(REPORTS_ROUTE, "Reports", Icons.Filled.Description),
     BottomNavItem("patient/profile", "Profile", Icons.Filled.Person),
 )
@@ -54,6 +61,12 @@ fun NavGraphBuilder.patientGraph(navController: NavController) {
                             navController.navigate("patient/programmes/$patientId/$programmeId")
                         },
                     )
+                    APPOINTMENTS_ROUTE -> AppointmentsListScreen(
+                        onBookAppointment = { navController.navigate(BOOK_APPOINTMENT_ROUTE) },
+                        onRescheduleAppointment = { appointmentId, practitionerId ->
+                            navController.navigate("patient/appointments/$appointmentId/reschedule/$practitionerId")
+                        },
+                    )
                     REPORTS_ROUTE -> ReportsListScreen(
                         onOpenReport = { reportId -> navController.navigate("patient/reports/$reportId") },
                     )
@@ -70,6 +83,16 @@ fun NavGraphBuilder.patientGraph(navController: NavController) {
         }
         composable(PROGRAMME_DETAIL_ROUTE) {
             ProgrammeDetailScreen()
+        }
+        composable(BOOK_APPOINTMENT_ROUTE) {
+            BookAppointmentScreen(onDone = { navController.popBackStack() })
+        }
+        composable(RESCHEDULE_APPOINTMENT_ROUTE) { backStackEntry ->
+            BookAppointmentScreen(
+                preselectedPractitionerId = backStackEntry.arguments?.getString("practitionerId"),
+                rescheduleAppointmentId = backStackEntry.arguments?.getString("appointmentId"),
+                onDone = { navController.popBackStack() },
+            )
         }
     }
 }

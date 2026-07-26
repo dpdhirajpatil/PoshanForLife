@@ -34,6 +34,8 @@ public class Notification extends BaseEntity {
     public static final String TYPE_CONSULTATION_REQUEST = "CONSULTATION_REQUEST";
     /** An InBody PDF finished processing successfully — sent to the patient's assigned doctor(s). */
     public static final String TYPE_INBODY_REPORT = "INBODY_REPORT";
+    /** A patient booked/rescheduled/cancelled an appointment — sent to the practitioner. */
+    public static final String TYPE_APPOINTMENT_BOOKED = "APPOINTMENT_BOOKED";
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)

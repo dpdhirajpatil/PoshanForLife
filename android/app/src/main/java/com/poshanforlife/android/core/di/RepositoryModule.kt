@@ -1,5 +1,7 @@
 package com.poshanforlife.android.core.di
 
+import com.poshanforlife.android.core.data.AppointmentRepository
+import com.poshanforlife.android.core.data.AppointmentRepositoryImpl
 import com.poshanforlife.android.core.data.AuthRepository
 import com.poshanforlife.android.core.data.AuthRepositoryImpl
 import com.poshanforlife.android.core.data.PatientRepository
@@ -27,4 +29,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindReportRepository(impl: ReportRepositoryImpl): ReportRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAppointmentRepository(impl: AppointmentRepositoryImpl): AppointmentRepository
 }

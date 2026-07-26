@@ -179,7 +179,12 @@
       "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -h localhost -p 5432 -U dhiraj -d poshan_api -c \"select id, email, role from users where role='PATIENT' limit 5;\")",
       "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -h localhost -p 5432 -U dhiraj -d poshan_api -c \"select pp.id, pp.service_type, pp.status, u.email from patient_programmes pp join users u on u.id=pp.patient_id order by u.email;\")",
       "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -h localhost -p 5432 -U dhiraj -d poshan_api -c 'update users set password_hash='\\\\''$2y$10$fNZClnI7L7Mt8M5oFsbqQ.obPaRxSBmma3FqWRHDtwkXTaTXovmdy'\\\\'' where email='\\\\''neha.kapoor@example.com'\\\\'';')",
-      "Bash(/Users/dhiraj/Library/Android/sdk/platform-tools/adb emu *)"
+      "Bash(/Users/dhiraj/Library/Android/sdk/platform-tools/adb emu *)",
+      "Bash(grep -v \"^\\\\.$\")",
+      "Bash(./mvnw -q -o compile)",
+      "Bash(./gradlew :app:compileDebugKotlin -q)",
+      "Bash(JAVA_HOME=/Users/dhiraj/Library/Java/JavaVirtualMachines/ms-21.0.9/Contents/Home ./gradlew :app:compileDebugKotlin -q)",
+      "Bash(JAVA_HOME=/Users/dhiraj/Library/Java/JavaVirtualMachines/ms-21.0.9/Contents/Home ./gradlew :app:assembleDebug -q)"
     ],
     "additionalDirectories": [
       "/private/tmp",
