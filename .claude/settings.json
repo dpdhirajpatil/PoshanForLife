@@ -209,7 +209,14 @@
       "Bash(sed -i '' 's/hover:bg-red-50 hover:text-red-600/hover:bg-brand-berry-100 hover:text-destructive/g' src/app/layout/sidebar.component.ts)",
       "Bash(sed -i '' 's/text-destructive hover:bg-red-50/text-destructive hover:bg-brand-berry-100/g' src/app/layout/topbar.component.ts)",
       "Bash(curl -s http://localhost:4200/)",
-      "Bash(curl -s http://localhost:4200/styles.css)"
+      "Bash(curl -s http://localhost:4200/styles.css)",
+      "Bash(pdftoppm -png -r 600 \"POSHAN LOGO.pdf\" poshan_logo_600dpi)",
+      "Bash(sips -g pixelWidth -g pixelHeight poshan_logo_600dpi-1.png)",
+      "Bash(sips -g pixelWidth -g pixelHeight poshan_logo_600dpi.png)",
+      "Bash(python3 -c \"import PIL; print\\(PIL.__version__\\)\")",
+      "Bash(python3)",
+      "Bash(curl -s -o /dev/null -w \"favicon.ico: %{http_code}\\\\n\" http://localhost:4200/favicon.ico)",
+      "Bash(curl -s -o /dev/null -w \"icon-192.png: %{http_code}\\\\n\" http://localhost:4200/icons/icon-192.png)"
     ],
     "additionalDirectories": [
       "/private/tmp",

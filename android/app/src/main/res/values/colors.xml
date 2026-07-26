@@ -1,3 +1,4 @@
 <resources>
-    <color name="ic_launcher_background">#1B5E20</color>
+    <!-- brand-navy-darkest — matches the CI guide's "logo on dark background" treatment. -->
+    <color name="ic_launcher_background">#262B64</color>
 </resources>

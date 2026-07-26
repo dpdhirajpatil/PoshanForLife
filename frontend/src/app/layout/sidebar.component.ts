@@ -25,11 +25,11 @@ import { SidebarTooltipDirective } from '../shared/sidebar-tooltip.directive';
       <!-- Header -->
       <div class="flex h-[60px] shrink-0 items-center justify-between border-b border-border px-3">
         <div class="flex min-w-0 items-center gap-2.5">
-          <div
-            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground"
-          >
-            <span class="material-icons text-[20px] leading-none">eco</span>
-          </div>
+          <img
+            src="icons/icon-192.png"
+            alt="Poshan for Life"
+            class="h-9 w-9 shrink-0 rounded-xl"
+          />
           @if (showLabels()) {
             <div class="flex min-w-0 items-baseline gap-1 overflow-hidden whitespace-nowrap">
               <span class="font-display font-semibold text-foreground">Poshan</span>
