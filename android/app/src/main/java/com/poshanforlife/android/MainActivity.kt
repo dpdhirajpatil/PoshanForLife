@@ -10,7 +10,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.poshanforlife.android.core.fcm.DeepLinkEvents
 import com.poshanforlife.android.feature.AppNavGraph
-import com.poshanforlife.android.ui.theme.PoshanForLifeTheme
+import com.poshanforlife.android.ui.theme.PoshanTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            PoshanForLifeTheme {
+            PoshanTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     AppNavGraph()
                 }

@@ -192,7 +192,18 @@
       "Bash(./mvnw -q -o test -Dtest=PatientServiceTest,ReportServiceTest)",
       "Bash(./mvnw -q -o clean test-compile)",
       "Bash(./mvnw -q -o test)",
-      "Bash(awk '{fail+=$5; err+=$7; tot+=$3} END {print \"total:\", tot, \"failures:\", fail, \"errors:\", err}' FS='[ ,]+')"
+      "Bash(awk '{fail+=$5; err+=$7; tot+=$3} END {print \"total:\", tot, \"failures:\", fail, \"errors:\", err}' FS='[ ,]+')",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" https://github.com/google/fonts/raw/main/ofl/poppins/Poppins-Regular.ttf --max-time 10)",
+      "Bash(curl -sL -o /dev/null -w \"%{http_code} %{size_download}\\\\n\" https://github.com/google/fonts/raw/main/ofl/poppins/Poppins-Regular.ttf --max-time 15)",
+      "Bash(curl -sL -o /dev/null -w \"%{http_code} %{size_download}\\\\n\" https://github.com/google/fonts/raw/main/ofl/alexbrush/AlexBrush-Regular.ttf --max-time 15)",
+      "Bash(curl -sL -o poppins_regular.ttf --max-time 20 __TRACKED_VAR__/poppins/Poppins-Regular.ttf)",
+      "Bash(curl -sL -o poppins_medium.ttf --max-time 20 __TRACKED_VAR__/poppins/Poppins-Medium.ttf)",
+      "Bash(curl -sL -o poppins_extrabold.ttf --max-time 20 __TRACKED_VAR__/poppins/Poppins-ExtraBold.ttf)",
+      "Bash(curl -sL -o alex_brush_regular.ttf --max-time 20 __TRACKED_VAR__/alexbrush/AlexBrush-Regular.ttf)",
+      "Bash(file *.ttf)",
+      "Bash(lsof -iTCP -sTCP:LISTEN -P)",
+      "Bash(xargs -I{} sh -c 'echo \"--- {} ---\"; grep -i \"url\\\\|username\\\\|datasource\" {}')",
+      "Bash(pkill -f spring-boot:run)"
     ],
     "additionalDirectories": [
       "/private/tmp",

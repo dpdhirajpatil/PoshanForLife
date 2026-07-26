@@ -1,23 +1,26 @@
 package com.poshanforlife.android.ui.theme
 
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import com.poshanforlife.android.R
 
 /**
- * Sora — the web app's heading font — bundled directly (variable font, single
- * file, weight axis) rather than substituted with a similar system font, so
- * headings match the web app exactly. Licensed OFL; see
- * assets/fonts/SORA_OFL.txt. Requires API 26+ for variable-axis rendering,
- * well under this app's minSdk 29.
+ * Named generically rather than after the font itself: Gilroy and Alexander Lettering are the
+ * real CI-mandated fonts but are licensed, not available on Google Fonts. Poppins/Alex Brush are
+ * free substitutes standing in until the real .ttf files are sourced — swapping them in later
+ * should only mean changing what's in res/font/ and the Font() calls below, so no composable
+ * elsewhere may reference "Poppins"/"Gilroy" by name.
  */
-@OptIn(ExperimentalTextApi::class)
-val SoraFontFamily = FontFamily(
-    Font(R.font.sora_variable, FontWeight.Normal, variationSettings = FontVariation.Settings(FontVariation.weight(400))),
-    Font(R.font.sora_variable, FontWeight.Medium, variationSettings = FontVariation.Settings(FontVariation.weight(500))),
-    Font(R.font.sora_variable, FontWeight.SemiBold, variationSettings = FontVariation.Settings(FontVariation.weight(600))),
-    Font(R.font.sora_variable, FontWeight.Bold, variationSettings = FontVariation.Settings(FontVariation.weight(700))),
+val displayFontFamily = FontFamily(
+    Font(R.font.poppins_extrabold, FontWeight.ExtraBold),
+    Font(R.font.poppins_medium, FontWeight.Medium),
+)
+
+val bodyFontFamily = FontFamily(
+    Font(R.font.poppins_regular, FontWeight.Normal),
+)
+
+val accentFontFamily = FontFamily(
+    Font(R.font.alex_brush_regular, FontWeight.Normal),
 )
