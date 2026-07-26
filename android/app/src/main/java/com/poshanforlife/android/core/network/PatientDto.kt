@@ -4,15 +4,48 @@ import kotlinx.serialization.Serializable
 
 /**
  * There is no dedicated /health-records endpoint on the backend — health
- * records are nested inside the patient detail response, newest first.
- * Only the subset PatientDetailDto/HealthRecordDto model here is what the
- * dashboard needs; both types have many more fields server-side.
+ * records are nested inside the patient detail response, newest first. The
+ * patient-self dashboard only reads id/healthRecords; AN-09's practitioner
+ * PatientDetailScreen needs the rest of the profile, so the remaining
+ * fields are modeled here too rather than duplicating a second DTO for the
+ * same endpoint. reports is omitted — the backend's own field is always []
+ * (reports come from a separate GET /reports?patientId= call instead).
  */
 @Serializable
 data class PatientDetailDto(
     val id: String,
+    val name: String = "",
+    val email: String? = null,
+    val phone: String? = null,
+    val dateOfBirth: String? = null,
+    val isActive: Boolean = true,
+    val gender: String? = null,
+    val bloodGroup: String? = null,
+    val heightCm: Double? = null,
+    val emergencyContact: String? = null,
+    val medicalHistory: String? = null,
+    /** UI label is "Notes"/"Practitioner notes" — wire/DB name stays doctorNotes. */
+    val doctorNotes: String? = null,
+    val assignedDoctors: List<UserRefDto> = emptyList(),
     val healthRecords: List<HealthRecordDto> = emptyList(),
 )
+
+/** Row shape for the practitioner's patient list (GET /patients, scoped server-side). Age is derived client-side. */
+@Serializable
+data class PatientSummaryDto(
+    val id: String,
+    val name: String,
+    val email: String? = null,
+    val phone: String? = null,
+    val dateOfBirth: String? = null,
+    val isActive: Boolean = true,
+    val assignedDoctors: List<UserRefDto> = emptyList(),
+    /** Null when the patient has no reports yet. */
+    val lastReportDate: String? = null,
+)
+
+@Serializable
+data class UpdateDoctorNotesRequest(val doctorNotes: String)
 
 @Serializable
 data class HealthRecordDto(

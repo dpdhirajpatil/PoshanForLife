@@ -4,8 +4,11 @@ import com.poshanforlife.android.core.network.DocumentApi
 import com.poshanforlife.android.core.network.DocumentListItemDto
 import com.poshanforlife.android.core.network.HealthRecordDto
 import com.poshanforlife.android.core.network.PatientApi
+import com.poshanforlife.android.core.network.PatientDetailDto
 import com.poshanforlife.android.core.network.PatientProgrammeDto
+import com.poshanforlife.android.core.network.PatientSummaryDto
 import com.poshanforlife.android.core.network.Result
+import com.poshanforlife.android.core.network.UpdateDoctorNotesRequest
 import com.poshanforlife.android.core.network.UserApi
 import com.poshanforlife.android.core.network.UserDetailDto
 import com.poshanforlife.android.core.network.safeApiCall
@@ -21,6 +24,15 @@ class PatientRepositoryImpl @Inject constructor(
 
     override suspend fun getMe(): Result<UserDetailDto> =
         safeApiCall(json) { userApi.me() }
+
+    override suspend fun listPatients(search: String?): Result<List<PatientSummaryDto>> =
+        safeApiCall(json) { patientApi.list(search = search) }
+
+    override suspend fun getPatientDetail(patientId: String): Result<PatientDetailDto> =
+        safeApiCall(json) { patientApi.getPatient(patientId) }
+
+    override suspend fun updateDoctorNotes(patientId: String, notes: String): Result<PatientDetailDto> =
+        safeApiCall(json) { patientApi.updateDoctorNotes(patientId, UpdateDoctorNotesRequest(notes)) }
 
     override suspend fun getLatestHealthRecord(patientId: String): Result<HealthRecordDto?> {
         val result = safeApiCall(json) { patientApi.getPatient(patientId) }

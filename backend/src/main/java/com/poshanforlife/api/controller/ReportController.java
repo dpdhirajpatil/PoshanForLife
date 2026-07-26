@@ -52,12 +52,13 @@ public class ReportController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String type,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) UUID patientId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int limit,
             @AuthenticationPrincipal AuthenticatedUser caller) {
-        ReportService.ReportListResult result = reportService.list(status, type, search, dateFrom,
+        ReportService.ReportListResult result = reportService.list(status, type, search, patientId, dateFrom,
                 dateTo, page, limit, caller);
         ReportListResponseDto body = new ReportListResponseDto(result.page().getContent(), result.stats());
         return ApiResponse.ok(body, result.page().getTotalElements(), page, limit);

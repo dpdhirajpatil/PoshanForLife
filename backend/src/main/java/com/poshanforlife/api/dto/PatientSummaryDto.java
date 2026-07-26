@@ -13,5 +13,7 @@ public record PatientSummaryDto(
         LocalDate dateOfBirth,
         boolean isActive,
         List<DoctorRefDto> assignedDoctors,
+        /** Null when the patient has no reports yet. */
+        Instant lastReportDate,
         Instant createdAt) {
 }

@@ -24,4 +24,13 @@ class ReportRepositoryImpl @Inject constructor(
 
     override suspend fun getReport(id: String): Result<ReportDetailDto> =
         safeApiCall(json) { reportApi.get(id) }
+
+    override suspend fun listForPatient(patientId: String): Result<List<ReportListItemDto>> {
+        val result = safeApiCall(json) { reportApi.list(type = null, patientId = patientId, limit = 50) }
+        return when (result) {
+            is Result.Success -> Result.Success(result.data.reports)
+            is Result.Error -> result
+            Result.Loading -> Result.Loading
+        }
+    }
 }

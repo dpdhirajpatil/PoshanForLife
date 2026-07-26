@@ -171,7 +171,7 @@ class ReportServiceTest {
         when(reportRepository.countStats(any(), any(), isNull(), eq(patient.getId()), eq(""), any(), any(), any(),
                 any(), any(), any(), any())).thenReturn(stats);
 
-        reportService.list(null, null, null, null, null, 1, 10, patientCaller);
+        reportService.list(null, null, null, null, null, null, 1, 10, patientCaller);
 
         verify(reportRepository).search(any(), any(), isNull(), eq(patient.getId()), eq(""), any(), any(), any());
     }
@@ -231,7 +231,7 @@ class ReportServiceTest {
         when(reportRepository.countStats(any(), any(), any(), any(), eq(""), any(), any(), any(),
                 any(), any(), any(), any())).thenReturn(stats);
 
-        ReportService.ReportListResult result = reportService.list(null, null, null, null, null,
+        ReportService.ReportListResult result = reportService.list(null, null, null, null, null, null,
                 1, 1, adminCaller);
 
         assertThat(result.page().getContent()).hasSize(1);
@@ -241,7 +241,7 @@ class ReportServiceTest {
 
     @Test
     void list_rejectsUnknownStatus() {
-        assertThatThrownBy(() -> reportService.list("bogus", null, null, null, null, 1, 10, adminCaller))
+        assertThatThrownBy(() -> reportService.list("bogus", null, null, null, null, null, 1, 10, adminCaller))
                 .isInstanceOf(ApiException.class);
     }
 

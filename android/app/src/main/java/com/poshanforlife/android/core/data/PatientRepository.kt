@@ -2,12 +2,21 @@ package com.poshanforlife.android.core.data
 
 import com.poshanforlife.android.core.network.DocumentListItemDto
 import com.poshanforlife.android.core.network.HealthRecordDto
+import com.poshanforlife.android.core.network.PatientDetailDto
 import com.poshanforlife.android.core.network.PatientProgrammeDto
+import com.poshanforlife.android.core.network.PatientSummaryDto
 import com.poshanforlife.android.core.network.Result
 import com.poshanforlife.android.core.network.UserDetailDto
 
 interface PatientRepository {
     suspend fun getMe(): Result<UserDetailDto>
+
+    /** Practitioner's own assigned patients (server-scoped for a DOCTOR caller). */
+    suspend fun listPatients(search: String? = null): Result<List<PatientSummaryDto>>
+
+    suspend fun getPatientDetail(patientId: String): Result<PatientDetailDto>
+
+    suspend fun updateDoctorNotes(patientId: String, notes: String): Result<PatientDetailDto>
 
     /** Null data means "no health records yet" (not an error). */
     suspend fun getLatestHealthRecord(patientId: String): Result<HealthRecordDto?>

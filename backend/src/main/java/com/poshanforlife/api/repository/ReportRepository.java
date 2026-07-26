@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 public interface ReportRepository extends JpaRepository<Report, UUID> {
@@ -99,4 +100,9 @@ public interface ReportRepository extends JpaRepository<Report, UUID> {
 
         Long getThisMonth();
     }
+
+    /** Newest report per patient (Postgres DISTINCT ON) — used for the patient list's "last report date" column. */
+    @Query(value = "SELECT DISTINCT ON (patient_id) * FROM reports ORDER BY patient_id, created_at DESC",
+            nativeQuery = true)
+    List<Report> findLatestPerPatient();
 }

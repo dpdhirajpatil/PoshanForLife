@@ -16,5 +16,7 @@ public record UpdatePatientRequest(
         @Size(max = 8) String bloodGroup,
         @Positive BigDecimal heightCm,
         @Size(max = 255) String emergencyContact,
-        String medicalHistory) {
+        String medicalHistory,
+        /** Practitioner-only clinical notes — UI label is "Notes"/"Practitioner notes", wire/DB name stays doctorNotes. */
+        String doctorNotes) {
 }

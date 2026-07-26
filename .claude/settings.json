@@ -188,7 +188,11 @@
       "Bash(find /Users/dhiraj/Documents/Applications/Poshan/PoshanForLife/android/app/src/main/java -iname *Notification*)",
       "Bash(find /Users/dhiraj/Documents/Applications/Poshan/PoshanForLife/android/app/src/main/java/com/poshanforlife/android -iname *Nav*.kt -o -iname *Scaffold*.kt)",
       "Bash(echo \"none found: $?\")",
-      "Bash(echo \"grep exit: $?\")"
+      "Bash(echo \"grep exit: $?\")",
+      "Bash(./mvnw -q -o test -Dtest=PatientServiceTest,ReportServiceTest)",
+      "Bash(./mvnw -q -o clean test-compile)",
+      "Bash(./mvnw -q -o test)",
+      "Bash(awk '{fail+=$5; err+=$7; tot+=$3} END {print \"total:\", tot, \"failures:\", fail, \"errors:\", err}' FS='[ ,]+')"
     ],
     "additionalDirectories": [
       "/private/tmp",

@@ -10,6 +10,7 @@ import com.poshanforlife.api.dto.UpdatePatientRequest;
 import com.poshanforlife.api.entity.DoctorPatient;
 import com.poshanforlife.api.entity.HealthRecord;
 import com.poshanforlife.api.entity.PatientProfile;
+import com.poshanforlife.api.entity.Report;
 import com.poshanforlife.api.entity.Role;
 import com.poshanforlife.api.entity.User;
 import com.poshanforlife.api.exception.ApiException;
@@ -20,6 +21,7 @@ import com.poshanforlife.api.repository.DoctorPatientRepository;
 import com.poshanforlife.api.repository.HealthRecordRepository;
 import com.poshanforlife.api.repository.PatientProfileRepository;
 import com.poshanforlife.api.repository.RefreshTokenRepository;
+import com.poshanforlife.api.repository.ReportRepository;
 import com.poshanforlife.api.repository.UserRepository;
 import com.poshanforlife.api.security.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +42,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -56,6 +59,7 @@ public class PatientService {
     private final PatientProfileRepository patientProfileRepository;
     private final DoctorPatientRepository doctorPatientRepository;
     private final HealthRecordRepository healthRecordRepository;
+    private final ReportRepository reportRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -77,7 +81,10 @@ public class PatientService {
             patients = userRepository.search(Role.PATIENT, term,
                     PageRequest.of(Math.max(page - 1, 0), limit, Sort.by("createdAt").descending()));
         }
-        return patients.map(this::toSummary);
+
+        Map<UUID, Instant> lastReportDates = reportRepository.findLatestPerPatient().stream()
+                .collect(Collectors.toMap(r -> r.getPatient().getId(), Report::getCreatedAt));
+        return patients.map(patient -> toSummary(patient, lastReportDates.get(patient.getId())));
     }
 
     /** Creates User (role=PATIENT) + PatientProfile + DoctorPatient link atomically. */
@@ -199,6 +206,7 @@ public class PatientService {
         if (request.heightCm() != null) profile.setHeightCm(request.heightCm());
         if (request.emergencyContact() != null) profile.setEmergencyContact(request.emergencyContact());
         if (request.medicalHistory() != null) profile.setMedicalHistory(request.medicalHistory());
+        if (request.doctorNotes() != null) profile.setDoctorNotes(request.doctorNotes());
         patientProfileRepository.save(profile);
 
         return toDetail(patient, profile, null);
@@ -285,7 +293,7 @@ public class PatientService {
         }
     }
 
-    private PatientSummaryDto toSummary(User patient) {
+    private PatientSummaryDto toSummary(User patient, Instant lastReportDate) {
         return new PatientSummaryDto(
                 patient.getId().toString(),
                 patient.getName(),
@@ -294,6 +302,7 @@ public class PatientService {
                 patient.getDateOfBirth(),
                 patient.isActive(),
                 assignedDoctors(patient.getId()),
+                lastReportDate,
                 patient.getCreatedAt());
     }
 

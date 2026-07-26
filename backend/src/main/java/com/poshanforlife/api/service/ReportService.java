@@ -75,8 +75,9 @@ public class ReportService {
     private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
-    public ReportListResult list(String status, String type, String search, LocalDate dateFrom,
-                                 LocalDate dateTo, int page, int limit, AuthenticatedUser caller) {
+    public ReportListResult list(String status, String type, String search, UUID patientIdFilter,
+                                 LocalDate dateFrom, LocalDate dateTo, int page, int limit,
+                                 AuthenticatedUser caller) {
         ReportStatus statusFilter = WireEnums.parse(status, ReportStatus::fromWire,
                 "status must be one of pending, processing, done, error");
         ReportType typeFilter = WireEnums.parse(type, ReportType::fromWire,
@@ -94,10 +95,12 @@ public class ReportService {
 
         // DOCTOR is scoped to their assigned patients; PATIENT is force-scoped to their
         // own record regardless of any patientId the caller might try to pass — a PATIENT
-        // has no notion of "someone else's reports" at this endpoint. Only one of the two
-        // is ever non-null since the two roles are mutually exclusive.
+        // has no notion of "someone else's reports" at this endpoint. ADMIN/DOCTOR may
+        // additionally narrow to one patient via patientIdFilter (e.g. AN-09's patient
+        // detail screen) — safe for DOCTOR even without an extra access check, since the
+        // doctorId scoping below is ANDed in and already excludes unassigned patients.
         UUID doctorId = caller.role() == Role.DOCTOR ? UUID.fromString(caller.id()) : null;
-        UUID patientId = caller.role() == Role.PATIENT ? UUID.fromString(caller.id()) : null;
+        UUID patientId = caller.role() == Role.PATIENT ? UUID.fromString(caller.id()) : patientIdFilter;
 
         Pageable pageable = PageRequest.of(Math.max(page - 1, 0), limit, Sort.by("createdAt").descending());
         Page<Report> result = reportRepository.search(statusFilter, typeFilter, doctorId, patientId,

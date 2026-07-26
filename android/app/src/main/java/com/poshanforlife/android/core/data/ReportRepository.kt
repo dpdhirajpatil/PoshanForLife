@@ -7,4 +7,7 @@ import com.poshanforlife.android.core.network.Result
 interface ReportRepository {
     suspend fun listInBodyReports(search: String? = null): Result<List<ReportListItemDto>>
     suspend fun getReport(id: String): Result<ReportDetailDto>
+
+    /** All report types for one patient — the practitioner's patient-detail Reports tab. */
+    suspend fun listForPatient(patientId: String): Result<List<ReportListItemDto>>
 }

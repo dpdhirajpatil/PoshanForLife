@@ -15,6 +15,7 @@ import com.poshanforlife.api.repository.DoctorPatientRepository;
 import com.poshanforlife.api.repository.HealthRecordRepository;
 import com.poshanforlife.api.repository.PatientProfileRepository;
 import com.poshanforlife.api.repository.RefreshTokenRepository;
+import com.poshanforlife.api.repository.ReportRepository;
 import com.poshanforlife.api.repository.UserRepository;
 import com.poshanforlife.api.security.AuthenticatedUser;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,6 +57,8 @@ class PatientServiceTest {
     @Mock
     private HealthRecordRepository healthRecordRepository;
     @Mock
+    private ReportRepository reportRepository;
+    @Mock
     private RefreshTokenRepository refreshTokenRepository;
 
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -69,7 +72,8 @@ class PatientServiceTest {
     @BeforeEach
     void setUp() {
         patientService = new PatientService(userRepository, patientProfileRepository,
-                doctorPatientRepository, healthRecordRepository, refreshTokenRepository, passwordEncoder);
+                doctorPatientRepository, healthRecordRepository, reportRepository, refreshTokenRepository,
+                passwordEncoder);
         doctorId = UUID.randomUUID();
         admin = new AuthenticatedUser(UUID.randomUUID().toString(), "admin@x.com", Role.ADMIN);
         doctor = new AuthenticatedUser(doctorId.toString(), "doc@x.com", Role.DOCTOR);
@@ -106,7 +110,7 @@ class PatientServiceTest {
                 .thenReturn(false);
 
         assertThatThrownBy(() -> patientService.update(patient.getId(),
-                new UpdatePatientRequest("X Y", null, null, null, null, null, null, null), doctor))
+                new UpdatePatientRequest("X Y", null, null, null, null, null, null, null, null), doctor))
                 .isInstanceOf(AccessDeniedException.class);
     }
 
@@ -201,7 +205,7 @@ class PatientServiceTest {
                 .thenReturn(List.of());
 
         var detail = patientService.update(patient.getId(),
-                new UpdatePatientRequest(null, null, null, Gender.FEMALE, "O+", null, null, null), admin);
+                new UpdatePatientRequest(null, null, null, Gender.FEMALE, "O+", null, null, null, null), admin);
 
         verify(patientProfileRepository).save(any(PatientProfile.class));
         assertThat(detail.gender()).isEqualTo(Gender.FEMALE);
