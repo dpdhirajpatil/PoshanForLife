@@ -54,6 +54,34 @@ data class PatientRefDto(
     val phone: String? = null,
 )
 
+/** Response of POST /reports/upload — the freshly-created report plus what Claude extracted from it. */
+@Serializable
+data class ReportUploadResponseDto(
+    val reportId: String,
+    val healthRecordId: String? = null,
+    val parsedData: InBodyDataDto? = null,
+    val fileUrl: String? = null,
+    val confidence: String? = null,
+    val extractedFieldCount: Int = 0,
+    val extractionMethod: String? = null,
+    val warnings: List<String> = emptyList(),
+)
+
+/**
+ * PATCH /reports/{id} body — every field optional, only non-null ones are
+ * applied server-side (ReportService.update). AN-10's confirm step sends
+ * title/notes/parsedData together; there is no separate "confirmedData"
+ * field on the backend — corrections go into the same parsedData the
+ * upload endpoint first populated.
+ */
+@Serializable
+data class UpdateReportRequest(
+    val title: String? = null,
+    val notes: String? = null,
+    val status: String? = null,
+    val parsedData: InBodyDataDto? = null,
+)
+
 /** Mirrors backend's InBodyData record: 20 nullable fields, no nested groups server-side. */
 @Serializable
 data class InBodyDataDto(

@@ -169,7 +169,14 @@ public class ReportService {
     public ReportUploadResponseDto upload(UUID patientId, MultipartFile file, AuthenticatedUser caller) {
         User patient = findPatient(patientId);
         requireAccess(patientId, caller);
-        User creator = userRepository.getReferenceById(UUID.fromString(caller.id()));
+        // A real fetch, not getReferenceById: upload() is deliberately not
+        // @Transactional (see class javadoc), and the catch block below hands
+        // this same reference to notificationService.create(), which reads
+        // recipient.getNotificationPrefs() — an uninitialized reference-only
+        // proxy throws LazyInitializationException there once its (nonexistent)
+        // session is gone.
+        User creator = userRepository.findById(UUID.fromString(caller.id()))
+                .orElseThrow(() -> new ResourceNotFoundException("User", UUID.fromString(caller.id())));
 
         // (a)+(b): validate and upload the raw PDF before any Report row exists.
         String objectPath = reportStorageService.uploadPdf(file, patientId);

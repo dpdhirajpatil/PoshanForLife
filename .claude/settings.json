@@ -216,7 +216,15 @@
       "Bash(python3 -c \"import PIL; print\\(PIL.__version__\\)\")",
       "Bash(python3)",
       "Bash(curl -s -o /dev/null -w \"favicon.ico: %{http_code}\\\\n\" http://localhost:4200/favicon.ico)",
-      "Bash(curl -s -o /dev/null -w \"icon-192.png: %{http_code}\\\\n\" http://localhost:4200/icons/icon-192.png)"
+      "Bash(curl -s -o /dev/null -w \"icon-192.png: %{http_code}\\\\n\" http://localhost:4200/icons/icon-192.png)",
+      "Bash(export ANDROID_HOME=$HOME/Library/Android/sdk)",
+      "Bash(nohup /Users/dhiraj/Library/Android/sdk/emulator/emulator -avd Medium_Phone_API_35 -no-snapshot-load)",
+      "Bash(curl -s -o /dev/null -w \"backend: %{http_code}\\\\n\" http://localhost:8080/v3/api-docs --max-time 5)",
+      "Bash(JAVA_HOME=/Users/dhiraj/Library/Java/JavaVirtualMachines/ms-21.0.9/Contents/Home ./gradlew :app:installDebug -q)",
+      "Bash(sips -g pixelWidth -g pixelHeight /private/tmp/claude-501/-Users-dhiraj-Documents-Applications-Poshan-PoshanForLife/1f895f6f-72c0-475c-99f9-bbe55f540b7f/scratchpad/screen11.png)",
+      "Bash(pkill -f \"PoshanApiApplication\")",
+      "Bash(./mvnw -q -o clean compile)",
+      "Bash(psql -U dhiraj -d poshan_api -c \"select type, title, message, created_at from notifications order by created_at desc limit 3;\")"
     ],
     "additionalDirectories": [
       "/private/tmp",
