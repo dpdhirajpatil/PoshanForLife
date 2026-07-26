@@ -1,6 +1,7 @@
 package com.poshanforlife.android.core.datastore
 
 import android.content.Context
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -38,6 +39,7 @@ class TokenDataStore @Inject constructor(
         val USER_NAME = stringPreferencesKey("user_name")
         val USER_EMAIL = stringPreferencesKey("user_email")
         val USER_ROLE = stringPreferencesKey("user_role")
+        val NOTIFICATION_PERMISSION_ASKED = booleanPreferencesKey("notification_permission_asked")
     }
 
     suspend fun saveTokens(access: String, refresh: String) {
@@ -78,8 +80,21 @@ class TokenDataStore @Inject constructor(
             )
         }
 
-    /** Wipes tokens + cached user together — logout and failed-refresh both call this. */
+    /** Wipes tokens + cached user together — logout and failed-refresh both call this. Preserves NOTIFICATION_PERMISSION_ASKED (a device-level flag, not a session one). */
     suspend fun clear() {
-        context.dataStore.edit { it.clear() }
+        context.dataStore.edit { prefs ->
+            val askedBefore = prefs[Keys.NOTIFICATION_PERMISSION_ASKED]
+            prefs.clear()
+            if (askedBefore != null) prefs[Keys.NOTIFICATION_PERMISSION_ASKED] = askedBefore
+        }
+    }
+
+    /** Device-level "don't nag again" flag for the POST_NOTIFICATIONS rationale — survives logout intentionally, so clear() doesn't touch it. */
+    fun notificationPermissionAsked(): Flow<Boolean> = context.dataStore.data
+        .catch { e -> if (e is IOException) emit(emptyPreferences()) else throw e }
+        .map { prefs -> prefs[Keys.NOTIFICATION_PERMISSION_ASKED] ?: false }
+
+    suspend fun setNotificationPermissionAsked() {
+        context.dataStore.edit { prefs -> prefs[Keys.NOTIFICATION_PERMISSION_ASKED] = true }
     }
 }

@@ -10,11 +10,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.poshanforlife.android.core.domain.model.Role
+import com.poshanforlife.android.core.fcm.DeepLinkTarget
 import com.poshanforlife.android.feature.admin.adminGraph
 import com.poshanforlife.android.feature.auth.AuthUiState
 import com.poshanforlife.android.feature.auth.AuthViewModel
 import com.poshanforlife.android.feature.auth.authGraph
 import com.poshanforlife.android.feature.lead.leadGraph
+import com.poshanforlife.android.feature.notifications.NotificationPermissionRequester
 import com.poshanforlife.android.feature.patient.patientGraph
 import com.poshanforlife.android.feature.practitioner.practitionerGraph
 import com.poshanforlife.android.ui.components.LoadingScreen
@@ -37,18 +39,25 @@ import com.poshanforlife.android.ui.components.LoadingScreen
 fun AppNavGraph(navController: NavHostController = rememberNavController()) {
     val authViewModel: AuthViewModel = hiltViewModel()
     val authState by authViewModel.uiState.collectAsStateWithLifecycle()
+    val navGraphViewModel: AppNavGraphViewModel = hiltViewModel()
 
     LaunchedEffect(authState) {
-        val target = when (val state = authState) {
+        val state = authState
+        val target = when (state) {
             AuthUiState.Loading -> null
             AuthUiState.LoggedOut -> RootRoutes.AUTH_GRAPH
-            is AuthUiState.LoggedIn -> when (state.role) {
-                Role.PATIENT -> RootRoutes.PATIENT_GRAPH
-                Role.DOCTOR -> RootRoutes.PRACTITIONER_GRAPH
-                Role.ADMIN -> RootRoutes.ADMIN_GRAPH
-                Role.LEAD -> RootRoutes.LEAD_GRAPH
-                // Unrecognized role (backend enum drift): fail safe to logged-out, never crash.
-                Role.UNKNOWN -> RootRoutes.AUTH_GRAPH
+            is AuthUiState.LoggedIn -> {
+                // Fire-and-forget FCM token push — covers "app was offline when the
+                // token last rotated" retries, once per login/app-open (see AN-08).
+                navGraphViewModel.syncFcmToken()
+                when (state.role) {
+                    Role.PATIENT -> RootRoutes.PATIENT_GRAPH
+                    Role.DOCTOR -> RootRoutes.PRACTITIONER_GRAPH
+                    Role.ADMIN -> RootRoutes.ADMIN_GRAPH
+                    Role.LEAD -> RootRoutes.LEAD_GRAPH
+                    // Unrecognized role (backend enum drift): fail safe to logged-out, never crash.
+                    Role.UNKNOWN -> RootRoutes.AUTH_GRAPH
+                }
             }
         }
         if (target != null && navController.currentDestination?.route != target) {
@@ -56,6 +65,20 @@ fun AppNavGraph(navController: NavHostController = rememberNavController()) {
                 popUpTo(0) { inclusive = true }
                 launchSingleTop = true
             }
+        }
+    }
+
+    // Resolves a tapped-push/bell-dropdown deep link into a route reachable from
+    // this outer navController. Only patient/reports/{id} exists as an outer,
+    // cross-role-reachable detail route today — practitioner/admin/lead's
+    // notification-relevant screens (patient detail, lead detail) are still
+    // tab-nested placeholders owned by each RoleScaffold's own inner NavHost,
+    // which this navController can't reach; extend resolveDeepLinkRoute once a
+    // future prompt adds a real outer-level detail route for those roles.
+    LaunchedEffect(Unit) {
+        navGraphViewModel.deepLinks.collect { target ->
+            val role = (authState as? AuthUiState.LoggedIn)?.role ?: return@collect
+            resolveDeepLinkRoute(role, target)?.let { route -> navController.navigate(route) }
         }
     }
 
@@ -69,4 +92,16 @@ fun AppNavGraph(navController: NavHostController = rememberNavController()) {
         adminGraph(navController)
         leadGraph(navController)
     }
+
+    if (authState is AuthUiState.LoggedIn) {
+        NotificationPermissionRequester()
+    }
+}
+
+private fun resolveDeepLinkRoute(role: Role, target: DeepLinkTarget): String? = when (role) {
+    Role.PATIENT -> when (target.relatedEntityType) {
+        "report" -> target.relatedEntityId?.let { "patient/reports/$it" }
+        else -> null
+    }
+    else -> null
 }

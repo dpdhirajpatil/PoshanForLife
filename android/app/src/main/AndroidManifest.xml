@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Medication reminder local notifications (runtime-requested on API 33+). -->
+    <!-- Medication reminders (local) and backend push updates via FCM both need this (runtime-requested on API 33+). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Lets WorkManager re-arm reminder work after a device reboot. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -20,12 +20,21 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleTask"
             android:theme="@style/Theme.PoshanForLife">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".core.fcm.PoshanFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
 
         <!-- Default WorkManager init is replaced by PoshanApplication's Hilt-aware
              Configuration.Provider (see PoshanApplication.workManagerConfiguration),

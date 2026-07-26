@@ -40,6 +40,7 @@ fun RoleScaffold(
 
     Scaffold(
         modifier = modifier,
+        topBar = { PoshanTopBar() },
         bottomBar = {
             NavigationBar {
                 val backStackEntry by tabNavController.currentBackStackEntryAsState()

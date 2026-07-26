@@ -66,23 +66,25 @@ fun ScheduleScreen(
     var showDatePicker by remember { mutableStateOf(false) }
     var selectedAppointment by remember { mutableStateOf<AppointmentDto?>(null) }
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                title = { Text(selectedDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL))) },
-                actions = {
-                    IconButton(onClick = { showDatePicker = true }) {
-                        Icon(Icons.Filled.CalendarMonth, contentDescription = "Pick date")
-                    }
-                },
+    // No own Scaffold/TopAppBar here — this screen renders inside RoleScaffold's
+    // tab content area, which already provides the shared PoshanTopBar.
+    Column(modifier = modifier.fillMaxSize()) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = selectedDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f),
             )
-        },
-    ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            WeekStrip(selectedDate = selectedDate, onSelect = viewModel::selectDate)
+            IconButton(onClick = { showDatePicker = true }) {
+                Icon(Icons.Filled.CalendarMonth, contentDescription = "Pick date")
+            }
+        }
+        WeekStrip(selectedDate = selectedDate, onSelect = viewModel::selectDate)
 
-            PullToRefreshBox(
+        PullToRefreshBox(
                 isRefreshing = isRefreshing,
                 onRefresh = viewModel::refresh,
                 modifier = Modifier.fillMaxSize(),
@@ -122,7 +124,6 @@ fun ScheduleScreen(
                         }
                     }
                 }
-            }
         }
     }
 

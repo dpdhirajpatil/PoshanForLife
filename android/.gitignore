@@ -9,3 +9,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Real Firebase project config (API keys tied to project poshan-for-life-1) — never commit.
+/app/google-services.json
