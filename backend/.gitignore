@@ -21,3 +21,4 @@ bin/
 ### Env ###
 .env
 *.local.yml
+firebase-service-account.json

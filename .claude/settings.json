@@ -186,7 +186,9 @@
       "Bash(JAVA_HOME=/Users/dhiraj/Library/Java/JavaVirtualMachines/ms-21.0.9/Contents/Home ./gradlew :app:compileDebugKotlin -q)",
       "Bash(JAVA_HOME=/Users/dhiraj/Library/Java/JavaVirtualMachines/ms-21.0.9/Contents/Home ./gradlew :app:assembleDebug -q)",
       "Bash(find /Users/dhiraj/Documents/Applications/Poshan/PoshanForLife/android/app/src/main/java -iname *Notification*)",
-      "Bash(find /Users/dhiraj/Documents/Applications/Poshan/PoshanForLife/android/app/src/main/java/com/poshanforlife/android -iname *Nav*.kt -o -iname *Scaffold*.kt)"
+      "Bash(find /Users/dhiraj/Documents/Applications/Poshan/PoshanForLife/android/app/src/main/java/com/poshanforlife/android -iname *Nav*.kt -o -iname *Scaffold*.kt)",
+      "Bash(echo \"none found: $?\")",
+      "Bash(echo \"grep exit: $?\")"
     ],
     "additionalDirectories": [
       "/private/tmp",
