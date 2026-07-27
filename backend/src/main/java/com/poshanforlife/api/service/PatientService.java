@@ -24,6 +24,7 @@ import com.poshanforlife.api.repository.RefreshTokenRepository;
 import com.poshanforlife.api.repository.ReportRepository;
 import com.poshanforlife.api.repository.UserRepository;
 import com.poshanforlife.api.security.AuthenticatedUser;
+import com.poshanforlife.api.util.HealthRecordMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -38,6 +39,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.security.SecureRandom;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -308,15 +311,13 @@ public class PatientService {
 
     private PatientDetailDto toDetail(User patient, PatientProfile profile, String tempPassword) {
         BigDecimal heightCm = profile != null ? profile.getHeightCm() : null;
-        List<HealthRecordDto> records = healthRecordRepository
-                .findByPatientIdOrderByRecordedAtDesc(patient.getId()).stream()
-                .map(hr -> new HealthRecordDto(
-                        hr.getId().toString(),
-                        hr.getWeightKg(),
-                        hr.getBodyFatPct(),
-                        bmi(hr.getWeightKg(), heightCm),
-                        hr.getRecordedAt()))
-                .toList();
+        // HealthRecordMapper computes deltas oldest-first; reverse for the
+        // newest-first contract this embedded list has always had (the
+        // Overview tab's `latest()` reads index 0).
+        List<HealthRecordDto> ascending = HealthRecordMapper.toDtos(
+                healthRecordRepository.findByPatientIdOrderByRecordDateAsc(patient.getId()), heightCm, Set.of());
+        List<HealthRecordDto> records = new ArrayList<>(ascending);
+        Collections.reverse(records);
         return new PatientDetailDto(
                 patient.getId().toString(),
                 patient.getName(),

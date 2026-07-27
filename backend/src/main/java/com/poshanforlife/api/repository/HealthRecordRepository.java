@@ -13,6 +13,9 @@ public interface HealthRecordRepository extends JpaRepository<HealthRecord, UUID
 
     List<HealthRecord> findByPatientIdOrderByRecordedAtDesc(UUID patientId);
 
+    /** Oldest-first — required for correct delta-vs-previous computation. */
+    List<HealthRecord> findByPatientIdOrderByRecordDateAsc(UUID patientId);
+
     /** Upsert key for the InBody pipeline — one record per patient per calendar day. */
     Optional<HealthRecord> findByPatientIdAndRecordDate(UUID patientId, LocalDate recordDate);
 

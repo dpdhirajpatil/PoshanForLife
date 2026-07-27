@@ -5,7 +5,6 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { RouterLink } from '@angular/router';
 import { ApiError } from '../../core/models/api-response.model';
@@ -13,14 +12,15 @@ import { PatientDetail, ageFrom } from '../../core/models/patient.model';
 import { ToastService } from '../../core/services/toast.service';
 import { openSidePanel } from '../../shared/side-panel';
 import { AssignedDoctorsPanelComponent } from '../assignments/assigned-doctors-panel.component';
+import { HealthRecordsPanelComponent } from './health-records-panel.component';
 import { PatientFormDialogComponent } from './patient-form-dialog.component';
 import { PatientProgrammesPanelComponent } from './patient-programmes-panel.component';
 import { PatientsService } from './patients.service';
 
 /**
  * Patient detail: profile header + tabs. Programmes and Reports are visible
- * stubs — those features arrive in their own prompts; Health Records shows
- * the raw table (trend charts come with the health-records prompt).
+ * stubs — Reports arrives in its own prompt; Health Records now hosts the
+ * full trend-chart/table view via HealthRecordsPanelComponent.
  */
 @Component({
   selector: 'app-patient-detail-page',
@@ -33,11 +33,11 @@ import { PatientsService } from './patients.service';
     MatTabsModule,
     MatIconModule,
     MatButtonModule,
-    MatTableModule,
     MatDialogModule,
     MatProgressSpinnerModule,
     AssignedDoctorsPanelComponent,
     PatientProgrammesPanelComponent,
+    HealthRecordsPanelComponent,
   ],
   template: `
     @if (loading()) {
@@ -146,40 +146,7 @@ import { PatientsService } from './patients.service';
 
         <mat-tab label="Health Records">
           <div class="tab-body">
-            @if (p.healthRecords.length === 0) {
-              <mat-card appearance="outlined">
-                <mat-card-content>
-                  <p class="stub">No health records yet. Trend charts arrive with the health-records feature prompt.</p>
-                </mat-card-content>
-              </mat-card>
-            } @else {
-              <mat-card appearance="outlined">
-                <div class="table-scroll">
-                <table mat-table [dataSource]="p.healthRecords">
-                  <ng-container matColumnDef="recordedAt">
-                    <th mat-header-cell *matHeaderCellDef>Recorded</th>
-                    <td mat-cell *matCellDef="let r">{{ r.recordedAt | date: 'medium' }}</td>
-                  </ng-container>
-                  <ng-container matColumnDef="weightKg">
-                    <th mat-header-cell *matHeaderCellDef>Weight (kg)</th>
-                    <td mat-cell *matCellDef="let r">{{ r.weightKg ?? '—' }}</td>
-                  </ng-container>
-                  <ng-container matColumnDef="bmi">
-                    <th mat-header-cell *matHeaderCellDef>BMI</th>
-                    <td mat-cell *matCellDef="let r">
-                      {{ r.bmi != null ? (r.bmi | number: '1.1-1') : '—' }}
-                    </td>
-                  </ng-container>
-                  <ng-container matColumnDef="bodyFatPct">
-                    <th mat-header-cell *matHeaderCellDef>Body fat %</th>
-                    <td mat-cell *matCellDef="let r">{{ r.bodyFatPct ?? '—' }}</td>
-                  </ng-container>
-                  <tr mat-header-row *matHeaderRowDef="recordColumns"></tr>
-                  <tr mat-row *matRowDef="let row; columns: recordColumns"></tr>
-                </table>
-                </div>
-              </mat-card>
-            }
+            <app-health-records-panel [patientId]="p.id" [patientName]="p.name" />
           </div>
         </mat-tab>
       </mat-tab-group>
@@ -292,7 +259,6 @@ export class PatientDetailPageComponent implements OnInit {
 
   protected readonly patient = signal<PatientDetail | null>(null);
   protected readonly loading = signal(true);
-  protected readonly recordColumns = ['recordedAt', 'weightKg', 'bmi', 'bodyFatPct'];
 
   ngOnInit(): void {
     this.load(this.id());

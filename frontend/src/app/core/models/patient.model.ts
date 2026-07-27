@@ -16,12 +16,31 @@ export interface PatientSummary {
   createdAt: string;
 }
 
+export type HealthRecordSource = 'manual' | 'inbody_upload' | 'patient_manual' | 'wearable_sync';
+
 export interface HealthRecordEntry {
   id: string;
-  weightKg: number | null;
-  bodyFatPct: number | null;
-  bmi: number | null;
+  recordDate: string;
   recordedAt: string;
+  source: HealthRecordSource;
+  weightKg: number | null;
+  weightKgDelta: number | null;
+  bodyFatPct: number | null;
+  bodyFatPctDelta: number | null;
+  bmi: number | null;
+  bmiDelta: number | null;
+  skeletalMuscleMassKg: number | null;
+  skeletalMuscleMassKgDelta: number | null;
+  visceralFatLevel: number | null;
+  visceralFatLevelDelta: number | null;
+  bodyWaterL: number | null;
+  bodyWaterLDelta: number | null;
+  proteinKg: number | null;
+  proteinKgDelta: number | null;
+  mineralKg: number | null;
+  mineralKgDelta: number | null;
+  basalMetabolicRate: number | null;
+  basalMetabolicRateDelta: number | null;
 }
 
 export interface PatientDetail {
