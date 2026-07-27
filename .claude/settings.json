@@ -224,7 +224,10 @@
       "Bash(sips -g pixelWidth -g pixelHeight /private/tmp/claude-501/-Users-dhiraj-Documents-Applications-Poshan-PoshanForLife/1f895f6f-72c0-475c-99f9-bbe55f540b7f/scratchpad/screen11.png)",
       "Bash(pkill -f \"PoshanApiApplication\")",
       "Bash(./mvnw -q -o clean compile)",
-      "Bash(psql -U dhiraj -d poshan_api -c \"select type, title, message, created_at from notifications order by created_at desc limit 3;\")"
+      "Bash(psql -U dhiraj -d poshan_api -c \"select type, title, message, created_at from notifications order by created_at desc limit 3;\")",
+      "Bash(curl -s -o /dev/null -w \"backend: %{http_code}\\\\n\" http://localhost:8080/v3/api-docs --max-time 3)",
+      "Bash(curl -s -o /dev/null -w \"frontend: %{http_code}\\\\n\" http://localhost:4200/ --max-time 3)",
+      "Bash(curl -s -o /dev/null -w \"frontend: %{http_code}\\\\n\" http://localhost:4200/ --max-time 5)"
     ],
     "additionalDirectories": [
       "/private/tmp",

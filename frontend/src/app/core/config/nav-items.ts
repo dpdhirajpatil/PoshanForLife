@@ -22,6 +22,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Patients', icon: 'personal_injury', path: '/patients' },
   { label: 'Contacts', icon: 'connect_without_contact', path: '/leads', sectionLabel: 'CRM' },
   { label: 'Service Catalogue', icon: 'inventory_2', path: '/catalogue', sectionLabel: 'Catalogue' },
+  { label: 'Products', icon: 'shopping_bag', path: '/products' },
   { label: 'Orders', icon: 'shopping_cart', path: '/orders' },
   { label: 'Transactions', icon: 'receipt_long', path: '/transactions' },
   { label: 'Reports', icon: 'description', path: '/reports' },
