@@ -17,6 +17,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog.component';
 import { openSidePanel } from '../../shared/side-panel';
+import { TrapeziumBarComponent } from '../../shared/trapezium-bar.component';
 import { ManageSegmentsDialogComponent } from './manage-segments-dialog.component';
 import { ProductDetailDialogComponent } from './product-detail-dialog.component';
 import { ProductFormDialogComponent, ProductFormDialogData } from './product-form-dialog.component';
@@ -46,6 +47,7 @@ interface SegmentSection {
     MatDialogModule,
     MatProgressBarModule,
     MatTooltipModule,
+    TrapeziumBarComponent,
   ],
   template: `
     <div class="page-header">
@@ -93,7 +95,10 @@ interface SegmentSection {
 
     @for (section of sections(); track section.segment.id) {
       <section class="segment-section">
-        <h2>{{ section.segment.name }}</h2>
+        <div class="segment-heading">
+          <app-trapezium-bar color="green">{{ section.segment.name }}</app-trapezium-bar>
+          <span class="segment-count">{{ section.products.length }} product{{ section.products.length === 1 ? '' : 's' }}</span>
+        </div>
 
         @if (section.products.length === 0) {
           <div class="empty-state">
@@ -106,20 +111,22 @@ interface SegmentSection {
           <div class="card-grid">
             @for (product of section.products; track product.id; let i = $index; let count = $count) {
               <div class="product-card" (click)="openDetail(product)">
-                @if (product.images.length) {
-                  <img class="thumb" [src]="product.images[0]" alt="" />
-                } @else {
-                  <div class="thumb placeholder">
-                    <mat-icon>shopping_bag</mat-icon>
-                  </div>
-                }
+                <div class="thumb-wrap">
+                  @if (product.images.length) {
+                    <img class="thumb" [src]="product.images[0]" alt="" />
+                  } @else {
+                    <div class="thumb placeholder">
+                      <mat-icon>shopping_bag</mat-icon>
+                    </div>
+                  }
+                  @if (isAdmin && product.status === 'draft') {
+                    <span class="draft-badge">Draft</span>
+                  }
+                </div>
                 <div class="card-body">
                   <span class="name">{{ product.name }}</span>
                   @if (product.priceInr != null) {
                     <span class="price">{{ product.priceInr | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
-                  }
-                  @if (isAdmin && product.status === 'draft') {
-                    <span class="draft-badge">Draft</span>
                   }
                   <!-- A future "Purchase" prompt's Buy button belongs here. -->
                 </div>
@@ -158,18 +165,23 @@ interface SegmentSection {
     </mat-menu>
   `,
   styles: `
+    :host {
+      display: block;
+      background: var(--muted);
+      min-height: 100%;
+    }
     .page-header {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
       gap: 16px;
       flex-wrap: wrap;
-      padding: 24px 16px 16px;
+      padding: 28px 24px 20px;
     }
     .subtitle {
-      margin: 2px 0 0;
+      margin: 4px 0 0;
       color: var(--muted-foreground);
-      font-size: 0.9rem;
+      font-size: 0.92rem;
     }
     .header-actions {
       display: flex;
@@ -179,79 +191,114 @@ interface SegmentSection {
     }
     .search {
       width: 260px;
+      background: var(--card);
+      border-radius: 8px;
     }
     .segment-section {
-      padding: 8px 16px 24px;
+      padding: 12px 24px 32px;
     }
-    .segment-section h2 {
-      font-size: 1.1rem;
-      margin: 0 0 12px;
+    .segment-heading {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    .segment-heading app-trapezium-bar {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.02em;
+    }
+    .segment-count {
+      color: var(--muted-foreground);
+      font-size: 0.85rem;
     }
     .card-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
     }
     .product-card {
       position: relative;
       display: flex;
       flex-direction: column;
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: var(--radius);
       overflow: hidden;
       cursor: pointer;
       background: var(--card);
-      transition: box-shadow 0.15s;
+      transition:
+        box-shadow 0.18s ease,
+        transform 0.18s ease,
+        border-color 0.18s ease;
     }
     .product-card:hover {
-      box-shadow: 0 2px 10px rgb(0 0 0 / 0.08);
+      box-shadow: 0 10px 24px rgb(38 43 100 / 0.1);
+      border-color: var(--brand-green);
+      transform: translateY(-2px);
+    }
+    .thumb-wrap {
+      position: relative;
+      background: linear-gradient(180deg, var(--brand-green-lightest) 0%, var(--muted) 100%);
     }
     .thumb {
+      display: block;
       width: 100%;
-      height: 140px;
-      object-fit: cover;
-      background: var(--muted);
+      height: 180px;
+      object-fit: contain;
+      padding: 18px;
+      box-sizing: border-box;
     }
     .thumb.placeholder {
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--muted-foreground);
+      height: 180px;
+      color: var(--brand-green-dark);
     }
     .thumb.placeholder mat-icon {
-      font-size: 40px;
-      width: 40px;
-      height: 40px;
+      font-size: 44px;
+      width: 44px;
+      height: 44px;
     }
     .card-body {
       display: flex;
       flex-direction: column;
-      gap: 2px;
-      padding: 10px 12px;
+      gap: 4px;
+      padding: 14px 16px 16px;
+      border-top: 1px solid var(--border);
     }
     .name {
-      font-weight: 500;
+      font-weight: 600;
+      color: var(--foreground);
+      line-height: 1.3;
     }
     .price {
-      color: var(--muted-foreground);
-      font-size: 0.9rem;
+      color: var(--brand-navy);
+      font-weight: 700;
+      font-size: 0.95rem;
     }
     .draft-badge {
-      align-self: flex-start;
-      margin-top: 4px;
-      padding: 1px 8px;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      padding: 2px 10px;
       border-radius: 10px;
       font-size: 0.7rem;
-      background: var(--badge-grey-bg);
-      color: var(--badge-grey-fg);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      background: var(--badge-amber-bg);
+      color: var(--badge-amber-fg);
     }
     .card-admin-actions {
       position: absolute;
-      top: 4px;
-      right: 4px;
+      top: 8px;
+      right: 8px;
       display: flex;
-      background: rgb(255 255 255 / 0.85);
-      border-radius: 8px;
+      background: rgb(255 255 255 / 0.92);
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
     }
     .empty-state {
       display: flex;
@@ -259,11 +306,15 @@ interface SegmentSection {
       align-items: center;
       text-align: center;
       gap: 8px;
-      padding: 32px 16px;
+      padding: 40px 16px;
       color: var(--muted-foreground);
+      background: var(--card);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
     }
     .empty-state.global {
-      padding: 64px 16px;
+      padding: 72px 16px;
+      margin: 0 24px;
     }
     .icon-circle {
       display: flex;

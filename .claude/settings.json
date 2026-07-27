@@ -227,7 +227,13 @@
       "Bash(psql -U dhiraj -d poshan_api -c \"select type, title, message, created_at from notifications order by created_at desc limit 3;\")",
       "Bash(curl -s -o /dev/null -w \"backend: %{http_code}\\\\n\" http://localhost:8080/v3/api-docs --max-time 3)",
       "Bash(curl -s -o /dev/null -w \"frontend: %{http_code}\\\\n\" http://localhost:4200/ --max-time 3)",
-      "Bash(curl -s -o /dev/null -w \"frontend: %{http_code}\\\\n\" http://localhost:4200/ --max-time 5)"
+      "Bash(curl -s -o /dev/null -w \"frontend: %{http_code}\\\\n\" http://localhost:4200/ --max-time 5)",
+      "Bash(mkdir -p pdf-assets)",
+      "Bash(pdfimages -list \"/Users/dhiraj/Documents/Applications/Poshan/Guidelines and Logo/Poshan Guidelines - Digital.pdf\")",
+      "Bash(pdfimages -list -f 29 -l 29 \"/Users/dhiraj/Documents/Applications/Poshan/Guidelines and Logo/Poshan Guidelines - Digital.pdf\")",
+      "Bash(python3 -c \"import requests; print\\('ok'\\)\")",
+      "Bash(python3 reseed_products.py)",
+      "Bash(curl -s -o /dev/null -w \"frontend dev server: %{http_code}\\\\n\" http://localhost:4200/ --max-time 3)"
     ],
     "additionalDirectories": [
       "/private/tmp",
