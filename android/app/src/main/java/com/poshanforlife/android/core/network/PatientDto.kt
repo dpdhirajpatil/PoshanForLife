@@ -73,8 +73,16 @@ data class PatientProgrammeDto(
     val assignedDoctor: UserRefDto? = null,
 )
 
+/** Duration fields are only ever non-null for the matching type (programme=weeks, session=minutes, challenge=days). */
 @Serializable
-data class ServiceRefDto(val id: String, val name: String)
+data class ServiceRefDto(
+    val id: String,
+    val name: String,
+    val serviceCode: String? = null,
+    val durationWeeks: Int? = null,
+    val durationMinutes: Int? = null,
+    val durationDays: Int? = null,
+)
 
 @Serializable
 data class UserRefDto(val id: String, val name: String)

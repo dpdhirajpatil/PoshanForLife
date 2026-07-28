@@ -244,7 +244,9 @@
       "Bash(/usr/libexec/java_home -v21)",
       "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v21 \\) ./gradlew :app:compileDebugKotlin -q)",
       "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v21 \\) ./gradlew :app:compileDebugKotlin)",
-      "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v21 \\) ./gradlew :app:assembleDebug -q)"
+      "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v21 \\) ./gradlew :app:assembleDebug -q)",
+      "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v21 \\) ./gradlew --stop)",
+      "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v21 \\) ./gradlew :app:compileDebugKotlin --rerun-tasks)"
     ],
     "additionalDirectories": [
       "/private/tmp",

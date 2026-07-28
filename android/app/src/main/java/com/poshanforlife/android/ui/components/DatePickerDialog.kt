@@ -44,3 +44,27 @@ fun AppDatePickerDialog(initial: LocalDate, onDismiss: () -> Unit, onConfirm: (L
         DatePicker(state = state)
     }
 }
+
+/** No date restriction (past or future) — for filter pickers like Orders/Transactions date range, unlike AppDatePickerDialog's future-only booking rule. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FilterDatePickerDialog(initial: LocalDate?, onDismiss: () -> Unit, onConfirm: (LocalDate) -> Unit) {
+    val state = rememberDatePickerState(
+        initialSelectedDateMillis = (initial ?: LocalDate.now(ZoneOffset.UTC))
+            .atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli(),
+    )
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = {
+                val millis = state.selectedDateMillis
+                if (millis != null) {
+                    onConfirm(Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate())
+                }
+            }) { Text("OK") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+    ) {
+        DatePicker(state = state)
+    }
+}

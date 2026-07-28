@@ -8,9 +8,11 @@ import com.poshanforlife.android.core.network.AuthInterceptor
 import com.poshanforlife.android.core.network.DocumentApi
 import com.poshanforlife.android.core.network.LeadApi
 import com.poshanforlife.android.core.network.NotificationApi
+import com.poshanforlife.android.core.network.OrderApi
 import com.poshanforlife.android.core.network.PatientApi
 import com.poshanforlife.android.core.network.ReportApi
 import com.poshanforlife.android.core.network.TokenAuthenticator
+import com.poshanforlife.android.core.network.TransactionApi
 import com.poshanforlife.android.core.network.UserApi
 import dagger.Module
 import dagger.Provides
@@ -116,4 +118,12 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideNotificationApi(retrofit: Retrofit): NotificationApi = retrofit.create(NotificationApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideOrderApi(retrofit: Retrofit): OrderApi = retrofit.create(OrderApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideTransactionApi(retrofit: Retrofit): TransactionApi = retrofit.create(TransactionApi::class.java)
 }

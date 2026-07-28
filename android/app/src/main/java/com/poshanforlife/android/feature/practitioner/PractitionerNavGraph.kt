@@ -18,6 +18,8 @@ import com.poshanforlife.android.feature.patient.reports.ReportDetailScreen
 import com.poshanforlife.android.feature.practitioner.documents.CreateEstimateScreen
 import com.poshanforlife.android.feature.practitioner.documents.DocumentDetailScreen
 import com.poshanforlife.android.feature.practitioner.documents.DocumentsListScreen
+import com.poshanforlife.android.feature.practitioner.orders.OrderDetailScreen
+import com.poshanforlife.android.feature.practitioner.orders.OrdersAndTransactionsScreen
 import com.poshanforlife.android.feature.practitioner.patients.PatientDetailScreen
 import com.poshanforlife.android.feature.practitioner.patients.PatientListScreen
 import com.poshanforlife.android.feature.practitioner.schedule.ScheduleScreen
@@ -39,6 +41,8 @@ private const val CAPTURE_ROUTE = "practitioner/upload/capture/{patientId}"
 private const val REVIEW_ROUTE = "practitioner/upload/review/{patientId}/{reportId}"
 private const val DOCUMENT_DETAIL_ROUTE = "practitioner/documents/{documentId}"
 private const val CREATE_ESTIMATE_ROUTE = "practitioner/documents/create-estimate"
+private const val ORDERS_ROUTE = "practitioner/orders"
+private const val ORDER_DETAIL_ROUTE = "practitioner/orders/{orderId}"
 
 // Role value on the wire stays DOCTOR (see Role.kt) — only user-facing text says "Practitioner".
 private val items = listOf(
@@ -46,7 +50,7 @@ private val items = listOf(
     BottomNavItem("practitioner/leads", "Leads", Icons.Filled.ContactPhone),
     BottomNavItem("practitioner/upload", "Upload", Icons.Filled.CloudUpload),
     BottomNavItem(SCHEDULE_ROUTE, "Schedule", Icons.Filled.Schedule),
-    BottomNavItem("practitioner/orders", "Orders", Icons.Filled.ShoppingCart),
+    BottomNavItem(ORDERS_ROUTE, "Orders", Icons.Filled.ShoppingCart),
     BottomNavItem(DOCUMENTS_ROUTE, "Invoices", Icons.Filled.Receipt),
     BottomNavItem("practitioner/profile", "Profile", Icons.Filled.Person),
 )
@@ -68,6 +72,9 @@ fun NavGraphBuilder.practitionerGraph(navController: NavController) {
                     DOCUMENTS_ROUTE -> DocumentsListScreen(
                         onOpenDocument = { documentId -> navController.navigate("practitioner/documents/$documentId") },
                         onCreateEstimate = { navController.navigate(CREATE_ESTIMATE_ROUTE) },
+                    )
+                    ORDERS_ROUTE -> OrdersAndTransactionsScreen(
+                        onOpenOrder = { orderId -> navController.navigate("practitioner/orders/$orderId") },
                     )
                     else -> PlaceholderScreen(label = items.first { it.route == route }.label)
                 }
@@ -128,6 +135,9 @@ fun NavGraphBuilder.practitionerGraph(navController: NavController) {
                     }
                 },
             )
+        }
+        composable(ORDER_DETAIL_ROUTE) {
+            OrderDetailScreen()
         }
     }
 }

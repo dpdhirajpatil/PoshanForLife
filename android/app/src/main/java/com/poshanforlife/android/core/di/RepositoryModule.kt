@@ -8,10 +8,14 @@ import com.poshanforlife.android.core.data.DocumentRepository
 import com.poshanforlife.android.core.data.DocumentRepositoryImpl
 import com.poshanforlife.android.core.data.NotificationRepository
 import com.poshanforlife.android.core.data.NotificationRepositoryImpl
+import com.poshanforlife.android.core.data.OrderRepository
+import com.poshanforlife.android.core.data.OrderRepositoryImpl
 import com.poshanforlife.android.core.data.PatientRepository
 import com.poshanforlife.android.core.data.PatientRepositoryImpl
 import com.poshanforlife.android.core.data.ReportRepository
 import com.poshanforlife.android.core.data.ReportRepositoryImpl
+import com.poshanforlife.android.core.data.TransactionRepository
+import com.poshanforlife.android.core.data.TransactionRepositoryImpl
 import com.poshanforlife.android.core.data.UserRepository
 import com.poshanforlife.android.core.data.UserRepositoryImpl
 import dagger.Binds
@@ -51,4 +55,12 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindDocumentRepository(impl: DocumentRepositoryImpl): DocumentRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindOrderRepository(impl: OrderRepositoryImpl): OrderRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindTransactionRepository(impl: TransactionRepositoryImpl): TransactionRepository
 }
