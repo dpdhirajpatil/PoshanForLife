@@ -16,5 +16,6 @@ public record CreateAppointmentRequest(
         @NotNull UUID practitionerId,
         @NotNull @Future Instant scheduledAt,
         @Min(5) Integer durationMinutes,
-        String notes) {
+        String notes,
+        Boolean isVideo) {
 }

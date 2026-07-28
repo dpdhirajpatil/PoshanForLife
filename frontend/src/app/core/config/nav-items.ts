@@ -20,6 +20,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', icon: 'dashboard', path: '/dashboard' },
   { label: 'Patients', icon: 'personal_injury', path: '/patients' },
+  { label: 'Appointments', icon: 'event', path: '/appointments' },
   { label: 'Contacts', icon: 'connect_without_contact', path: '/leads', sectionLabel: 'CRM' },
   { label: 'Service Catalogue', icon: 'inventory_2', path: '/catalogue', sectionLabel: 'Catalogue' },
   { label: 'Products', icon: 'shopping_bag', path: '/products' },

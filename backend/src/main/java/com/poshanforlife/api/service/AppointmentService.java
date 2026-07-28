@@ -19,6 +19,9 @@ import com.poshanforlife.api.repository.UserRepository;
 import com.poshanforlife.api.security.AuthenticatedUser;
 import com.poshanforlife.api.util.WireEnums;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,10 +58,11 @@ public class AppointmentService {
     private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
-    public List<AppointmentDto> list(UUID patientId, UUID practitionerId, String status,
-                                     LocalDate dateFrom, LocalDate dateTo, AuthenticatedUser caller) {
+    public Page<AppointmentDto> list(UUID patientId, UUID practitionerId, String status,
+                                     LocalDate dateFrom, LocalDate dateTo,
+                                     int page, int limit, AuthenticatedUser caller) {
         AppointmentStatus statusFilter = WireEnums.parse(status, AppointmentStatus::fromWire,
-                "status must be one of scheduled, completed, cancelled");
+                "status must be one of scheduled, completed, cancelled, no_show");
         Instant from = dateFrom != null ? dateFrom.atStartOfDay(ZoneOffset.UTC).toInstant() : Instant.EPOCH;
         Instant to = dateTo != null
                 ? dateTo.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant()
@@ -67,12 +71,14 @@ public class AppointmentService {
             throw new ApiException(ErrorCode.VALIDATION_ERROR, "dateTo cannot be before dateFrom");
         }
 
+        // PATIENT is force-scoped to their own id regardless of what's passed (same
+        // rule as elsewhere — never a 403 here, the value is just silently overridden).
         UUID patientScope = caller.role() == Role.PATIENT ? UUID.fromString(caller.id()) : patientId;
         UUID practitionerScope = caller.role() == Role.DOCTOR ? UUID.fromString(caller.id()) : practitionerId;
 
-        return appointmentRepository.search(patientScope, practitionerScope, statusFilter, from, to).stream()
-                .map(AppointmentService::toDto)
-                .toList();
+        Page<Appointment> result = appointmentRepository.search(patientScope, practitionerScope, statusFilter, from, to,
+                PageRequest.of(Math.max(page - 1, 0), limit, Sort.by("scheduledAt")));
+        return result.map(AppointmentService::toDto);
     }
 
     /** The caller's own assigned practitioners — the only ones they may book with. */
@@ -129,6 +135,8 @@ public class AppointmentService {
         appointment.setScheduledAt(request.scheduledAt());
         appointment.setDurationMinutes(request.durationMinutes() != null ? request.durationMinutes() : 30);
         appointment.setNotes(request.notes());
+        appointment.setVideo(request.isVideo() != null && request.isVideo());
+        appointment.setCreatedBy(userRepository.getReferenceById(UUID.fromString(caller.id())));
         appointment = appointmentRepository.save(appointment);
 
         notificationService.create(practitioner, Notification.TYPE_APPOINTMENT_BOOKED, "New appointment booked",
@@ -140,11 +148,23 @@ public class AppointmentService {
     /**
      * scheduledAt present = reschedule (bumps status back to SCHEDULED unless
      * this same request also sets status); status present = cancel/complete;
-     * notes present = practitioner's post-appointment notes.
+     * notes present = practitioner's post-appointment notes. A PATIENT caller
+     * is restricted to rescheduling (scheduledAt) and/or cancelling
+     * (status=CANCELLED only) — they can never set notes or any other status
+     * (completed/no_show), that's DOCTOR/ADMIN-only.
      */
     @Transactional
     public AppointmentDto update(UUID id, UpdateAppointmentRequest request, AuthenticatedUser caller) {
         Appointment appointment = findAccessible(id, caller);
+
+        if (caller.role() == Role.PATIENT) {
+            if (request.notes() != null) {
+                throw new AccessDeniedException("Patients cannot add appointment notes");
+            }
+            if (request.status() != null && request.status() != AppointmentStatus.CANCELLED) {
+                throw new AccessDeniedException("Patients can only cancel an appointment, not set this status");
+            }
+        }
 
         if (request.scheduledAt() != null) {
             if (appointmentRepository.existsByPractitionerIdAndScheduledAtAndStatusNot(
@@ -161,6 +181,14 @@ public class AppointmentService {
         if (request.notes() != null) appointment.setNotes(request.notes().isBlank() ? null : request.notes().trim());
 
         return toDto(appointment);
+    }
+
+    /** Hard delete — ADMIN-only cleanup tool (see AppointmentController); a cancelled-status PATCH is the normal path for everyone else. */
+    @Transactional
+    public void delete(UUID id) {
+        Appointment appointment = appointmentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment", id));
+        appointmentRepository.delete(appointment);
     }
 
     // ---- helpers -----------------------------------------------------------
@@ -214,6 +242,10 @@ public class AppointmentService {
                 a.getDurationMinutes(),
                 a.getStatus(),
                 a.getNotes(),
+                a.isVideo(),
+                a.getVideoRoomId(),
+                a.getCreatedBy() == null ? null
+                        : new UserRefDto(a.getCreatedBy().getId().toString(), a.getCreatedBy().getName()),
                 a.getCreatedAt());
     }
 }

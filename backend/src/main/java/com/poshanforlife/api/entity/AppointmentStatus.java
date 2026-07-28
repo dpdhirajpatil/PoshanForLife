@@ -5,11 +5,12 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import java.util.Locale;
 
-/** Wire format lowercase ("scheduled" | "completed" | "cancelled"). */
+/** Wire format lowercase ("scheduled" | "completed" | "cancelled" | "no_show"). */
 public enum AppointmentStatus {
     SCHEDULED,
     COMPLETED,
-    CANCELLED;
+    CANCELLED,
+    NO_SHOW;
 
     @JsonValue
     public String toWire() {

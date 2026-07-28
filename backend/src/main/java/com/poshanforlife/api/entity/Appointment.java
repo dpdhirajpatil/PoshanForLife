@@ -40,4 +40,16 @@ public class Appointment extends BaseEntity {
 
     @Column(columnDefinition = "text")
     private String notes;
+
+    @Column(name = "is_video", nullable = false)
+    private boolean isVideo = false;
+
+    /** Populated only once a video provider is integrated — unused for now. */
+    @Column(name = "video_room_id")
+    private String videoRoomId;
+
+    /** Who booked it: the PATIENT themselves, or the DOCTOR/ADMIN who booked on their behalf. Nullable — predates this column. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private User createdBy;
 }

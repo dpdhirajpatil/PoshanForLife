@@ -12,5 +12,8 @@ public record AppointmentDto(
         int durationMinutes,
         AppointmentStatus status,
         String notes,
+        boolean isVideo,
+        String videoRoomId,
+        UserRefDto createdBy,
         Instant createdAt) {
 }

@@ -33,6 +33,7 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       { path: 'dashboard', loadChildren: () => import('./features/dashboard/dashboard.routes') },
       { path: 'patients', loadChildren: () => import('./features/patients/patients.routes') },
+      { path: 'appointments', loadChildren: () => import('./features/appointments/appointments.routes') },
       { path: 'catalogue', loadChildren: () => import('./features/catalogue/catalogue.routes') },
       { path: 'products', loadChildren: () => import('./features/products/products.routes') },
       { path: 'orders', loadChildren: () => import('./features/orders/orders.routes') },

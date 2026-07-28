@@ -6,14 +6,17 @@ import com.poshanforlife.api.dto.AvailableSlotDto;
 import com.poshanforlife.api.dto.CreateAppointmentRequest;
 import com.poshanforlife.api.dto.UpdateAppointmentRequest;
 import com.poshanforlife.api.dto.UserRefDto;
+import com.poshanforlife.api.security.AdminOnly;
 import com.poshanforlife.api.security.AdminOrDoctorOrPatient;
 import com.poshanforlife.api.security.AuthenticatedUser;
 import com.poshanforlife.api.service.AppointmentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -43,8 +47,12 @@ public class AppointmentController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "50") int limit,
             @AuthenticationPrincipal AuthenticatedUser caller) {
-        return ApiResponse.ok(appointmentService.list(patientId, practitionerId, status, dateFrom, dateTo, caller));
+        Page<AppointmentDto> result = appointmentService.list(patientId, practitionerId, status, dateFrom, dateTo,
+                page, limit, caller);
+        return ApiResponse.ok(result.getContent(), result.getTotalElements(), page, limit);
     }
 
     /** The caller's own assigned practitioners — the pool a PATIENT may book with. */
@@ -73,5 +81,13 @@ public class AppointmentController {
                                               @Valid @RequestBody UpdateAppointmentRequest request,
                                               @AuthenticationPrincipal AuthenticatedUser caller) {
         return ApiResponse.ok(appointmentService.update(id, request, caller));
+    }
+
+    /** Hard delete — ADMIN-only cleanup tool; a cancelled-status PATCH is the normal path for everyone else. */
+    @DeleteMapping("/{id}")
+    @AdminOnly
+    public ApiResponse<Map<String, Boolean>> delete(@PathVariable UUID id) {
+        appointmentService.delete(id);
+        return ApiResponse.ok(Map.of("deleted", true));
     }
 }
