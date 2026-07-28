@@ -157,6 +157,11 @@ MapStruct mappers default to the Spring component model. Profiles: `local` (defa
   add/remove (bulk dialog relabeled "Replace patient list"); success toasts state the doctor
   was notified
 
-## Feature prompts still to come
+## Feature status
 
-catalogue · orders · transactions · reports · leads · dashboard · notifications
+Done: auth · users · patients · assignments · catalogue · products · orders · transactions ·
+reports · leads · dashboard · notifications · appointments · documents (invoices/estimates) ·
+health records · gamification & badges.
+
+A native Kotlin/Compose Android app (`android/`) also exists for the PATIENT role and mirrors
+much of the practitioner/admin surface — see the AN-XX prompt series.

@@ -85,6 +85,8 @@ public class DocumentService {
         if (caller.role() == Role.PATIENT) {
             patientId = UUID.fromString(caller.id());
             leadId = null;
+            // Estimates are pre-sale/lead-stage artifacts; patients only ever see invoices.
+            typeFilter = DocumentType.INVOICE;
         }
         Page<Document> result = documentRepository.search(leadId, patientId, typeFilter, statusFilter, doctorId,
                 PageRequest.of(Math.max(page - 1, 0), limit, Sort.by("createdAt").descending()));
@@ -191,7 +193,8 @@ public class DocumentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Document", id));
         if (caller.role() == Role.PATIENT) {
             if (document.getPatient() == null
-                    || !document.getPatient().getId().equals(UUID.fromString(caller.id()))) {
+                    || !document.getPatient().getId().equals(UUID.fromString(caller.id()))
+                    || document.getDocumentType() != DocumentType.INVOICE) {
                 throw new ResourceNotFoundException("Document", id);
             }
             return document;
