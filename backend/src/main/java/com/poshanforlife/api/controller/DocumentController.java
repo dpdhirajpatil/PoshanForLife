@@ -8,6 +8,7 @@ import com.poshanforlife.api.dto.FromOrderRequest;
 import com.poshanforlife.api.dto.PdfUrlDto;
 import com.poshanforlife.api.dto.UpdateDocumentStatusRequest;
 import com.poshanforlife.api.security.AdminOrDoctor;
+import com.poshanforlife.api.security.AdminOrDoctorOrPatient;
 import com.poshanforlife.api.security.AuthenticatedUser;
 import com.poshanforlife.api.service.DocumentService;
 import jakarta.validation.Valid;
@@ -30,18 +31,20 @@ import java.util.UUID;
 
 /**
  * Draft estimates and GST-aware invoices for the mobile app's RN-20 module —
- * extends prompt 08's Transaction/invoice-number machinery. ADMIN+DOCTOR;
- * DOCTOR scoped server-side to their own leads/patients.
+ * extends prompt 08's Transaction/invoice-number machinery. Reads are
+ * ADMIN+DOCTOR+PATIENT (PATIENT scoped server-side to their own documents,
+ * 404 not 403 outside that scope); mutations are ADMIN+DOCTOR only, with
+ * DOCTOR further scoped to their own leads/patients.
  */
 @RestController
 @RequestMapping("/api/v1/documents")
 @RequiredArgsConstructor
-@AdminOrDoctor
 public class DocumentController {
 
     private final DocumentService documentService;
 
     @GetMapping
+    @AdminOrDoctorOrPatient
     public ApiResponse<List<DocumentListItemDto>> list(
             @RequestParam(required = false) UUID patientId,
             @RequestParam(required = false) UUID leadId,
@@ -57,6 +60,7 @@ public class DocumentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @AdminOrDoctor
     public ApiResponse<DocumentDetailDto> create(@Valid @RequestBody CreateDocumentRequest request,
                                                  @AuthenticationPrincipal AuthenticatedUser caller) {
         return ApiResponse.ok(documentService.create(request, caller));
@@ -64,18 +68,21 @@ public class DocumentController {
 
     @PostMapping("/from-order")
     @ResponseStatus(HttpStatus.CREATED)
+    @AdminOrDoctor
     public ApiResponse<DocumentDetailDto> fromOrder(@Valid @RequestBody FromOrderRequest request,
                                                     @AuthenticationPrincipal AuthenticatedUser caller) {
         return ApiResponse.ok(documentService.fromOrder(request, caller));
     }
 
     @GetMapping("/{id}")
+    @AdminOrDoctorOrPatient
     public ApiResponse<DocumentDetailDto> get(@PathVariable UUID id,
                                               @AuthenticationPrincipal AuthenticatedUser caller) {
         return ApiResponse.ok(documentService.get(id, caller));
     }
 
     @PatchMapping("/{id}")
+    @AdminOrDoctor
     public ApiResponse<DocumentDetailDto> updateStatus(@PathVariable UUID id,
                                                        @Valid @RequestBody UpdateDocumentStatusRequest request,
                                                        @AuthenticationPrincipal AuthenticatedUser caller) {
@@ -83,6 +90,7 @@ public class DocumentController {
     }
 
     @GetMapping("/{id}/pdf")
+    @AdminOrDoctorOrPatient
     public ApiResponse<PdfUrlDto> pdf(@PathVariable UUID id,
                                       @AuthenticationPrincipal AuthenticatedUser caller) {
         return ApiResponse.ok(documentService.getPdfUrl(id, caller));

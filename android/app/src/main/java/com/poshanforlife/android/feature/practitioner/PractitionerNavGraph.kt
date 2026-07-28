@@ -5,6 +5,7 @@ import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.ContactPhone
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.navigation.NavGraphBuilder
@@ -14,6 +15,9 @@ import androidx.navigation.compose.navigation
 import com.poshanforlife.android.feature.RootRoutes
 import com.poshanforlife.android.feature.patient.programmes.ProgrammeDetailScreen
 import com.poshanforlife.android.feature.patient.reports.ReportDetailScreen
+import com.poshanforlife.android.feature.practitioner.documents.CreateEstimateScreen
+import com.poshanforlife.android.feature.practitioner.documents.DocumentDetailScreen
+import com.poshanforlife.android.feature.practitioner.documents.DocumentsListScreen
 import com.poshanforlife.android.feature.practitioner.patients.PatientDetailScreen
 import com.poshanforlife.android.feature.practitioner.patients.PatientListScreen
 import com.poshanforlife.android.feature.practitioner.schedule.ScheduleScreen
@@ -27,11 +31,14 @@ private const val ROOT = "practitioner/root"
 private const val SCHEDULE_ROUTE = "practitioner/schedule"
 private const val PATIENTS_ROUTE = "practitioner/patients"
 private const val UPLOAD_ROUTE = "practitioner/upload"
+private const val DOCUMENTS_ROUTE = "practitioner/documents"
 private const val PATIENT_DETAIL_ROUTE = "practitioner/patients/{patientId}"
 private const val PATIENT_REPORT_DETAIL_ROUTE = "practitioner/patients/{patientId}/reports/{reportId}"
 private const val PATIENT_PROGRAMME_DETAIL_ROUTE = "practitioner/patients/{patientId}/programmes/{programmeId}"
 private const val CAPTURE_ROUTE = "practitioner/upload/capture/{patientId}"
 private const val REVIEW_ROUTE = "practitioner/upload/review/{patientId}/{reportId}"
+private const val DOCUMENT_DETAIL_ROUTE = "practitioner/documents/{documentId}"
+private const val CREATE_ESTIMATE_ROUTE = "practitioner/documents/create-estimate"
 
 // Role value on the wire stays DOCTOR (see Role.kt) — only user-facing text says "Practitioner".
 private val items = listOf(
@@ -40,6 +47,7 @@ private val items = listOf(
     BottomNavItem("practitioner/upload", "Upload", Icons.Filled.CloudUpload),
     BottomNavItem(SCHEDULE_ROUTE, "Schedule", Icons.Filled.Schedule),
     BottomNavItem("practitioner/orders", "Orders", Icons.Filled.ShoppingCart),
+    BottomNavItem(DOCUMENTS_ROUTE, "Invoices", Icons.Filled.Receipt),
     BottomNavItem("practitioner/profile", "Profile", Icons.Filled.Person),
 )
 
@@ -56,6 +64,10 @@ fun NavGraphBuilder.practitionerGraph(navController: NavController) {
                     // report capture for them instead of opening their detail page.
                     UPLOAD_ROUTE -> PatientListScreen(
                         onOpenPatient = { patientId -> navController.navigate("practitioner/upload/capture/$patientId") },
+                    )
+                    DOCUMENTS_ROUTE -> DocumentsListScreen(
+                        onOpenDocument = { documentId -> navController.navigate("practitioner/documents/$documentId") },
+                        onCreateEstimate = { navController.navigate(CREATE_ESTIMATE_ROUTE) },
                     )
                     else -> PlaceholderScreen(label = items.first { it.route == route }.label)
                 }
@@ -99,6 +111,19 @@ fun NavGraphBuilder.practitionerGraph(navController: NavController) {
                 onBack = { navController.popBackStack() },
                 onSaved = {
                     navController.navigate("practitioner/patients/$patientId") {
+                        popUpTo(ROOT) { inclusive = false }
+                    }
+                },
+            )
+        }
+        composable(DOCUMENT_DETAIL_ROUTE) {
+            DocumentDetailScreen()
+        }
+        composable(CREATE_ESTIMATE_ROUTE) {
+            CreateEstimateScreen(
+                onBack = { navController.popBackStack() },
+                onSaved = { documentId ->
+                    navController.navigate("practitioner/documents/$documentId") {
                         popUpTo(ROOT) { inclusive = false }
                     }
                 },

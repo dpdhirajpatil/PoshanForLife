@@ -238,7 +238,13 @@
       "Bash(curl -s http://localhost:8080/api/v1/patients/__TRACKED_VAR__ -H 'Authorization: Bearer __CMDSUB_OUTPUT__')",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\)['data']; print\\(d['email']\\)\")",
       "Bash(curl -s -o /dev/null -w '%{http_code}\\\\n' -X DELETE http://localhost:8080/api/v1/health-records/__TRACKED_VAR__?recordId=__TRACKED_VAR__ -H 'Authorization: Bearer __CMDSUB_OUTPUT__')",
-      "Bash(curl -s http://localhost:8080/api/v1/health-records/__TRACKED_VAR__ -H 'Authorization: Bearer __CMDSUB_OUTPUT__')"
+      "Bash(curl -s http://localhost:8080/api/v1/health-records/__TRACKED_VAR__ -H 'Authorization: Bearer __CMDSUB_OUTPUT__')",
+      "Bash(mvn -q -DskipTests compile)",
+      "Bash(echo \"exit:$?\")",
+      "Bash(/usr/libexec/java_home -v21)",
+      "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v21 \\) ./gradlew :app:compileDebugKotlin -q)",
+      "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v21 \\) ./gradlew :app:compileDebugKotlin)",
+      "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v21 \\) ./gradlew :app:assembleDebug -q)"
     ],
     "additionalDirectories": [
       "/private/tmp",

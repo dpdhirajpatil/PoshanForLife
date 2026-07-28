@@ -82,6 +82,10 @@ public class DocumentService {
         DocumentStatus statusFilter = WireEnums.parse(status, DocumentStatus::fromWire,
                 "status must be one of draft, sent, paid");
         UUID doctorId = caller.role() == Role.DOCTOR ? UUID.fromString(caller.id()) : null;
+        if (caller.role() == Role.PATIENT) {
+            patientId = UUID.fromString(caller.id());
+            leadId = null;
+        }
         Page<Document> result = documentRepository.search(leadId, patientId, typeFilter, statusFilter, doctorId,
                 PageRequest.of(Math.max(page - 1, 0), limit, Sort.by("createdAt").descending()));
         return result.map(this::toListItem);
@@ -185,6 +189,13 @@ public class DocumentService {
     private Document findAccessible(UUID id, AuthenticatedUser caller) {
         Document document = documentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Document", id));
+        if (caller.role() == Role.PATIENT) {
+            if (document.getPatient() == null
+                    || !document.getPatient().getId().equals(UUID.fromString(caller.id()))) {
+                throw new ResourceNotFoundException("Document", id);
+            }
+            return document;
+        }
         if (document.getLead() != null) {
             requireLeadAccess(document.getLead(), caller);
         } else {
