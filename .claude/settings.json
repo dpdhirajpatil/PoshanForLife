@@ -246,7 +246,10 @@
       "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v21 \\) ./gradlew :app:compileDebugKotlin)",
       "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v21 \\) ./gradlew :app:assembleDebug -q)",
       "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v21 \\) ./gradlew --stop)",
-      "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v21 \\) ./gradlew :app:compileDebugKotlin --rerun-tasks)"
+      "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v21 \\) ./gradlew :app:compileDebugKotlin --rerun-tasks)",
+      "Bash(./mvnw -q test -Dtest=PatientProgrammeServiceTest)",
+      "Bash(echo \"backend exit:$?\")",
+      "Bash(echo \"frontend exit:$?\")"
     ],
     "additionalDirectories": [
       "/private/tmp",

@@ -45,6 +45,11 @@ export const routes: Routes = [
         canActivate: [adminOnlyGuard],
         loadChildren: () => import('./features/users/users.routes'),
       },
+      {
+        path: 'badges',
+        canActivate: [adminOnlyGuard],
+        loadChildren: () => import('./features/badges/badges.routes'),
+      },
       { path: 'settings', loadChildren: () => import('./features/settings/settings.routes') },
     ],
   },

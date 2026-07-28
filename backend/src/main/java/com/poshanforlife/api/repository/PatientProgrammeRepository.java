@@ -15,6 +15,10 @@ public interface PatientProgrammeRepository extends JpaRepository<PatientProgram
 
     List<PatientProgramme> findByPatientIdOrderByCreatedAtDesc(UUID patientId);
 
+    /** Used by badge evaluation's programme_count criteria. */
+    long countByPatientIdAndServiceTypeAndStatus(UUID patientId, CatalogueItemType serviceType,
+                                                 PatientProgrammeStatus status);
+
     /**
      * Exactly one of the three catalogue columns is set per row, so
      * coalesce(...) is the referenced item's id; serviceType says which table

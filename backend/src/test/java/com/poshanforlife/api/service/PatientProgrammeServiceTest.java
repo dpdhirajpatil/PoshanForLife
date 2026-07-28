@@ -73,6 +73,8 @@ class PatientProgrammeServiceTest {
     private DoctorPatientRepository doctorPatientRepository;
     @Mock
     private TransactionNumbers transactionNumbers;
+    @Mock
+    private BadgeEvaluationService badgeEvaluationService;
 
     private PatientProgrammeService service;
 
@@ -90,7 +92,7 @@ class PatientProgrammeServiceTest {
         service = new PatientProgrammeService(patientProgrammeRepository, orderRepository,
                 transactionRepository, programmeRepository, sessionRepository,
                 challengeRepository, userRepository, doctorPatientRepository,
-                transactionFactory);
+                transactionFactory, badgeEvaluationService);
         admin = newUser("Admin", Role.ADMIN);
         patient = newUser("Pat Kumar", Role.PATIENT);
         otherPatient = newUser("Someone Else", Role.PATIENT);

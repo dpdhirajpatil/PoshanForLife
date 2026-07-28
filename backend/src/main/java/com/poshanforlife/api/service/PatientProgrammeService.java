@@ -13,6 +13,7 @@ import com.poshanforlife.api.entity.CatalogueStatus;
 import com.poshanforlife.api.entity.Challenge;
 import com.poshanforlife.api.entity.Order;
 import com.poshanforlife.api.entity.PatientProgramme;
+import com.poshanforlife.api.entity.PatientProgrammeStatus;
 import com.poshanforlife.api.entity.Programme;
 import com.poshanforlife.api.entity.Role;
 import com.poshanforlife.api.entity.Transaction;
@@ -67,6 +68,7 @@ public class PatientProgrammeService {
     private final UserRepository userRepository;
     private final DoctorPatientRepository doctorPatientRepository;
     private final TransactionFactory transactionFactory;
+    private final BadgeEvaluationService badgeEvaluationService;
 
     @Transactional(readOnly = true)
     public List<PatientProgrammeDto> list(UUID patientId, AuthenticatedUser caller) {
@@ -178,6 +180,9 @@ public class PatientProgrammeService {
         requireAccess(patientId, caller);
         PatientProgramme pp = findAssignment(patientId, ppId);
 
+        boolean becomesCompleted = request.status() == PatientProgrammeStatus.COMPLETED
+                && pp.getStatus() != PatientProgrammeStatus.COMPLETED;
+
         if (request.status() != null) pp.setStatus(request.status());
         if (request.notes() != null) pp.setNotes(blankToNull(request.notes()));
         if (request.startDate() != null) {
@@ -192,6 +197,14 @@ public class PatientProgrammeService {
             throw new ApiException(ErrorCode.VALIDATION_ERROR,
                     "endDate cannot be before startDate");
         }
+
+        // Badge evaluation (gamification feature) — same DB transaction as the
+        // status change itself, so a newly-earned badge is never recorded
+        // without the completion that triggered it (or vice versa).
+        if (becomesCompleted) {
+            badgeEvaluationService.evaluateForProgrammeCompletion(pp);
+        }
+
         return toDtoWithCommercials(pp);
     }
 

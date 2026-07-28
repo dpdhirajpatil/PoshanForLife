@@ -36,6 +36,8 @@ public class Notification extends BaseEntity {
     public static final String TYPE_INBODY_REPORT = "INBODY_REPORT";
     /** A patient booked/rescheduled/cancelled an appointment — sent to the practitioner. */
     public static final String TYPE_APPOINTMENT_BOOKED = "APPOINTMENT_BOOKED";
+    /** A patient newly earned a Badge — sent to that patient. Always sends (no dedicated prefs toggle, same as APPOINTMENT_BOOKED). */
+    public static final String TYPE_BADGE_EARNED = "BADGE_EARNED";
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)

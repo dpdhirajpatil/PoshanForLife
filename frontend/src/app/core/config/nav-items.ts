@@ -28,5 +28,6 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Transactions', icon: 'receipt_long', path: '/transactions' },
   { label: 'Reports', icon: 'description', path: '/reports' },
   { label: 'User Management', icon: 'group', path: '/users', roles: ['ADMIN'] },
+  { label: 'Badges', icon: 'military_tech', path: '/badges', roles: ['ADMIN'] },
   { label: 'Settings', icon: 'settings', path: '/settings' },
 ];
