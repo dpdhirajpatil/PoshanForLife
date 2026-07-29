@@ -31,6 +31,24 @@ npm install
 npm start                       # http://localhost:4200, proxies nothing — calls :8080 directly
 ```
 
+## Database
+
+Normal case (a fresh local Postgres, or any database Flyway has managed itself since V1): no
+extra config needed, `spring.flyway.*` defaults in `application.yml` apply as-is.
+
+Pointing this backend at a database where the schema was pre-applied *outside* Flyway — e.g. via
+a manual SQL script run in Supabase's SQL Editor — needs a one-time baseline so Flyway doesn't
+try to replay migrations against tables that already exist. Set these two env vars for the
+**first startup only**:
+
+```bash
+SPRING_FLYWAY_BASELINE_ON_MIGRATE=true
+SPRING_FLYWAY_BASELINE_VERSION=16   # highest migration version already applied by hand
+```
+
+Then **unset both** — they're a one-time bootstrap step, not a permanent setting, and leaving
+`baseline-on-migrate` on masks real future migration-mismatch errors.
+
 ## Conventions (established in prompt 0)
 
 ### API envelope

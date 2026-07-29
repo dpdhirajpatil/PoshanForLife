@@ -17,6 +17,12 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+    # One-time only — set via env vars, NOT hardcoded here, when first
+    # connecting to a database where V1-V16 were applied by hand:
+    #   SPRING_FLYWAY_BASELINE_ON_MIGRATE=true
+    #   SPRING_FLYWAY_BASELINE_VERSION=16
+    # Remove both env vars after the first successful startup against
+    # that database — they should never be a permanent setting.
   servlet:
     multipart:
       # Ceiling across all uploads; per-type checks are stricter (cover images:
