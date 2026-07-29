@@ -8,12 +8,19 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,6 +30,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.poshanforlife.android.core.network.ChallengeProgressDto
+import java.time.LocalDate
 import java.util.Locale
 
 @Composable
@@ -98,17 +107,95 @@ fun ProgrammeDetailScreen(
 
                 if (programme.serviceType == "challenge") {
                     item {
-                        DetailCard {
-                            Text(text = "Badges & rewards", style = MaterialTheme.typography.titleLarge)
-                            Text(
-                                text = "Coming soon — complete this challenge to earn a badge.",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(top = 8.dp),
-                            )
-                        }
+                        ChallengeProgressCard(
+                            progress = state.challengeProgress,
+                            checkingIn = state.checkingIn,
+                            onCheckIn = { viewModel.checkInToday() },
+                        )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ChallengeProgressCard(
+    progress: ChallengeProgressDto?,
+    checkingIn: Boolean,
+    onCheckIn: () -> Unit,
+) {
+    val checkedInToday = progress?.lastLoggedDate == LocalDate.now().toString()
+
+    DetailCard {
+        Text(text = "Challenge progress", style = MaterialTheme.typography.titleLarge)
+
+        if (progress == null) {
+            Text(
+                text = "Loading progress…",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 8.dp),
+            )
+            return@DetailCard
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.size(64.dp)) {
+                CircularProgressIndicator(
+                    progress = { progress.percentComplete / 100f },
+                    modifier = Modifier.size(64.dp),
+                    strokeWidth = 6.dp,
+                )
+                Text(text = "${progress.percentComplete}%", style = MaterialTheme.typography.labelLarge)
+            }
+            Column(modifier = Modifier.padding(start = 16.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Filled.LocalFireDepartment,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp),
+                    )
+                    Text(
+                        text = " ${progress.currentStreak} day streak",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+                Text(
+                    text = "Best: ${progress.longestStreak} days",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+
+        if (checkedInToday) {
+            OutlinedButton(
+                onClick = {},
+                enabled = false,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+            ) {
+                Icon(imageVector = Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                Text(text = " Checked in today", modifier = Modifier.padding(start = 4.dp))
+            }
+        } else {
+            Button(
+                onClick = onCheckIn,
+                enabled = !checkingIn,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+            ) {
+                Text(text = if (checkingIn) "Checking in…" else "Check in today")
             }
         }
     }

@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Timeline
@@ -16,6 +17,7 @@ import androidx.navigation.compose.navigation
 import com.poshanforlife.android.feature.RootRoutes
 import com.poshanforlife.android.feature.patient.appointments.AppointmentsListScreen
 import com.poshanforlife.android.feature.patient.appointments.BookAppointmentScreen
+import com.poshanforlife.android.feature.patient.badges.BadgesScreen
 import com.poshanforlife.android.feature.patient.profile.ProfileScreen
 import com.poshanforlife.android.feature.patient.programmes.ProgrammeDetailScreen
 import com.poshanforlife.android.feature.patient.programmes.ProgrammesListScreen
@@ -41,6 +43,7 @@ private const val TRACK_ROUTE = "patient/track"
 private const val PROGRAMMES_ROUTE = "patient/programmes"
 private const val APPOINTMENTS_ROUTE = "patient/appointments"
 private const val REPORTS_ROUTE = "patient/reports"
+private const val BADGES_ROUTE = "patient/badges"
 private const val PROFILE_ROUTE = "patient/profile"
 
 private val items = listOf(
@@ -49,6 +52,7 @@ private val items = listOf(
     BottomNavItem(PROGRAMMES_ROUTE, "Programmes", Icons.AutoMirrored.Filled.MenuBook),
     BottomNavItem(APPOINTMENTS_ROUTE, "Appointments", Icons.Filled.CalendarMonth),
     BottomNavItem(REPORTS_ROUTE, "Reports", Icons.Filled.Description),
+    BottomNavItem(BADGES_ROUTE, "Badges", Icons.Filled.EmojiEvents),
     BottomNavItem(PROFILE_ROUTE, "Profile", Icons.Filled.Person),
 )
 
@@ -78,6 +82,7 @@ fun NavGraphBuilder.patientGraph(navController: NavController) {
                     REPORTS_ROUTE -> ReportsListScreen(
                         onOpenReport = { reportId -> navController.navigate("patient/reports/$reportId") },
                     )
+                    BADGES_ROUTE -> BadgesScreen()
                     PROFILE_ROUTE -> ProfileScreen()
                     else -> PlaceholderScreen(label = items.first { it.route == route }.label)
                 }

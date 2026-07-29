@@ -1,9 +1,11 @@
 package com.poshanforlife.android.core.data
 
+import com.poshanforlife.android.core.network.ChallengeProgressDto
 import com.poshanforlife.android.core.network.DocumentApi
 import com.poshanforlife.android.core.network.DocumentListItemDto
 import com.poshanforlife.android.core.network.HealthRecordDto
 import com.poshanforlife.android.core.network.PatientApi
+import com.poshanforlife.android.core.network.PatientBadgeStatusDto
 import com.poshanforlife.android.core.network.PatientDetailDto
 import com.poshanforlife.android.core.network.PatientProgrammeDto
 import com.poshanforlife.android.core.network.PatientSummaryDto
@@ -62,4 +64,13 @@ class PatientRepositoryImpl @Inject constructor(
         safeApiCall(json) {
             documentApi.list(patientId = patientId, type = "invoice", status = "sent", limit = 10)
         }
+
+    override suspend fun getBadges(patientId: String): Result<List<PatientBadgeStatusDto>> =
+        safeApiCall(json) { patientApi.getBadges(patientId) }
+
+    override suspend fun getChallengeProgress(patientId: String, ppId: String): Result<ChallengeProgressDto> =
+        safeApiCall(json) { patientApi.getChallengeProgress(patientId, ppId) }
+
+    override suspend fun checkIn(patientId: String, ppId: String): Result<ChallengeProgressDto> =
+        safeApiCall(json) { patientApi.checkIn(patientId, ppId) }
 }

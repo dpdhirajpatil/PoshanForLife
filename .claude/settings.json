@@ -261,7 +261,9 @@
       "Bash(javap 'androidx.health.connect.client.PermissionController$Companion')",
       "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v21\\) ./gradlew :app:dependencies --configuration debugCompileClasspath 2>&1 > /tmp/deptree.txt *)",
       "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v21\\) ./gradlew :app:assembleDebug)",
-      "Bash(sort -t V -k2 -n)"
+      "Bash(sort -t V -k2 -n)",
+      "Bash(JAVA_HOME=/Users/dhiraj/Library/Java/JavaVirtualMachines/ms-21.0.9/Contents/Home ./gradlew :app:compileDebugKotlin --rerun-tasks)",
+      "Bash(JAVA_HOME=/Users/dhiraj/Library/Java/JavaVirtualMachines/ms-21.0.9/Contents/Home ./gradlew :app:compileDebugKotlin)"
     ],
     "additionalDirectories": [
       "/private/tmp",

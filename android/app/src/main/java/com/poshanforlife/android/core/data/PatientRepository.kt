@@ -1,7 +1,9 @@
 package com.poshanforlife.android.core.data
 
+import com.poshanforlife.android.core.network.ChallengeProgressDto
 import com.poshanforlife.android.core.network.DocumentListItemDto
 import com.poshanforlife.android.core.network.HealthRecordDto
+import com.poshanforlife.android.core.network.PatientBadgeStatusDto
 import com.poshanforlife.android.core.network.PatientDetailDto
 import com.poshanforlife.android.core.network.PatientProgrammeDto
 import com.poshanforlife.android.core.network.PatientSummaryDto
@@ -31,4 +33,12 @@ interface PatientRepository {
 
     /** Empty list means "nothing outstanding" (not an error). */
     suspend fun getPendingInvoices(patientId: String): Result<List<DocumentListItemDto>>
+
+    /** Full badge catalog, earned + locked. */
+    suspend fun getBadges(patientId: String): Result<List<PatientBadgeStatusDto>>
+
+    suspend fun getChallengeProgress(patientId: String, ppId: String): Result<ChallengeProgressDto>
+
+    /** Self check-in for today; a repeat call on the same day is a no-op server-side. */
+    suspend fun checkIn(patientId: String, ppId: String): Result<ChallengeProgressDto>
 }

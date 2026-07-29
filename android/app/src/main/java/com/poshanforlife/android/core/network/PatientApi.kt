@@ -35,4 +35,22 @@ interface PatientApi {
         @Path("patientId") patientId: String,
         @Path("ppId") ppId: String,
     ): Response<ApiResponse<PatientProgrammeDto>>
+
+    /** Full badge catalog for this patient, each annotated with earned/earnedAt. */
+    @GET("api/v1/patients/{patientId}/badges")
+    suspend fun getBadges(@Path("patientId") patientId: String): Response<ApiResponse<List<PatientBadgeStatusDto>>>
+
+    @GET("api/v1/patients/{patientId}/programmes/{ppId}/progress")
+    suspend fun getChallengeProgress(
+        @Path("patientId") patientId: String,
+        @Path("ppId") ppId: String,
+    ): Response<ApiResponse<ChallengeProgressDto>>
+
+    /** PATIENT-self-only server-side — currentStreak/longestStreak/percentComplete are server-computed. */
+    @PATCH("api/v1/patients/{patientId}/programmes/{ppId}/progress")
+    suspend fun checkIn(
+        @Path("patientId") patientId: String,
+        @Path("ppId") ppId: String,
+        @Body request: CheckInRequest = CheckInRequest(),
+    ): Response<ApiResponse<ChallengeProgressDto>>
 }
