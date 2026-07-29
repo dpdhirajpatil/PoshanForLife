@@ -22,4 +22,8 @@ interface HealthEntryDao {
 
     @Query("SELECT * FROM health_entries WHERE synced = 0")
     suspend fun getUnsynced(): List<HealthEntryEntity>
+
+    /** Used by the Health Connect sync worker to update today's synced value in place instead of accumulating duplicates. */
+    @Query("SELECT * FROM health_entries WHERE type = :type AND source = :source AND loggedAt >= :sinceEpochMillis ORDER BY loggedAt DESC LIMIT 1")
+    suspend fun findLatestOfTypeAndSource(type: String, source: String, sinceEpochMillis: Long): HealthEntryEntity?
 }

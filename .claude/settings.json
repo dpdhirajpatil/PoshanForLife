@@ -250,7 +250,17 @@
       "Bash(./mvnw -q test -Dtest=PatientProgrammeServiceTest)",
       "Bash(echo \"backend exit:$?\")",
       "Bash(echo \"frontend exit:$?\")",
-      "Bash(./mvnw -q test -Dtest=DocumentServiceTest)"
+      "Bash(./mvnw -q test -Dtest=DocumentServiceTest)",
+      "Bash(curl -s https://dl.google.com/android/maven2/androidx/health/connect/connect-client/maven-metadata.xml)",
+      "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v21\\) ./gradlew :app:compileDebugKotlin --rerun-tasks)",
+      "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v21\\) ./gradlew :app:dependencies --configuration debugCompileClasspath)",
+      "Bash(javap 'androidx.health.connect.client.HealthConnectClient$Companion')",
+      "Bash(javap 'androidx.health.connect.client.request.ReadRecordsRequest')",
+      "Bash(javap 'androidx.health.connect.client.request.AggregateRequest')",
+      "Bash(javap 'androidx.health.connect.client.PermissionController')",
+      "Bash(javap 'androidx.health.connect.client.PermissionController$Companion')",
+      "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v21\\) ./gradlew :app:dependencies --configuration debugCompileClasspath 2>&1 > /tmp/deptree.txt *)",
+      "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v21\\) ./gradlew :app:assembleDebug)"
     ],
     "additionalDirectories": [
       "/private/tmp",

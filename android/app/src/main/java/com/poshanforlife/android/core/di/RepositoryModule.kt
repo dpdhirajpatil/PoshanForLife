@@ -6,6 +6,8 @@ import com.poshanforlife.android.core.data.AuthRepository
 import com.poshanforlife.android.core.data.AuthRepositoryImpl
 import com.poshanforlife.android.core.data.DocumentRepository
 import com.poshanforlife.android.core.data.DocumentRepositoryImpl
+import com.poshanforlife.android.core.data.HealthRecordRepository
+import com.poshanforlife.android.core.data.HealthRecordRepositoryImpl
 import com.poshanforlife.android.core.data.NotificationRepository
 import com.poshanforlife.android.core.data.NotificationRepositoryImpl
 import com.poshanforlife.android.core.data.OrderRepository
@@ -63,4 +65,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindTransactionRepository(impl: TransactionRepositoryImpl): TransactionRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindHealthRecordRepository(impl: HealthRecordRepositoryImpl): HealthRecordRepository
 }

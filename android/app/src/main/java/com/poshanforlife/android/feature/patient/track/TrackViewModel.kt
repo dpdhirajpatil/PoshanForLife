@@ -25,6 +25,9 @@ data class TrackUiState(
     val nutritionEntriesToday: List<HealthEntryEntity> = emptyList(),
     val sleepHoursToday: Float? = null,
     val latestWeightKg: Float? = null,
+    /** Health-Connect-sourced only (AN-11) — no manual entry for these. */
+    val stepsToday: Int? = null,
+    val avgHeartRateBpmToday: Int? = null,
 )
 
 @HiltViewModel
@@ -53,6 +56,12 @@ class TrackViewModel @Inject constructor(
                 .filter { it.type == HealthMetricType.SLEEP }
                 .maxByOrNull { it.loggedAt }?.value,
             latestWeightKg = latestWeight?.value,
+            stepsToday = todayEntries
+                .filter { it.type == HealthMetricType.STEPS }
+                .maxByOrNull { it.loggedAt }?.value?.toInt(),
+            avgHeartRateBpmToday = todayEntries
+                .filter { it.type == HealthMetricType.HEART_RATE }
+                .maxByOrNull { it.loggedAt }?.value?.toInt(),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TrackUiState())
 

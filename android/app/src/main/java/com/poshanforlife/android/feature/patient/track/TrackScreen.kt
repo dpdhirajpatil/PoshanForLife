@@ -67,7 +67,13 @@ fun TrackScreen(
         item { NutritionCard(entries = state.nutritionEntriesToday, onLog = viewModel::logNutrition) }
         item { SleepCard(sleepHours = state.sleepHoursToday, goalHours = state.goals.sleepGoalHours, onLog = viewModel::logSleep) }
         item { WeightCard(latestKg = state.latestWeightKg, goalKg = state.goals.weightGoalKg, onLog = viewModel::logWeight) }
-        item { StepsCard(onConnectHealthConnect = onConnectHealthConnect) }
+        item {
+            StepsCard(
+                steps = state.stepsToday,
+                avgHeartRateBpm = state.avgHeartRateBpmToday,
+                onConnectHealthConnect = onConnectHealthConnect,
+            )
+        }
         item { RemindersCard(viewModel = reminderViewModel) }
     }
 }
@@ -225,21 +231,32 @@ private fun WeightCard(latestKg: Float?, goalKg: Float, onLog: (Float) -> Unit) 
 }
 
 @Composable
-private fun StepsCard(onConnectHealthConnect: () -> Unit) {
+private fun StepsCard(steps: Int?, avgHeartRateBpm: Int?, onConnectHealthConnect: () -> Unit) {
     TrackCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(imageVector = Icons.AutoMirrored.Filled.DirectionsWalk, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             Text(text = "Steps", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(start = 8.dp))
         }
         Spacer(modifier = Modifier.height(12.dp))
-        // Read-only once Health Connect (AN-11) is wired — no manual entry for steps.
-        Text(
-            text = "Not connected",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        OutlinedButton(onClick = onConnectHealthConnect) { Text("Connect Health Connect") }
+        // Read-only from Health Connect (AN-11) — no manual entry for steps/heart rate.
+        if (steps == null) {
+            Text(
+                text = "Not connected",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            OutlinedButton(onClick = onConnectHealthConnect) { Text("Connect Health Connect") }
+        } else {
+            Text(text = "$steps steps today", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+            avgHeartRateBpm?.let {
+                Text(
+                    text = "Avg heart rate: $it bpm",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
     }
 }
 

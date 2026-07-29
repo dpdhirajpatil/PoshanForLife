@@ -7,6 +7,8 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Timeline
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavController
 import androidx.navigation.compose.composable
@@ -14,6 +16,7 @@ import androidx.navigation.compose.navigation
 import com.poshanforlife.android.feature.RootRoutes
 import com.poshanforlife.android.feature.patient.appointments.AppointmentsListScreen
 import com.poshanforlife.android.feature.patient.appointments.BookAppointmentScreen
+import com.poshanforlife.android.feature.patient.profile.ProfileScreen
 import com.poshanforlife.android.feature.patient.programmes.ProgrammeDetailScreen
 import com.poshanforlife.android.feature.patient.programmes.ProgrammesListScreen
 import com.poshanforlife.android.feature.patient.reports.ReportDetailScreen
@@ -23,6 +26,8 @@ import com.poshanforlife.android.feature.patient.track.TrackScreen
 import com.poshanforlife.android.ui.components.BottomNavItem
 import com.poshanforlife.android.ui.components.PlaceholderScreen
 import com.poshanforlife.android.ui.components.RoleScaffold
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.launch
 
 private const val ROOT = "patient/root"
 private const val GOALS_ROUTE = "patient/goals"
@@ -36,6 +41,7 @@ private const val TRACK_ROUTE = "patient/track"
 private const val PROGRAMMES_ROUTE = "patient/programmes"
 private const val APPOINTMENTS_ROUTE = "patient/appointments"
 private const val REPORTS_ROUTE = "patient/reports"
+private const val PROFILE_ROUTE = "patient/profile"
 
 private val items = listOf(
     BottomNavItem(HOME_ROUTE, "Home", Icons.Filled.Home),
@@ -43,17 +49,19 @@ private val items = listOf(
     BottomNavItem(PROGRAMMES_ROUTE, "Programmes", Icons.AutoMirrored.Filled.MenuBook),
     BottomNavItem(APPOINTMENTS_ROUTE, "Appointments", Icons.Filled.CalendarMonth),
     BottomNavItem(REPORTS_ROUTE, "Reports", Icons.Filled.Description),
-    BottomNavItem("patient/profile", "Profile", Icons.Filled.Person),
+    BottomNavItem(PROFILE_ROUTE, "Profile", Icons.Filled.Person),
 )
 
 fun NavGraphBuilder.patientGraph(navController: NavController) {
     navigation(startDestination = ROOT, route = RootRoutes.PATIENT_GRAPH) {
         composable(ROOT) {
-            RoleScaffold(items = items) { route ->
+            val tabSwitchRequests = remember { MutableSharedFlow<String>() }
+            val scope = rememberCoroutineScope()
+            RoleScaffold(items = items, tabSwitchRequests = tabSwitchRequests) { route ->
                 when (route) {
                     HOME_ROUTE -> DashboardScreen()
                     TRACK_ROUTE -> TrackScreen(
-                        onConnectHealthConnect = { /* TODO: wired up in AN-11 */ },
+                        onConnectHealthConnect = { scope.launch { tabSwitchRequests.emit(PROFILE_ROUTE) } },
                         onOpenGoals = { navController.navigate(GOALS_ROUTE) },
                     )
                     PROGRAMMES_ROUTE -> ProgrammesListScreen(
@@ -70,6 +78,7 @@ fun NavGraphBuilder.patientGraph(navController: NavController) {
                     REPORTS_ROUTE -> ReportsListScreen(
                         onOpenReport = { reportId -> navController.navigate("patient/reports/$reportId") },
                     )
+                    PROFILE_ROUTE -> ProfileScreen()
                     else -> PlaceholderScreen(label = items.first { it.route == route }.label)
                 }
             }

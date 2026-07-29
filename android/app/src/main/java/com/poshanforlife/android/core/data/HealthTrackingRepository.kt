@@ -2,10 +2,13 @@ package com.poshanforlife.android.core.data
 
 import com.poshanforlife.android.core.data.local.HealthEntryDao
 import com.poshanforlife.android.core.data.local.HealthEntryEntity
+import com.poshanforlife.android.core.data.local.HealthEntrySource
 import com.poshanforlife.android.core.di.ApplicationScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -37,6 +40,24 @@ class HealthTrackingRepository @Inject constructor(
 
     fun observeLatestOfType(type: String): Flow<HealthEntryEntity?> =
         healthEntryDao.observeLatestOfType(type)
+
+    /**
+     * Called by the Health Connect sync worker (AN-11) instead of [log]: replaces
+     * today's Health-Connect-sourced value for this metric type in place rather than
+     * inserting a new row every sync run (the worker re-reads today's full-day
+     * aggregate each time, so the latest write is always the correct total).
+     */
+    suspend fun upsertFromHealthConnect(type: String, value: Float, unit: String, loggedAt: Long = System.currentTimeMillis()) {
+        val startOfToday = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val existing = healthEntryDao.findLatestOfTypeAndSource(type, HealthEntrySource.HEALTH_CONNECT, startOfToday)
+        if (existing != null) {
+            healthEntryDao.update(existing.copy(value = value, unit = unit, loggedAt = loggedAt))
+        } else {
+            healthEntryDao.insert(
+                HealthEntryEntity(type = type, value = value, unit = unit, loggedAt = loggedAt, source = HealthEntrySource.HEALTH_CONNECT),
+            )
+        }
+    }
 
     private suspend fun syncPending() {
         val unsynced = healthEntryDao.getUnsynced()

@@ -6,6 +6,7 @@ import com.poshanforlife.android.core.network.AppointmentApi
 import com.poshanforlife.android.core.network.AuthApi
 import com.poshanforlife.android.core.network.AuthInterceptor
 import com.poshanforlife.android.core.network.DocumentApi
+import com.poshanforlife.android.core.network.HealthRecordApi
 import com.poshanforlife.android.core.network.LeadApi
 import com.poshanforlife.android.core.network.NotificationApi
 import com.poshanforlife.android.core.network.OrderApi
@@ -126,4 +127,8 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideTransactionApi(retrofit: Retrofit): TransactionApi = retrofit.create(TransactionApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideHealthRecordApi(retrofit: Retrofit): HealthRecordApi = retrofit.create(HealthRecordApi::class.java)
 }

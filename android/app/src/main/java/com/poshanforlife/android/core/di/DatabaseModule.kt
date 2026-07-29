@@ -19,7 +19,10 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
-        Room.databaseBuilder(context, AppDatabase::class.java, "poshan.db").build()
+        Room.databaseBuilder(context, AppDatabase::class.java, "poshan.db")
+            // Pre-launch app, no shipped schema to preserve — simplest option for the AN-11 schema bump.
+            .fallbackToDestructiveMigration()
+            .build()
 
     @Provides
     fun provideHealthEntryDao(db: AppDatabase): HealthEntryDao = db.healthEntryDao()

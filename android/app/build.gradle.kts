@@ -90,6 +90,13 @@ dependencies {
 
     implementation(libs.androidx.browser)
 
+    implementation(libs.androidx.health.connect.client)
+    // Health Connect's runtime variant depends on real Guava (unlike camera-core, which only
+    // needs the ListenableFuture interface). Without this, Gradle's compile classpath resolution
+    // substitutes com.google.guava:listenablefuture with the conflict-avoidance empty artifact
+    // build-wide, which breaks CaptureScreen's direct ListenableFuture usage (AN-10).
+    implementation("com.google.guava:guava:31.1-android")
+
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging.ktx)
 
