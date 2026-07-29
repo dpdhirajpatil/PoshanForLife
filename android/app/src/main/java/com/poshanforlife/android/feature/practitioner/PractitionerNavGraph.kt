@@ -18,6 +18,9 @@ import com.poshanforlife.android.feature.patient.reports.ReportDetailScreen
 import com.poshanforlife.android.feature.practitioner.documents.CreateEstimateScreen
 import com.poshanforlife.android.feature.practitioner.documents.DocumentDetailScreen
 import com.poshanforlife.android.feature.practitioner.documents.DocumentsListScreen
+import com.poshanforlife.android.feature.practitioner.leads.ConvertToPatientScreen
+import com.poshanforlife.android.feature.practitioner.leads.LeadDetailScreen
+import com.poshanforlife.android.feature.practitioner.leads.LeadListScreen
 import com.poshanforlife.android.feature.practitioner.orders.OrderDetailScreen
 import com.poshanforlife.android.feature.practitioner.orders.OrdersAndTransactionsScreen
 import com.poshanforlife.android.feature.practitioner.patients.PatientDetailScreen
@@ -43,11 +46,14 @@ private const val DOCUMENT_DETAIL_ROUTE = "practitioner/documents/{documentId}"
 private const val CREATE_ESTIMATE_ROUTE = "practitioner/documents/create-estimate"
 private const val ORDERS_ROUTE = "practitioner/orders"
 private const val ORDER_DETAIL_ROUTE = "practitioner/orders/{orderId}"
+private const val LEADS_ROUTE = "practitioner/leads"
+private const val LEAD_DETAIL_ROUTE = "practitioner/leads/{leadId}"
+private const val CONVERT_LEAD_ROUTE = "practitioner/leads/{leadId}/convert"
 
 // Role value on the wire stays DOCTOR (see Role.kt) — only user-facing text says "Practitioner".
 private val items = listOf(
     BottomNavItem(PATIENTS_ROUTE, "Patients", Icons.Filled.People),
-    BottomNavItem("practitioner/leads", "Leads", Icons.Filled.ContactPhone),
+    BottomNavItem(LEADS_ROUTE, "Leads", Icons.Filled.ContactPhone),
     BottomNavItem("practitioner/upload", "Upload", Icons.Filled.CloudUpload),
     BottomNavItem(SCHEDULE_ROUTE, "Schedule", Icons.Filled.Schedule),
     BottomNavItem(ORDERS_ROUTE, "Orders", Icons.Filled.ShoppingCart),
@@ -75,6 +81,9 @@ fun NavGraphBuilder.practitionerGraph(navController: NavController) {
                     )
                     ORDERS_ROUTE -> OrdersAndTransactionsScreen(
                         onOpenOrder = { orderId -> navController.navigate("practitioner/orders/$orderId") },
+                    )
+                    LEADS_ROUTE -> LeadListScreen(
+                        onOpenLead = { leadId -> navController.navigate("practitioner/leads/$leadId") },
                     )
                     else -> PlaceholderScreen(label = items.first { it.route == route }.label)
                 }
@@ -138,6 +147,26 @@ fun NavGraphBuilder.practitionerGraph(navController: NavController) {
         }
         composable(ORDER_DETAIL_ROUTE) {
             OrderDetailScreen()
+        }
+        composable(LEAD_DETAIL_ROUTE) {
+            LeadDetailScreen(
+                onBack = { navController.popBackStack() },
+                onConvert = {
+                    val backStackEntry = navController.currentBackStackEntry
+                    val leadId = backStackEntry?.arguments?.getString("leadId").orEmpty()
+                    navController.navigate("practitioner/leads/$leadId/convert")
+                },
+            )
+        }
+        composable(CONVERT_LEAD_ROUTE) {
+            ConvertToPatientScreen(
+                onBack = { navController.popBackStack() },
+                onConverted = { patientId ->
+                    navController.navigate("practitioner/patients/$patientId") {
+                        popUpTo(ROOT) { inclusive = false }
+                    }
+                },
+            )
         }
     }
 }

@@ -4,10 +4,14 @@ import com.poshanforlife.android.core.data.AppointmentRepository
 import com.poshanforlife.android.core.data.AppointmentRepositoryImpl
 import com.poshanforlife.android.core.data.AuthRepository
 import com.poshanforlife.android.core.data.AuthRepositoryImpl
+import com.poshanforlife.android.core.data.CatalogueRepository
+import com.poshanforlife.android.core.data.CatalogueRepositoryImpl
 import com.poshanforlife.android.core.data.DocumentRepository
 import com.poshanforlife.android.core.data.DocumentRepositoryImpl
 import com.poshanforlife.android.core.data.HealthRecordRepository
 import com.poshanforlife.android.core.data.HealthRecordRepositoryImpl
+import com.poshanforlife.android.core.data.LeadRepository
+import com.poshanforlife.android.core.data.LeadRepositoryImpl
 import com.poshanforlife.android.core.data.NotificationRepository
 import com.poshanforlife.android.core.data.NotificationRepositoryImpl
 import com.poshanforlife.android.core.data.OrderRepository
@@ -69,4 +73,12 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindHealthRecordRepository(impl: HealthRecordRepositoryImpl): HealthRecordRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindLeadRepository(impl: LeadRepositoryImpl): LeadRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindCatalogueRepository(impl: CatalogueRepositoryImpl): CatalogueRepository
 }

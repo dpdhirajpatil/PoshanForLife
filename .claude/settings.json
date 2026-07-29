@@ -263,7 +263,8 @@
       "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v21\\) ./gradlew :app:assembleDebug)",
       "Bash(sort -t V -k2 -n)",
       "Bash(JAVA_HOME=/Users/dhiraj/Library/Java/JavaVirtualMachines/ms-21.0.9/Contents/Home ./gradlew :app:compileDebugKotlin --rerun-tasks)",
-      "Bash(JAVA_HOME=/Users/dhiraj/Library/Java/JavaVirtualMachines/ms-21.0.9/Contents/Home ./gradlew :app:compileDebugKotlin)"
+      "Bash(JAVA_HOME=/Users/dhiraj/Library/Java/JavaVirtualMachines/ms-21.0.9/Contents/Home ./gradlew :app:compileDebugKotlin)",
+      "Bash(unzip -o -q /Users/dhiraj/.gradle/caches/8.8/transforms/95c2e1e47c57bb7db6c205455285700b/transformed/material3-release/jars/classes.jar -d material3_classes)"
     ],
     "additionalDirectories": [
       "/private/tmp",

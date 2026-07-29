@@ -16,9 +16,13 @@ import com.poshanforlife.android.feature.RootRoutes
 import com.poshanforlife.android.feature.practitioner.documents.CreateEstimateScreen
 import com.poshanforlife.android.feature.practitioner.documents.DocumentDetailScreen
 import com.poshanforlife.android.feature.practitioner.documents.DocumentsListScreen
+import com.poshanforlife.android.feature.practitioner.leads.ConvertToPatientScreen
+import com.poshanforlife.android.feature.practitioner.leads.LeadDetailScreen
+import com.poshanforlife.android.feature.practitioner.leads.LeadListScreen
 import com.poshanforlife.android.feature.practitioner.orders.OrderDetailScreen
 import com.poshanforlife.android.feature.practitioner.orders.OrdersScreen
 import com.poshanforlife.android.feature.practitioner.orders.TransactionsScreen
+import com.poshanforlife.android.feature.practitioner.patients.PatientDetailScreen
 import com.poshanforlife.android.ui.components.BottomNavItem
 import com.poshanforlife.android.ui.components.PlaceholderScreen
 import com.poshanforlife.android.ui.components.RoleScaffold
@@ -30,11 +34,15 @@ private const val CREATE_ESTIMATE_ROUTE = "admin/documents/create-estimate"
 private const val ORDERS_ROUTE = "admin/orders"
 private const val TRANSACTIONS_ROUTE = "admin/transactions"
 private const val ORDER_DETAIL_ROUTE = "admin/orders/{orderId}"
+private const val LEADS_ROUTE = "admin/leads"
+private const val LEAD_DETAIL_ROUTE = "admin/leads/{leadId}"
+private const val CONVERT_LEAD_ROUTE = "admin/leads/{leadId}/convert"
+private const val PATIENT_DETAIL_ROUTE = "admin/patients/{patientId}"
 
 private val items = listOf(
     BottomNavItem("admin/dashboard", "Dashboard", Icons.Filled.Dashboard),
     BottomNavItem("admin/patients", "Patients", Icons.Filled.People),
-    BottomNavItem("admin/leads", "Leads", Icons.Filled.ContactPhone),
+    BottomNavItem(LEADS_ROUTE, "Leads", Icons.Filled.ContactPhone),
     BottomNavItem(ORDERS_ROUTE, "Orders", Icons.Filled.ShoppingCart),
     BottomNavItem(TRANSACTIONS_ROUTE, "Transactions", Icons.Filled.Receipt),
     BottomNavItem(DOCUMENTS_ROUTE, "Invoices", Icons.Filled.Description),
@@ -54,6 +62,9 @@ fun NavGraphBuilder.adminGraph(navController: NavController) {
                         onOpenOrder = { orderId -> navController.navigate("admin/orders/$orderId") },
                     )
                     TRANSACTIONS_ROUTE -> TransactionsScreen()
+                    LEADS_ROUTE -> LeadListScreen(
+                        onOpenLead = { leadId -> navController.navigate("admin/leads/$leadId") },
+                    )
                     else -> PlaceholderScreen(label = items.first { it.route == route }.label)
                 }
             }
@@ -73,6 +84,31 @@ fun NavGraphBuilder.adminGraph(navController: NavController) {
         }
         composable(ORDER_DETAIL_ROUTE) {
             OrderDetailScreen()
+        }
+        composable(LEAD_DETAIL_ROUTE) {
+            LeadDetailScreen(
+                onBack = { navController.popBackStack() },
+                onConvert = {
+                    val leadId = navController.currentBackStackEntry?.arguments?.getString("leadId").orEmpty()
+                    navController.navigate("admin/leads/$leadId/convert")
+                },
+            )
+        }
+        composable(CONVERT_LEAD_ROUTE) {
+            ConvertToPatientScreen(
+                onBack = { navController.popBackStack() },
+                onConverted = { patientId ->
+                    navController.navigate("admin/patients/$patientId") {
+                        popUpTo(ROOT) { inclusive = false }
+                    }
+                },
+            )
+        }
+        // No admin patient list screen exists yet (AN-09 only built the practitioner
+        // one) — this sibling route exists purely so the convert flow has somewhere
+        // to deep-link to, same PatientDetailScreen reused verbatim.
+        composable(PATIENT_DETAIL_ROUTE) {
+            PatientDetailScreen(onBack = { navController.popBackStack() })
         }
     }
 }
