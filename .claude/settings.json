@@ -282,7 +282,9 @@
       "Bash(/Users/dhiraj/Library/Android/sdk/platform-tools/adb uninstall *)",
       "Bash(grep -n -A20 \"POST /api/v1/catalogue/programmes$\" /private/tmp/claude-501/-Users-dhiraj-Documents-Applications-Poshan-PoshanForLife/3e154054-62b6-4e49-9361-28e5b273e070/scratchpad/backend2.log)",
       "Bash(awk '/22:09:00.699/{f=1} f{print} /22:09:0[1-9]/{c++} c>0 && c<40{print} c>=40{exit}' /private/tmp/claude-501/-Users-dhiraj-Documents-Applications-Poshan-PoshanForLife/3e154054-62b6-4e49-9361-28e5b273e070/scratchpad/backend2.log)",
-      "Bash(/Users/dhiraj/Library/Android/sdk/platform-tools/adb exec-out *)"
+      "Bash(/Users/dhiraj/Library/Android/sdk/platform-tools/adb exec-out *)",
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c \"SELECT name, email, role FROM users WHERE email='testlead1@example.com';\")",
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c \"SELECT l.name, l.source, la.activity_type, la.description FROM leads l JOIN lead_activities la ON la.lead_id = l.id WHERE l.name='TestLeadUser';\")"
     ],
     "additionalDirectories": [
       "/private/tmp",

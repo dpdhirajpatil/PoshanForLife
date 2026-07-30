@@ -9,6 +9,7 @@ import com.poshanforlife.android.core.network.CatalogueApi
 import com.poshanforlife.android.core.network.DocumentApi
 import com.poshanforlife.android.core.network.HealthRecordApi
 import com.poshanforlife.android.core.network.LeadApi
+import com.poshanforlife.android.core.network.LeadSelfApi
 import com.poshanforlife.android.core.network.NotificationApi
 import com.poshanforlife.android.core.network.OrderApi
 import com.poshanforlife.android.core.network.PatientApi
@@ -136,4 +137,8 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideCatalogueApi(retrofit: Retrofit): CatalogueApi = retrofit.create(CatalogueApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideLeadSelfApi(retrofit: Retrofit): LeadSelfApi = retrofit.create(LeadSelfApi::class.java)
 }

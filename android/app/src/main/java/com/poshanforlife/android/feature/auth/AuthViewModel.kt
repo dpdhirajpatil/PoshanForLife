@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.poshanforlife.android.core.data.AuthRepository
 import com.poshanforlife.android.core.domain.model.Role
 import com.poshanforlife.android.core.network.Result
+import com.poshanforlife.android.core.network.SignupRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -24,6 +25,11 @@ sealed class AuthUiState {
 }
 
 data class LoginFormState(
+    val isLoading: Boolean = false,
+    val error: String? = null,
+)
+
+data class SignupFormState(
     val isLoading: Boolean = false,
     val error: String? = null,
 )
@@ -46,6 +52,9 @@ class AuthViewModel @Inject constructor(
     var loginForm by mutableStateOf(LoginFormState())
         private set
 
+    var signupForm by mutableStateOf(SignupFormState())
+        private set
+
     fun login(email: String, password: String) {
         loginForm = loginForm.copy(isLoading = true, error = null)
         viewModelScope.launch {
@@ -57,8 +66,28 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    fun signup(request: SignupRequest) {
+        signupForm = signupForm.copy(isLoading = true, error = null)
+        viewModelScope.launch {
+            signupForm = when (val result = authRepository.signup(request)) {
+                is Result.Success -> signupForm.copy(isLoading = false)
+                is Result.Error -> signupForm.copy(isLoading = false, error = result.message)
+                Result.Loading -> signupForm
+            }
+        }
+    }
+
     fun consumeError() {
         loginForm = loginForm.copy(error = null)
+    }
+
+    fun consumeSignupError() {
+        signupForm = signupForm.copy(error = null)
+    }
+
+    /** Detects a staff-side LEAD->PATIENT conversion — see AuthRepository.refreshCurrentUser's kdoc. Fire-and-forget. */
+    fun refreshUser() {
+        viewModelScope.launch { authRepository.refreshCurrentUser() }
     }
 
     // Never reveals which field was wrong — any 401 from /auth/login means bad credentials.

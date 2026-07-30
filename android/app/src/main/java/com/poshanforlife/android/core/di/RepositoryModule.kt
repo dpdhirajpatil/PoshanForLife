@@ -12,6 +12,8 @@ import com.poshanforlife.android.core.data.HealthRecordRepository
 import com.poshanforlife.android.core.data.HealthRecordRepositoryImpl
 import com.poshanforlife.android.core.data.LeadRepository
 import com.poshanforlife.android.core.data.LeadRepositoryImpl
+import com.poshanforlife.android.core.data.LeadSelfRepository
+import com.poshanforlife.android.core.data.LeadSelfRepositoryImpl
 import com.poshanforlife.android.core.data.NotificationRepository
 import com.poshanforlife.android.core.data.NotificationRepositoryImpl
 import com.poshanforlife.android.core.data.OrderRepository
@@ -81,4 +83,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindCatalogueRepository(impl: CatalogueRepositoryImpl): CatalogueRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindLeadSelfRepository(impl: LeadSelfRepositoryImpl): LeadSelfRepository
 }

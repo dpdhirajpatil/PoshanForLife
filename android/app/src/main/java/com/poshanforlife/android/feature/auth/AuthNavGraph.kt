@@ -7,6 +7,7 @@ import androidx.navigation.compose.navigation
 import com.poshanforlife.android.feature.RootRoutes
 
 private const val LOGIN = "auth/login"
+private const val SIGNUP = "auth/signup"
 
 /**
  * authViewModel is the single shared instance created once in AppNavGraph
@@ -17,7 +18,10 @@ private const val LOGIN = "auth/login"
 fun NavGraphBuilder.authGraph(navController: NavController, authViewModel: AuthViewModel) {
     navigation(startDestination = LOGIN, route = RootRoutes.AUTH_GRAPH) {
         composable(LOGIN) {
-            LoginScreen(authViewModel = authViewModel)
+            LoginScreen(authViewModel = authViewModel, onSignUp = { navController.navigate(SIGNUP) })
+        }
+        composable(SIGNUP) {
+            SignupScreen(authViewModel = authViewModel, onBack = { navController.popBackStack() })
         }
     }
 }

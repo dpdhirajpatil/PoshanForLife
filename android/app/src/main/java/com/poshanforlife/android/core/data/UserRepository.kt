@@ -10,4 +10,7 @@ interface UserRepository {
      * next token rotation) retries, never blocks the caller.
      */
     suspend fun updateFcmToken(userId: String, token: String): Result<UserDetailDto>
+
+    /** Live server profile — used by AuthRepository.refreshCurrentUser() to detect a LEAD->PATIENT role promotion. */
+    suspend fun getMe(): Result<UserDetailDto>
 }

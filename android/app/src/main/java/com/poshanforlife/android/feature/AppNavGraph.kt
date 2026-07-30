@@ -1,9 +1,13 @@
 package com.poshanforlife.android.feature
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -40,6 +44,20 @@ fun AppNavGraph(navController: NavHostController = rememberNavController()) {
     val authViewModel: AuthViewModel = hiltViewModel()
     val authState by authViewModel.uiState.collectAsStateWithLifecycle()
     val navGraphViewModel: AppNavGraphViewModel = hiltViewModel()
+
+    // Re-fetches GET /users/me on every app resume — the only way to notice a
+    // staff-side LEAD->PATIENT conversion (AN-14's convert flow), since
+    // nothing pushes that change to the device otherwise. AuthViewModel's
+    // uiState re-derives from the refreshed cached user automatically, which
+    // the LaunchedEffect below picks up like any other role change.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) authViewModel.refreshUser()
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     LaunchedEffect(authState) {
         val state = authState

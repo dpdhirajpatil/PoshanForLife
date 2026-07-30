@@ -15,4 +15,7 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun updateFcmToken(userId: String, token: String): Result<UserDetailDto> =
         safeApiCall(json) { userApi.update(userId, UpdateUserRequest(fcmToken = token)) }
+
+    override suspend fun getMe(): Result<UserDetailDto> =
+        safeApiCall(json) { userApi.me() }
 }
