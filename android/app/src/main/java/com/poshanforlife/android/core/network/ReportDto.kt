@@ -82,6 +82,15 @@ data class UpdateReportRequest(
     val parsedData: InBodyDataDto? = null,
 )
 
+/** POST /reports body — manual (no-file) report record. type is one of "lab" | "prescription" | "other" (never "inbody", which only the AN-10 upload pipeline can create). */
+@Serializable
+data class CreateReportRequest(
+    val patientId: String,
+    val title: String,
+    val type: String,
+    val notes: String? = null,
+)
+
 /** Mirrors backend's InBodyData record: 20 nullable fields, no nested groups server-side. */
 @Serializable
 data class InBodyDataDto(

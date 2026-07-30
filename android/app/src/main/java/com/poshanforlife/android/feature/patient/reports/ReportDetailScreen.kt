@@ -12,15 +12,33 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -28,80 +46,150 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.poshanforlife.android.core.domain.model.Role
 import com.poshanforlife.android.core.network.InBodyDataDto
+import kotlinx.coroutines.launch
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportDetailScreen(
     modifier: Modifier = Modifier,
     viewModel: ReportDetailViewModel = hiltViewModel(),
+    onBack: () -> Unit = {},
+    onEdit: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val currentUserRole by viewModel.currentUserRole.collectAsStateWithLifecycle()
+    val deleteState by viewModel.deleteState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    var showDeleteConfirm by remember { mutableStateOf(false) }
 
-    when (val state = uiState) {
-        ReportDetailUiState.Loading -> {
-            Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
+    val canEdit = currentUserRole == Role.DOCTOR || currentUserRole == Role.ADMIN
+    val canDelete = currentUserRole == Role.ADMIN
+
+    LaunchedEffect(deleteState) {
+        if (deleteState is ReportDeleteState.Deleted) onBack()
+        if (deleteState is ReportDeleteState.Error) {
+            scope.launch { snackbarHostState.showSnackbar((deleteState as ReportDeleteState.Error).message) }
         }
+    }
 
-        is ReportDetailUiState.Error -> {
-            Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(
-                    text = "Couldn't load this report: ${state.message}",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(24.dp),
-                )
+    if (showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text("Delete report?") },
+            text = { Text("This can't be undone.") },
+            confirmButton = {
+                TextButton(onClick = { showDeleteConfirm = false; viewModel.delete() }) { Text("Delete") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirm = false }) { Text("Cancel") }
+            },
+        )
+    }
+
+    Scaffold(
+        modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            TopAppBar(
+                title = { Text("Report") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    if (canEdit) {
+                        IconButton(onClick = onEdit) {
+                            Icon(Icons.Filled.Edit, contentDescription = "Edit report")
+                        }
+                    }
+                    if (canDelete) {
+                        IconButton(onClick = { showDeleteConfirm = true }) {
+                            Icon(Icons.Filled.Delete, contentDescription = "Delete report")
+                        }
+                    }
+                },
+            )
+        },
+    ) { padding ->
+        when (val state = uiState) {
+            ReportDetailUiState.Loading -> {
+                Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
             }
-        }
 
-        is ReportDetailUiState.Success -> {
-            val report = state.report
-            LazyColumn(
-                modifier = modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                item {
-                    Column {
-                        Text(text = report.title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
-                        Text(
-                            text = report.patient?.name ?: "",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+            is ReportDetailUiState.Error -> {
+                Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "Couldn't load this report: ${state.message}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(24.dp),
+                    )
                 }
+            }
 
-                if (report.confidence != null && report.confidence.lowercase() == "low") {
-                    item { LowConfidenceBadge() }
-                }
-
-                val data = report.parsedData
-                if (data != null) {
-                    inBodyGroups(data).forEach { group ->
-                        item { FieldGroupCard(group) }
-                    }
-                } else {
+            is ReportDetailUiState.Success -> {
+                val report = state.report
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize().padding(padding),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
                     item {
-                        Text(
-                            text = "No parsed data available for this report.",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                        Column {
+                            Text(text = report.title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+                            Text(
+                                text = report.patient?.name ?: "",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                     }
-                }
 
-                if (report.fileUrl != null) {
-                    item {
-                        Button(
-                            onClick = {
-                                CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(report.fileUrl))
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                        ) { Text("View original PDF") }
+                    if (report.confidence != null && report.confidence.lowercase() == "low") {
+                        item { LowConfidenceBadge() }
+                    }
+
+                    val data = report.parsedData
+                    if (data != null) {
+                        inBodyGroups(data).forEach { group ->
+                            item { FieldGroupCard(group) }
+                        }
+                    } else if (report.type != "inbody") {
+                        report.notes?.takeIf { it.isNotBlank() }?.let {
+                            item {
+                                Column {
+                                    Text(text = "Notes", style = MaterialTheme.typography.titleMedium)
+                                    Text(text = it, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 4.dp))
+                                }
+                            }
+                        }
+                    } else {
+                        item {
+                            Text(
+                                text = "No parsed data available for this report.",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+
+                    if (report.fileUrl != null) {
+                        item {
+                            Button(
+                                onClick = {
+                                    CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(report.fileUrl))
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                            ) { Text("View original PDF") }
+                        }
                     }
                 }
             }

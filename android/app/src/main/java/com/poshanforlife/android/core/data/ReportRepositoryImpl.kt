@@ -1,5 +1,6 @@
 package com.poshanforlife.android.core.data
 
+import com.poshanforlife.android.core.network.CreateReportRequest
 import com.poshanforlife.android.core.network.ReportApi
 import com.poshanforlife.android.core.network.ReportDetailDto
 import com.poshanforlife.android.core.network.ReportListItemDto
@@ -56,4 +57,15 @@ class ReportRepositoryImpl @Inject constructor(
 
     override suspend fun updateReport(id: String, request: UpdateReportRequest): Result<ReportDetailDto> =
         safeApiCall(json) { reportApi.update(id, request) }
+
+    override suspend fun createReport(request: CreateReportRequest): Result<ReportDetailDto> =
+        safeApiCall(json) { reportApi.create(request) }
+
+    override suspend fun deleteReport(id: String): Result<Unit> {
+        return when (val result = safeApiCall(json) { reportApi.delete(id) }) {
+            is Result.Success -> Result.Success(Unit)
+            is Result.Error -> result
+            Result.Loading -> Result.Loading
+        }
+    }
 }

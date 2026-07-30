@@ -4,6 +4,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.PATCH
@@ -39,4 +40,12 @@ interface ReportApi {
         @Path("id") id: String,
         @Body body: UpdateReportRequest,
     ): Response<ApiResponse<ReportDetailDto>>
+
+    /** Manual (non-INBODY) report record — ADMIN+DOCTOR only, per backend prompt 09. */
+    @POST("api/v1/reports")
+    suspend fun create(@Body body: CreateReportRequest): Response<ApiResponse<ReportDetailDto>>
+
+    /** Hard delete, ADMIN-only server-side. */
+    @DELETE("api/v1/reports/{id}")
+    suspend fun delete(@Path("id") id: String): Response<ApiResponse<kotlin.collections.Map<String, Boolean>>>
 }

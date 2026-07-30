@@ -1,5 +1,6 @@
 package com.poshanforlife.android.core.data
 
+import com.poshanforlife.android.core.network.CreateReportRequest
 import com.poshanforlife.android.core.network.ReportDetailDto
 import com.poshanforlife.android.core.network.ReportListItemDto
 import com.poshanforlife.android.core.network.ReportUploadResponseDto
@@ -17,6 +18,12 @@ interface ReportRepository {
     /** AN-10: uploads a captured InBody report photo for AI extraction. */
     suspend fun uploadReport(patientId: String, file: File): Result<ReportUploadResponseDto>
 
-    /** AN-10: confirms/corrects the extracted data (and/or title/notes) after review. */
+    /** AN-10: confirms/corrects the extracted data (and/or title/notes) after review. AN-19 also reuses this for edit-mode title/notes/status saves. */
     suspend fun updateReport(id: String, request: UpdateReportRequest): Result<ReportDetailDto>
+
+    /** AN-19: manual (non-INBODY) report record — LAB/PRESCRIPTION/OTHER. */
+    suspend fun createReport(request: CreateReportRequest): Result<ReportDetailDto>
+
+    /** AN-19: hard delete, ADMIN-only. */
+    suspend fun deleteReport(id: String): Result<Unit>
 }

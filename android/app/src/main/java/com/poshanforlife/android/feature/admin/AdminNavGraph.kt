@@ -13,6 +13,9 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.poshanforlife.android.feature.RootRoutes
+import com.poshanforlife.android.feature.patient.reports.CreateReportScreen
+import com.poshanforlife.android.feature.patient.reports.EditReportScreen
+import com.poshanforlife.android.feature.patient.reports.ReportDetailScreen
 import com.poshanforlife.android.feature.practitioner.catalogue.CatalogueItemFormScreen
 import com.poshanforlife.android.feature.practitioner.catalogue.CatalogueScreen
 import com.poshanforlife.android.feature.practitioner.documents.CreateEstimateScreen
@@ -40,6 +43,9 @@ private const val LEADS_ROUTE = "admin/leads"
 private const val LEAD_DETAIL_ROUTE = "admin/leads/{leadId}"
 private const val CONVERT_LEAD_ROUTE = "admin/leads/{leadId}/convert"
 private const val PATIENT_DETAIL_ROUTE = "admin/patients/{patientId}"
+private const val PATIENT_REPORT_DETAIL_ROUTE = "admin/patients/{patientId}/reports/{reportId}"
+private const val EDIT_REPORT_ROUTE = "admin/patients/{patientId}/reports/{reportId}/edit"
+private const val CREATE_REPORT_ROUTE = "admin/patients/{patientId}/reports/new"
 private const val SETTINGS_ROUTE = "admin/settings"
 private const val CATALOGUE_NEW_ROUTE = "admin/catalogue/{type}/new"
 private const val CATALOGUE_EDIT_ROUTE = "admin/catalogue/{type}/{itemId}/edit"
@@ -122,8 +128,45 @@ fun NavGraphBuilder.adminGraph(navController: NavController) {
         // No admin patient list screen exists yet (AN-09 only built the practitioner
         // one) — this sibling route exists purely so the convert flow has somewhere
         // to deep-link to, same PatientDetailScreen reused verbatim.
-        composable(PATIENT_DETAIL_ROUTE) {
-            PatientDetailScreen(onBack = { navController.popBackStack() })
+        composable(PATIENT_DETAIL_ROUTE) { backStackEntry ->
+            val patientId = backStackEntry.arguments?.getString("patientId").orEmpty()
+            PatientDetailScreen(
+                isAdmin = true,
+                onOpenReport = { reportId -> navController.navigate("admin/patients/$patientId/reports/$reportId") },
+                onCreateReport = { navController.navigate("admin/patients/$patientId/reports/new") },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable(PATIENT_REPORT_DETAIL_ROUTE) { backStackEntry ->
+            val patientId = backStackEntry.arguments?.getString("patientId").orEmpty()
+            val reportId = backStackEntry.arguments?.getString("reportId").orEmpty()
+            ReportDetailScreen(
+                onBack = { navController.popBackStack() },
+                onEdit = { navController.navigate("admin/patients/$patientId/reports/$reportId/edit") },
+            )
+        }
+        composable(EDIT_REPORT_ROUTE) { backStackEntry ->
+            val patientId = backStackEntry.arguments?.getString("patientId").orEmpty()
+            val reportId = backStackEntry.arguments?.getString("reportId").orEmpty()
+            EditReportScreen(
+                onBack = { navController.popBackStack() },
+                onSaved = {
+                    navController.navigate("admin/patients/$patientId/reports/$reportId") {
+                        popUpTo(PATIENT_DETAIL_ROUTE) { inclusive = false }
+                    }
+                },
+            )
+        }
+        composable(CREATE_REPORT_ROUTE) { backStackEntry ->
+            val patientId = backStackEntry.arguments?.getString("patientId").orEmpty()
+            CreateReportScreen(
+                onBack = { navController.popBackStack() },
+                onSaved = { reportId ->
+                    navController.navigate("admin/patients/$patientId/reports/$reportId") {
+                        popUpTo(PATIENT_DETAIL_ROUTE) { inclusive = false }
+                    }
+                },
+            )
         }
         composable(CATALOGUE_NEW_ROUTE) {
             CatalogueItemFormScreen(onBack = { navController.popBackStack() }, onSaved = { navController.popBackStack() })

@@ -157,6 +157,17 @@ class PatientManagementViewModel @Inject constructor(
         }
     }
 
+    /** AN-19: ADMIN-only, enforced server-side too. Refreshes the list on success so the deleted row disappears. */
+    fun deleteReport(reportId: String) {
+        viewModelScope.launch {
+            when (reportRepository.deleteReport(reportId)) {
+                is Result.Success -> loadReports()
+                is Result.Error -> Unit
+                Result.Loading -> Unit
+            }
+        }
+    }
+
     private fun loadProgrammes() {
         val id = checkNotNull(patientId)
         viewModelScope.launch {

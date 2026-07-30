@@ -1,7 +1,9 @@
 package com.poshanforlife.android.feature.practitioner.patients
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,15 +24,18 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.HelpOutline
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -40,10 +45,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -73,11 +80,14 @@ private val TABS = listOf("Overview", "Reports", "Programmes", "Notes")
 fun PatientDetailScreen(
     modifier: Modifier = Modifier,
     viewModel: PatientManagementViewModel = hiltViewModel(),
+    isAdmin: Boolean = false,
     onOpenReport: (reportId: String) -> Unit = {},
+    onCreateReport: () -> Unit = {},
     onOpenProgramme: (programmeId: String) -> Unit = {},
     onBack: () -> Unit = {},
 ) {
     val detailState by viewModel.detailState.collectAsStateWithLifecycle()
+    var selectedTab by remember { mutableIntStateOf(0) }
 
     Scaffold(
         modifier = modifier,
@@ -92,6 +102,14 @@ fun PatientDetailScreen(
                     }
                 },
             )
+        },
+        floatingActionButton = {
+            // Both DOCTOR and ADMIN can create manual (non-INBODY) reports server-side — see backend prompt 09's @AdminOrDoctor create endpoint.
+            if (selectedTab == 1 && detailState is PatientDetailUiState.Success) {
+                FloatingActionButton(onClick = onCreateReport) {
+                    Icon(Icons.Filled.Add, contentDescription = "New report")
+                }
+            }
         },
     ) { padding ->
         when (val state = detailState) {
@@ -113,7 +131,6 @@ fun PatientDetailScreen(
             }
 
             is PatientDetailUiState.Success -> {
-                var selectedTab by remember { mutableIntStateOf(0) }
                 Column(modifier = Modifier.fillMaxSize().padding(padding)) {
                     ProfileHeader(state.patient)
                     TabRow(selectedTabIndex = selectedTab) {
@@ -127,7 +144,7 @@ fun PatientDetailScreen(
                     }
                     when (selectedTab) {
                         0 -> OverviewTab(state.patient)
-                        1 -> ReportsTab(viewModel, onOpenReport)
+                        1 -> ReportsTab(viewModel, isAdmin, onOpenReport)
                         2 -> ProgrammesTab(viewModel, onOpenProgramme)
                         3 -> NotesTab(viewModel)
                     }
@@ -226,8 +243,24 @@ private fun StatColumn(label: String, value: String) {
 }
 
 @Composable
-private fun ReportsTab(viewModel: PatientManagementViewModel, onOpenReport: (String) -> Unit) {
+private fun ReportsTab(viewModel: PatientManagementViewModel, isAdmin: Boolean, onOpenReport: (String) -> Unit) {
     val state by viewModel.reportsState.collectAsStateWithLifecycle()
+    var pendingDeleteId by remember { mutableStateOf<String?>(null) }
+
+    pendingDeleteId?.let { reportId ->
+        AlertDialog(
+            onDismissRequest = { pendingDeleteId = null },
+            title = { Text("Delete report?") },
+            text = { Text("This can't be undone.") },
+            confirmButton = {
+                TextButton(onClick = { viewModel.deleteReport(reportId); pendingDeleteId = null }) { Text("Delete") }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDeleteId = null }) { Text("Cancel") }
+            },
+        )
+    }
+
     when (val s = state) {
         PatientReportsUiState.Loading -> Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator() }
         is PatientReportsUiState.Error -> Box(Modifier.fillMaxSize(), Alignment.Center) {
@@ -241,7 +274,12 @@ private fun ReportsTab(viewModel: PatientManagementViewModel, onOpenReport: (Str
             } else {
                 LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(s.reports, key = { it.id }) { report ->
-                        ReportRow(report, onClick = { onOpenReport(report.id) })
+                        ReportRow(
+                            report,
+                            onClick = { onOpenReport(report.id) },
+                            // ADMIN-only, matching backend prompt 09's @AdminOnly delete endpoint — long-press since there's no swipe-to-dismiss convention elsewhere in this app.
+                            onLongClick = if (isAdmin) ({ pendingDeleteId = report.id }) else null,
+                        )
                     }
                 }
             }
@@ -249,12 +287,13 @@ private fun ReportsTab(viewModel: PatientManagementViewModel, onOpenReport: (Str
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun ReportRow(report: ReportListItemDto, onClick: () -> Unit) {
+private fun ReportRow(report: ReportListItemDto, onClick: () -> Unit, onLongClick: (() -> Unit)? = null) {
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        modifier = Modifier.fillMaxWidth().combinedClickable(onClick = onClick, onLongClick = onLongClick),
     ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(imageVector = Icons.Filled.Description, contentDescription = null, tint = MaterialTheme.colorScheme.primary)

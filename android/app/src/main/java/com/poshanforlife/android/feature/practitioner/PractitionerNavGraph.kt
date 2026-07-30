@@ -14,6 +14,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.poshanforlife.android.feature.RootRoutes
 import com.poshanforlife.android.feature.patient.programmes.ProgrammeDetailScreen
+import com.poshanforlife.android.feature.patient.reports.CreateReportScreen
+import com.poshanforlife.android.feature.patient.reports.EditReportScreen
 import com.poshanforlife.android.feature.patient.reports.ReportDetailScreen
 import com.poshanforlife.android.feature.practitioner.catalogue.CatalogueScreen
 import com.poshanforlife.android.feature.practitioner.documents.CreateEstimateScreen
@@ -40,6 +42,8 @@ private const val UPLOAD_ROUTE = "practitioner/upload"
 private const val DOCUMENTS_ROUTE = "practitioner/documents"
 private const val PATIENT_DETAIL_ROUTE = "practitioner/patients/{patientId}"
 private const val PATIENT_REPORT_DETAIL_ROUTE = "practitioner/patients/{patientId}/reports/{reportId}"
+private const val EDIT_REPORT_ROUTE = "practitioner/patients/{patientId}/reports/{reportId}/edit"
+private const val CREATE_REPORT_ROUTE = "practitioner/patients/{patientId}/reports/new"
 private const val PATIENT_PROGRAMME_DETAIL_ROUTE = "practitioner/patients/{patientId}/programmes/{programmeId}"
 private const val CAPTURE_ROUTE = "practitioner/upload/capture/{patientId}"
 private const val REVIEW_ROUTE = "practitioner/upload/review/{patientId}/{reportId}"
@@ -99,7 +103,9 @@ fun NavGraphBuilder.practitionerGraph(navController: NavController) {
         composable(PATIENT_DETAIL_ROUTE) { backStackEntry ->
             val patientId = backStackEntry.arguments?.getString("patientId").orEmpty()
             PatientDetailScreen(
+                isAdmin = false,
                 onOpenReport = { reportId -> navController.navigate("practitioner/patients/$patientId/reports/$reportId") },
+                onCreateReport = { navController.navigate("practitioner/patients/$patientId/reports/new") },
                 onOpenProgramme = { programmeId ->
                     navController.navigate("practitioner/patients/$patientId/programmes/$programmeId")
                 },
@@ -109,8 +115,36 @@ fun NavGraphBuilder.practitionerGraph(navController: NavController) {
         // Reuses AN-05's/AN-06's own detail screens verbatim — their ViewModels read
         // reportId/patientId/programmeId from SavedStateHandle by key name, which
         // this route's placeholders satisfy regardless of which graph declares it.
-        composable(PATIENT_REPORT_DETAIL_ROUTE) {
-            ReportDetailScreen()
+        composable(PATIENT_REPORT_DETAIL_ROUTE) { backStackEntry ->
+            val patientId = backStackEntry.arguments?.getString("patientId").orEmpty()
+            val reportId = backStackEntry.arguments?.getString("reportId").orEmpty()
+            ReportDetailScreen(
+                onBack = { navController.popBackStack() },
+                onEdit = { navController.navigate("practitioner/patients/$patientId/reports/$reportId/edit") },
+            )
+        }
+        composable(EDIT_REPORT_ROUTE) { backStackEntry ->
+            val patientId = backStackEntry.arguments?.getString("patientId").orEmpty()
+            val reportId = backStackEntry.arguments?.getString("reportId").orEmpty()
+            EditReportScreen(
+                onBack = { navController.popBackStack() },
+                onSaved = {
+                    navController.navigate("practitioner/patients/$patientId/reports/$reportId") {
+                        popUpTo(PATIENT_DETAIL_ROUTE) { inclusive = false }
+                    }
+                },
+            )
+        }
+        composable(CREATE_REPORT_ROUTE) { backStackEntry ->
+            val patientId = backStackEntry.arguments?.getString("patientId").orEmpty()
+            CreateReportScreen(
+                onBack = { navController.popBackStack() },
+                onSaved = { reportId ->
+                    navController.navigate("practitioner/patients/$patientId/reports/$reportId") {
+                        popUpTo(PATIENT_DETAIL_ROUTE) { inclusive = false }
+                    }
+                },
+            )
         }
         composable(PATIENT_PROGRAMME_DETAIL_ROUTE) {
             ProgrammeDetailScreen()

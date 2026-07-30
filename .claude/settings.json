@@ -284,7 +284,11 @@
       "Bash(awk '/22:09:00.699/{f=1} f{print} /22:09:0[1-9]/{c++} c>0 && c<40{print} c>=40{exit}' /private/tmp/claude-501/-Users-dhiraj-Documents-Applications-Poshan-PoshanForLife/3e154054-62b6-4e49-9361-28e5b273e070/scratchpad/backend2.log)",
       "Bash(/Users/dhiraj/Library/Android/sdk/platform-tools/adb exec-out *)",
       "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c \"SELECT name, email, role FROM users WHERE email='testlead1@example.com';\")",
-      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c \"SELECT l.name, l.source, la.activity_type, la.description FROM leads l JOIN lead_activities la ON la.lead_id = l.id WHERE l.name='TestLeadUser';\")"
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -c \"SELECT l.name, l.source, la.activity_type, la.description FROM leads l JOIN lead_activities la ON la.lead_id = l.id WHERE l.name='TestLeadUser';\")",
+      "Bash(export JAVA_HOME=/Users/dhiraj/Library/Java/JavaVirtualMachines/ms-21.0.9/Contents/Home)",
+      "Bash(./gradlew :app:compileDebugKotlin --rerun-tasks)",
+      "Bash(psql -U dhiraj -d poshan_api -c \"select id, name, email, role from users where role='DOCTOR' limit 5;\")",
+      "Bash(psql -U dhiraj -d poshan_api -c \"select id, name, email, role from users where role='PATIENT' limit 5;\")"
     ],
     "additionalDirectories": [
       "/private/tmp",
