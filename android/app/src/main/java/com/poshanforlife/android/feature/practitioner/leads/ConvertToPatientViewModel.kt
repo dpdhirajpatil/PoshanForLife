@@ -5,7 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.poshanforlife.android.core.data.CatalogueRepository
 import com.poshanforlife.android.core.data.LeadRepository
-import com.poshanforlife.android.core.network.CataloguePickerItemDto
+import com.poshanforlife.android.core.network.CatalogueItemDto
+import com.poshanforlife.android.core.network.CatalogueType
 import com.poshanforlife.android.core.network.ConvertLeadRequest
 import com.poshanforlife.android.core.network.LeadDetailDto
 import com.poshanforlife.android.core.network.Result
@@ -18,13 +19,6 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
-/** Programme/Session/Challenge — the catalogue picker's plural URL segment for each. */
-enum class CatalogueTypeOption(val pathSegment: String, val wireLabel: String, val label: String) {
-    PROGRAMME("programmes", "programme", "Programme"),
-    SESSION("sessions", "session", "Session"),
-    CHALLENGE("challenges", "challenge", "Challenge"),
-}
-
 sealed class ConvertLeadUiState {
     data object Loading : ConvertLeadUiState()
     data class Error(val message: String) : ConvertLeadUiState()
@@ -36,10 +30,10 @@ sealed class ConvertLeadUiState {
         val bloodGroup: String = "",
         val heightCm: String = "",
         val assignService: Boolean = false,
-        val serviceType: CatalogueTypeOption = CatalogueTypeOption.PROGRAMME,
+        val serviceType: CatalogueType = CatalogueType.PROGRAMME,
         val serviceSearch: String = "",
-        val serviceResults: List<CataloguePickerItemDto> = emptyList(),
-        val selectedService: CataloguePickerItemDto? = null,
+        val serviceResults: List<CatalogueItemDto> = emptyList(),
+        val selectedService: CatalogueItemDto? = null,
         val price: String = "",
         val startDate: LocalDate = LocalDate.now(),
         val submitting: Boolean = false,
@@ -104,7 +98,7 @@ class ConvertToPatientViewModel @Inject constructor(
         if (assign) searchCatalogue()
     }
 
-    fun onServiceTypeChange(type: CatalogueTypeOption) {
+    fun onServiceTypeChange(type: CatalogueType) {
         updateForm { it.copy(serviceType = type, selectedService = null, serviceResults = emptyList()) }
         searchCatalogue()
     }
@@ -117,7 +111,13 @@ class ConvertToPatientViewModel @Inject constructor(
     private fun searchCatalogue() {
         val form = _uiState.value as? ConvertLeadUiState.Form ?: return
         viewModelScope.launch {
-            when (val result = catalogueRepository.listPublished(form.serviceType.pathSegment, form.serviceSearch.ifBlank { null })) {
+            when (
+                val result = catalogueRepository.list(
+                    type = form.serviceType.pathSegment,
+                    status = "published",
+                    search = form.serviceSearch.ifBlank { null },
+                )
+            ) {
                 is Result.Success -> updateForm { it.copy(serviceResults = result.data) }
                 is Result.Error -> Unit
                 Result.Loading -> Unit
@@ -125,7 +125,7 @@ class ConvertToPatientViewModel @Inject constructor(
         }
     }
 
-    fun onSelectService(item: CataloguePickerItemDto) {
+    fun onSelectService(item: CatalogueItemDto) {
         updateForm { it.copy(selectedService = item, price = item.priceInr?.toString() ?: it.price) }
     }
 

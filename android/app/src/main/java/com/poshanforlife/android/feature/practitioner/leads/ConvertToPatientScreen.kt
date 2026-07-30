@@ -36,7 +36,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.poshanforlife.android.core.network.CataloguePickerItemDto
+import com.poshanforlife.android.core.network.CatalogueItemDto
+import com.poshanforlife.android.core.network.CatalogueType
 import com.poshanforlife.android.ui.components.AppDatePickerDialog
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -143,11 +144,11 @@ fun ConvertToPatientScreen(
 
                         if (state.assignService) {
                             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) {
-                                CatalogueTypeOption.entries.forEachIndexed { index, type ->
+                                CatalogueType.entries.forEachIndexed { index, type ->
                                     SegmentedButton(
                                         selected = state.serviceType == type,
                                         onClick = { viewModel.onServiceTypeChange(type) },
-                                        shape = SegmentedButtonDefaults.itemShape(index = index, count = CatalogueTypeOption.entries.size),
+                                        shape = SegmentedButtonDefaults.itemShape(index = index, count = CatalogueType.entries.size),
                                     ) { Text(type.label) }
                                 }
                             }
@@ -223,7 +224,7 @@ fun ConvertToPatientScreen(
 }
 
 @Composable
-private fun CatalogueResultRow(item: CataloguePickerItemDto, onClick: () -> Unit) {
+private fun CatalogueResultRow(item: CatalogueItemDto, onClick: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 10.dp),
         horizontalArrangement = Arrangement.SpaceBetween,

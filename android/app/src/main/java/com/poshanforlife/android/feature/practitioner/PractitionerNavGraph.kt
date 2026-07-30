@@ -15,6 +15,7 @@ import androidx.navigation.compose.navigation
 import com.poshanforlife.android.feature.RootRoutes
 import com.poshanforlife.android.feature.patient.programmes.ProgrammeDetailScreen
 import com.poshanforlife.android.feature.patient.reports.ReportDetailScreen
+import com.poshanforlife.android.feature.practitioner.catalogue.CatalogueScreen
 import com.poshanforlife.android.feature.practitioner.documents.CreateEstimateScreen
 import com.poshanforlife.android.feature.practitioner.documents.DocumentDetailScreen
 import com.poshanforlife.android.feature.practitioner.documents.DocumentsListScreen
@@ -49,6 +50,7 @@ private const val ORDER_DETAIL_ROUTE = "practitioner/orders/{orderId}"
 private const val LEADS_ROUTE = "practitioner/leads"
 private const val LEAD_DETAIL_ROUTE = "practitioner/leads/{leadId}"
 private const val CONVERT_LEAD_ROUTE = "practitioner/leads/{leadId}/convert"
+private const val PROFILE_ROUTE = "practitioner/profile"
 
 // Role value on the wire stays DOCTOR (see Role.kt) — only user-facing text says "Practitioner".
 private val items = listOf(
@@ -85,6 +87,10 @@ fun NavGraphBuilder.practitionerGraph(navController: NavController) {
                     LEADS_ROUTE -> LeadListScreen(
                         onOpenLead = { leadId -> navController.navigate("practitioner/leads/$leadId") },
                     )
+                    // Profile doesn't have a real screen of its own yet (a future prompt's
+                    // job) — read-only Service Catalogue browse is the one concrete
+                    // practitioner-facing surface this prompt asks for.
+                    PROFILE_ROUTE -> CatalogueScreen(isAdmin = false)
                     else -> PlaceholderScreen(label = items.first { it.route == route }.label)
                 }
             }

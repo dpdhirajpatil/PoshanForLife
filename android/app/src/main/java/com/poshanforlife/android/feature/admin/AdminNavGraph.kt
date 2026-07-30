@@ -13,6 +13,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.poshanforlife.android.feature.RootRoutes
+import com.poshanforlife.android.feature.practitioner.catalogue.CatalogueItemFormScreen
+import com.poshanforlife.android.feature.practitioner.catalogue.CatalogueScreen
 import com.poshanforlife.android.feature.practitioner.documents.CreateEstimateScreen
 import com.poshanforlife.android.feature.practitioner.documents.DocumentDetailScreen
 import com.poshanforlife.android.feature.practitioner.documents.DocumentsListScreen
@@ -38,6 +40,9 @@ private const val LEADS_ROUTE = "admin/leads"
 private const val LEAD_DETAIL_ROUTE = "admin/leads/{leadId}"
 private const val CONVERT_LEAD_ROUTE = "admin/leads/{leadId}/convert"
 private const val PATIENT_DETAIL_ROUTE = "admin/patients/{patientId}"
+private const val SETTINGS_ROUTE = "admin/settings"
+private const val CATALOGUE_NEW_ROUTE = "admin/catalogue/{type}/new"
+private const val CATALOGUE_EDIT_ROUTE = "admin/catalogue/{type}/{itemId}/edit"
 
 private val items = listOf(
     BottomNavItem("admin/dashboard", "Dashboard", Icons.Filled.Dashboard),
@@ -64,6 +69,16 @@ fun NavGraphBuilder.adminGraph(navController: NavController) {
                     TRANSACTIONS_ROUTE -> TransactionsScreen()
                     LEADS_ROUTE -> LeadListScreen(
                         onOpenLead = { leadId -> navController.navigate("admin/leads/$leadId") },
+                    )
+                    // Settings doesn't have a real screen of its own yet (a future prompt's
+                    // job) — Service Catalogue management is the one concrete admin-only
+                    // surface this prompt asks for, so it's the tab's first real content.
+                    SETTINGS_ROUTE -> CatalogueScreen(
+                        isAdmin = true,
+                        onCreateItem = { type -> navController.navigate("admin/catalogue/${type.pathSegment}/new") },
+                        onEditItem = { type, itemId ->
+                            navController.navigate("admin/catalogue/${type.pathSegment}/$itemId/edit")
+                        },
                     )
                     else -> PlaceholderScreen(label = items.first { it.route == route }.label)
                 }
@@ -109,6 +124,12 @@ fun NavGraphBuilder.adminGraph(navController: NavController) {
         // to deep-link to, same PatientDetailScreen reused verbatim.
         composable(PATIENT_DETAIL_ROUTE) {
             PatientDetailScreen(onBack = { navController.popBackStack() })
+        }
+        composable(CATALOGUE_NEW_ROUTE) {
+            CatalogueItemFormScreen(onBack = { navController.popBackStack() }, onSaved = { navController.popBackStack() })
+        }
+        composable(CATALOGUE_EDIT_ROUTE) {
+            CatalogueItemFormScreen(onBack = { navController.popBackStack() }, onSaved = { navController.popBackStack() })
         }
     }
 }
