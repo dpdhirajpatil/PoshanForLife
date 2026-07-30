@@ -4,6 +4,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.PATCH
+import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -34,6 +35,13 @@ interface PatientApi {
     suspend fun getProgramme(
         @Path("patientId") patientId: String,
         @Path("ppId") ppId: String,
+    ): Response<ApiResponse<PatientProgrammeDto>>
+
+    /** AN-20: assign a catalogue service to a patient — also auto-creates an Order (and an activation Transaction if priced) server-side. */
+    @POST("api/v1/patients/{patientId}/programmes")
+    suspend fun createProgramme(
+        @Path("patientId") patientId: String,
+        @Body request: CreatePatientProgrammeRequest,
     ): Response<ApiResponse<PatientProgrammeDto>>
 
     /** Full badge catalog for this patient, each annotated with earned/earnedAt. */

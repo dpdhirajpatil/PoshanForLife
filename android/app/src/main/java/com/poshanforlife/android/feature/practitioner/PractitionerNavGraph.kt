@@ -12,6 +12,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
+import com.poshanforlife.android.core.network.CatalogueType
 import com.poshanforlife.android.feature.RootRoutes
 import com.poshanforlife.android.feature.patient.programmes.ProgrammeDetailScreen
 import com.poshanforlife.android.feature.patient.reports.CreateReportScreen
@@ -26,6 +27,7 @@ import com.poshanforlife.android.feature.practitioner.leads.LeadDetailScreen
 import com.poshanforlife.android.feature.practitioner.leads.LeadListScreen
 import com.poshanforlife.android.feature.practitioner.orders.OrderDetailScreen
 import com.poshanforlife.android.feature.practitioner.orders.OrdersAndTransactionsScreen
+import com.poshanforlife.android.feature.practitioner.patients.AssignServiceScreen
 import com.poshanforlife.android.feature.practitioner.patients.PatientDetailScreen
 import com.poshanforlife.android.feature.practitioner.patients.PatientListScreen
 import com.poshanforlife.android.feature.practitioner.schedule.ScheduleScreen
@@ -45,6 +47,8 @@ private const val PATIENT_REPORT_DETAIL_ROUTE = "practitioner/patients/{patientI
 private const val EDIT_REPORT_ROUTE = "practitioner/patients/{patientId}/reports/{reportId}/edit"
 private const val CREATE_REPORT_ROUTE = "practitioner/patients/{patientId}/reports/new"
 private const val PATIENT_PROGRAMME_DETAIL_ROUTE = "practitioner/patients/{patientId}/programmes/{programmeId}"
+private const val ASSIGN_SERVICE_PICKER_ROUTE = "practitioner/patients/{patientId}/assign"
+private const val ASSIGN_SERVICE_DETAILS_ROUTE = "practitioner/patients/{patientId}/assign/{type}/{itemId}"
 private const val CAPTURE_ROUTE = "practitioner/upload/capture/{patientId}"
 private const val REVIEW_ROUTE = "practitioner/upload/review/{patientId}/{reportId}"
 private const val DOCUMENT_DETAIL_ROUTE = "practitioner/documents/{documentId}"
@@ -109,7 +113,31 @@ fun NavGraphBuilder.practitionerGraph(navController: NavController) {
                 onOpenProgramme = { programmeId ->
                     navController.navigate("practitioner/patients/$patientId/programmes/$programmeId")
                 },
+                onAssignService = { navController.navigate("practitioner/patients/$patientId/assign") },
                 onBack = { navController.popBackStack() },
+            )
+        }
+        // AN-20: reuses AN-15's CatalogueScreen itself as the type-tabs + item-picker
+        // step (pickerMode=true) rather than rebuilding that browse UI.
+        composable(ASSIGN_SERVICE_PICKER_ROUTE) { backStackEntry ->
+            val patientId = backStackEntry.arguments?.getString("patientId").orEmpty()
+            CatalogueScreen(
+                pickerMode = true,
+                onItemSelected = { item ->
+                    val type = CatalogueType.entries.first { it.wireLabel == item.type }
+                    navController.navigate("practitioner/patients/$patientId/assign/${type.pathSegment}/${item.id}")
+                },
+            )
+        }
+        composable(ASSIGN_SERVICE_DETAILS_ROUTE) { backStackEntry ->
+            AssignServiceScreen(
+                onBack = { navController.popBackStack() },
+                onAssigned = {
+                    val patientId = backStackEntry.arguments?.getString("patientId").orEmpty()
+                    navController.navigate("practitioner/patients/$patientId") {
+                        popUpTo(ROOT) { inclusive = false }
+                    }
+                },
             )
         }
         // Reuses AN-05's/AN-06's own detail screens verbatim — their ViewModels read

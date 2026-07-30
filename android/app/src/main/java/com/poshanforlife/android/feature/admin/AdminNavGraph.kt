@@ -12,6 +12,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
+import com.poshanforlife.android.core.network.CatalogueType
 import com.poshanforlife.android.feature.RootRoutes
 import com.poshanforlife.android.feature.patient.reports.CreateReportScreen
 import com.poshanforlife.android.feature.patient.reports.EditReportScreen
@@ -27,6 +28,7 @@ import com.poshanforlife.android.feature.practitioner.leads.LeadListScreen
 import com.poshanforlife.android.feature.practitioner.orders.OrderDetailScreen
 import com.poshanforlife.android.feature.practitioner.orders.OrdersScreen
 import com.poshanforlife.android.feature.practitioner.orders.TransactionsScreen
+import com.poshanforlife.android.feature.practitioner.patients.AssignServiceScreen
 import com.poshanforlife.android.feature.practitioner.patients.PatientDetailScreen
 import com.poshanforlife.android.ui.components.BottomNavItem
 import com.poshanforlife.android.ui.components.PlaceholderScreen
@@ -46,6 +48,8 @@ private const val PATIENT_DETAIL_ROUTE = "admin/patients/{patientId}"
 private const val PATIENT_REPORT_DETAIL_ROUTE = "admin/patients/{patientId}/reports/{reportId}"
 private const val EDIT_REPORT_ROUTE = "admin/patients/{patientId}/reports/{reportId}/edit"
 private const val CREATE_REPORT_ROUTE = "admin/patients/{patientId}/reports/new"
+private const val ASSIGN_SERVICE_PICKER_ROUTE = "admin/patients/{patientId}/assign"
+private const val ASSIGN_SERVICE_DETAILS_ROUTE = "admin/patients/{patientId}/assign/{type}/{itemId}"
 private const val SETTINGS_ROUTE = "admin/settings"
 private const val CATALOGUE_NEW_ROUTE = "admin/catalogue/{type}/new"
 private const val CATALOGUE_EDIT_ROUTE = "admin/catalogue/{type}/{itemId}/edit"
@@ -134,7 +138,31 @@ fun NavGraphBuilder.adminGraph(navController: NavController) {
                 isAdmin = true,
                 onOpenReport = { reportId -> navController.navigate("admin/patients/$patientId/reports/$reportId") },
                 onCreateReport = { navController.navigate("admin/patients/$patientId/reports/new") },
+                onAssignService = { navController.navigate("admin/patients/$patientId/assign") },
                 onBack = { navController.popBackStack() },
+            )
+        }
+        // AN-20: reuses AN-15's CatalogueScreen itself as the type-tabs + item-picker
+        // step (pickerMode=true) rather than rebuilding that browse UI.
+        composable(ASSIGN_SERVICE_PICKER_ROUTE) { backStackEntry ->
+            val patientId = backStackEntry.arguments?.getString("patientId").orEmpty()
+            CatalogueScreen(
+                pickerMode = true,
+                onItemSelected = { item ->
+                    val type = CatalogueType.entries.first { it.wireLabel == item.type }
+                    navController.navigate("admin/patients/$patientId/assign/${type.pathSegment}/${item.id}")
+                },
+            )
+        }
+        composable(ASSIGN_SERVICE_DETAILS_ROUTE) { backStackEntry ->
+            AssignServiceScreen(
+                onBack = { navController.popBackStack() },
+                onAssigned = {
+                    val patientId = backStackEntry.arguments?.getString("patientId").orEmpty()
+                    navController.navigate("admin/patients/$patientId") {
+                        popUpTo(ROOT) { inclusive = false }
+                    }
+                },
             )
         }
         composable(PATIENT_REPORT_DETAIL_ROUTE) { backStackEntry ->

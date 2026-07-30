@@ -1,6 +1,7 @@
 package com.poshanforlife.android.core.data
 
 import com.poshanforlife.android.core.network.ChallengeProgressDto
+import com.poshanforlife.android.core.network.CreatePatientProgrammeRequest
 import com.poshanforlife.android.core.network.DocumentListItemDto
 import com.poshanforlife.android.core.network.HealthRecordDto
 import com.poshanforlife.android.core.network.PatientBadgeStatusDto
@@ -30,6 +31,9 @@ interface PatientRepository {
     suspend fun getProgrammes(patientId: String): Result<List<PatientProgrammeDto>>
 
     suspend fun getProgramme(patientId: String, ppId: String): Result<PatientProgrammeDto>
+
+    /** AN-20: assign a catalogue service to a patient. */
+    suspend fun assignService(patientId: String, request: CreatePatientProgrammeRequest): Result<PatientProgrammeDto>
 
     /** Empty list means "nothing outstanding" (not an error). */
     suspend fun getPendingInvoices(patientId: String): Result<List<DocumentListItemDto>>

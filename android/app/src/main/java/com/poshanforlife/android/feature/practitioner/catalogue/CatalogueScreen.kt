@@ -35,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -82,6 +83,11 @@ fun CatalogueScreen(
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     var detailItem by remember { mutableStateOf<CatalogueItemDto?>(null) }
 
+    // AN-20: assigning a service should only ever offer live, bookable items.
+    LaunchedEffect(pickerMode) {
+        if (pickerMode) viewModel.onStatusFilterChange("published")
+    }
+
     Scaffold(
         modifier = modifier,
         floatingActionButton = {
@@ -112,16 +118,18 @@ fun CatalogueScreen(
                 singleLine = true,
             )
 
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                items(STATUS_OPTIONS) { option ->
-                    FilterChip(
-                        selected = statusFilter == option.value,
-                        onClick = { viewModel.onStatusFilterChange(option.value) },
-                        label = { Text(option.label) },
-                    )
+            if (!pickerMode) {
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    items(STATUS_OPTIONS) { option ->
+                        FilterChip(
+                            selected = statusFilter == option.value,
+                            onClick = { viewModel.onStatusFilterChange(option.value) },
+                            label = { Text(option.label) },
+                        )
+                    }
                 }
             }
 

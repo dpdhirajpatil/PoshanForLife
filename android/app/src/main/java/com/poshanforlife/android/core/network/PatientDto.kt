@@ -71,6 +71,29 @@ data class PatientProgrammeDto(
     val status: String,
     val notes: String? = null,
     val assignedDoctor: UserRefDto? = null,
+    /** The order auto-created alongside this assignment — null only if the DTO variant that omits it was used. */
+    val order: AssignmentOrderDto? = null,
+)
+
+/** AN-20: POST /patients/{patientId}/programmes body. serviceType is the wire singular label ("programme"/"session"/"challenge"); exactly the id matching it should be set. */
+@Serializable
+data class CreatePatientProgrammeRequest(
+    val serviceType: String,
+    val programmeId: String? = null,
+    val sessionId: String? = null,
+    val challengeId: String? = null,
+    val startDate: String? = null,
+    val priceInr: Double? = null,
+    val notes: String? = null,
+)
+
+/** Minimal view of the order auto-created by assigning a service — mirrors backend's OrderSummaryDto (transactions omitted, unused by the assign-service receipt). */
+@Serializable
+data class AssignmentOrderDto(
+    val id: String,
+    val amountInr: Double,
+    val status: String,
+    val paymentStatus: String,
 )
 
 /** Duration fields are only ever non-null for the matching type (programme=weeks, session=minutes, challenge=days). */

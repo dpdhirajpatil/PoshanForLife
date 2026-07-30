@@ -84,6 +84,7 @@ fun PatientDetailScreen(
     onOpenReport: (reportId: String) -> Unit = {},
     onCreateReport: () -> Unit = {},
     onOpenProgramme: (programmeId: String) -> Unit = {},
+    onAssignService: () -> Unit = {},
     onBack: () -> Unit = {},
 ) {
     val detailState by viewModel.detailState.collectAsStateWithLifecycle()
@@ -104,10 +105,15 @@ fun PatientDetailScreen(
             )
         },
         floatingActionButton = {
-            // Both DOCTOR and ADMIN can create manual (non-INBODY) reports server-side — see backend prompt 09's @AdminOrDoctor create endpoint.
-            if (selectedTab == 1 && detailState is PatientDetailUiState.Success) {
-                FloatingActionButton(onClick = onCreateReport) {
-                    Icon(Icons.Filled.Add, contentDescription = "New report")
+            // Both DOCTOR and ADMIN can create manual (non-INBODY) reports / assign services server-side — see backend prompt 09's and the patient-programmes endpoint's @AdminOrDoctor gates.
+            if (detailState is PatientDetailUiState.Success) {
+                when (selectedTab) {
+                    1 -> FloatingActionButton(onClick = onCreateReport) {
+                        Icon(Icons.Filled.Add, contentDescription = "New report")
+                    }
+                    2 -> FloatingActionButton(onClick = onAssignService) {
+                        Icon(Icons.Filled.Add, contentDescription = "Assign service")
+                    }
                 }
             }
         },

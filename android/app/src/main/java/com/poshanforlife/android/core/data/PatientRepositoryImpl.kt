@@ -1,6 +1,7 @@
 package com.poshanforlife.android.core.data
 
 import com.poshanforlife.android.core.network.ChallengeProgressDto
+import com.poshanforlife.android.core.network.CreatePatientProgrammeRequest
 import com.poshanforlife.android.core.network.DocumentApi
 import com.poshanforlife.android.core.network.DocumentListItemDto
 import com.poshanforlife.android.core.network.HealthRecordDto
@@ -59,6 +60,9 @@ class PatientRepositoryImpl @Inject constructor(
 
     override suspend fun getProgramme(patientId: String, ppId: String): Result<PatientProgrammeDto> =
         safeApiCall(json) { patientApi.getProgramme(patientId, ppId) }
+
+    override suspend fun assignService(patientId: String, request: CreatePatientProgrammeRequest): Result<PatientProgrammeDto> =
+        safeApiCall(json) { patientApi.createProgramme(patientId, request) }
 
     override suspend fun getPendingInvoices(patientId: String): Result<List<DocumentListItemDto>> =
         safeApiCall(json) {
