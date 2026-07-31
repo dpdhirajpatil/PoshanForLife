@@ -17,6 +17,6 @@ interface CatalogueRepository {
 
     suspend fun update(type: String, id: String, request: UpdateCatalogueItemRequest): Result<CatalogueItemDto>
 
-    /** Uploads the given local file, returning the resulting cover image URL. */
-    suspend fun uploadCoverImage(type: String, file: File): Result<String>
+    /** Uploads the given local file, returning the resulting cover image URL. mimeType must exactly match one the backend allowlists (image/jpeg|png|webp|gif) — a wildcard MIME type is rejected. */
+    suspend fun uploadCoverImage(type: String, file: File, mimeType: String): Result<String>
 }

@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavController
@@ -30,6 +31,10 @@ import com.poshanforlife.android.feature.practitioner.orders.OrdersScreen
 import com.poshanforlife.android.feature.practitioner.orders.TransactionsScreen
 import com.poshanforlife.android.feature.practitioner.patients.AssignServiceScreen
 import com.poshanforlife.android.feature.practitioner.patients.PatientDetailScreen
+import com.poshanforlife.android.feature.products.ProductDetailScreen
+import com.poshanforlife.android.feature.products.ProductFormScreen
+import com.poshanforlife.android.feature.products.ProductsScreen
+import com.poshanforlife.android.feature.products.SegmentManagementScreen
 import com.poshanforlife.android.ui.components.BottomNavItem
 import com.poshanforlife.android.ui.components.PlaceholderScreen
 import com.poshanforlife.android.ui.components.RoleScaffold
@@ -53,6 +58,11 @@ private const val ASSIGN_SERVICE_DETAILS_ROUTE = "admin/patients/{patientId}/ass
 private const val SETTINGS_ROUTE = "admin/settings"
 private const val CATALOGUE_NEW_ROUTE = "admin/catalogue/{type}/new"
 private const val CATALOGUE_EDIT_ROUTE = "admin/catalogue/{type}/{itemId}/edit"
+private const val PRODUCTS_ROUTE = "admin/products"
+private const val PRODUCT_DETAIL_ROUTE = "admin/products/{productId}"
+private const val PRODUCT_NEW_ROUTE = "admin/products/new"
+private const val PRODUCT_EDIT_ROUTE = "admin/products/{productId}/edit"
+private const val MANAGE_SEGMENTS_ROUTE = "admin/products/segments"
 
 private val items = listOf(
     BottomNavItem("admin/dashboard", "Dashboard", Icons.Filled.Dashboard),
@@ -61,6 +71,7 @@ private val items = listOf(
     BottomNavItem(ORDERS_ROUTE, "Orders", Icons.Filled.ShoppingCart),
     BottomNavItem(TRANSACTIONS_ROUTE, "Transactions", Icons.Filled.Receipt),
     BottomNavItem(DOCUMENTS_ROUTE, "Invoices", Icons.Filled.Description),
+    BottomNavItem(PRODUCTS_ROUTE, "Products", Icons.Filled.ShoppingBag),
     BottomNavItem("admin/settings", "Settings", Icons.Filled.Settings),
 )
 
@@ -90,9 +101,28 @@ fun NavGraphBuilder.adminGraph(navController: NavController) {
                             navController.navigate("admin/catalogue/${type.pathSegment}/$itemId/edit")
                         },
                     )
+                    PRODUCTS_ROUTE -> ProductsScreen(
+                        isAdmin = true,
+                        onOpenProduct = { productId -> navController.navigate("admin/products/$productId") },
+                        onCreateProduct = { navController.navigate(PRODUCT_NEW_ROUTE) },
+                        onEditProduct = { productId -> navController.navigate("admin/products/$productId/edit") },
+                        onManageSegments = { navController.navigate(MANAGE_SEGMENTS_ROUTE) },
+                    )
                     else -> PlaceholderScreen(label = items.first { it.route == route }.label)
                 }
             }
+        }
+        composable(PRODUCT_DETAIL_ROUTE) {
+            ProductDetailScreen(onBack = { navController.popBackStack() })
+        }
+        composable(PRODUCT_NEW_ROUTE) {
+            ProductFormScreen(onBack = { navController.popBackStack() })
+        }
+        composable(PRODUCT_EDIT_ROUTE) {
+            ProductFormScreen(onBack = { navController.popBackStack() })
+        }
+        composable(MANAGE_SEGMENTS_ROUTE) {
+            SegmentManagementScreen(onBack = { navController.popBackStack() })
         }
         composable(DOCUMENT_DETAIL_ROUTE) {
             DocumentDetailScreen()

@@ -13,6 +13,7 @@ import com.poshanforlife.android.core.network.LeadSelfApi
 import com.poshanforlife.android.core.network.NotificationApi
 import com.poshanforlife.android.core.network.OrderApi
 import com.poshanforlife.android.core.network.PatientApi
+import com.poshanforlife.android.core.network.ProductApi
 import com.poshanforlife.android.core.network.ReportApi
 import com.poshanforlife.android.core.network.TokenAuthenticator
 import com.poshanforlife.android.core.network.TransactionApi
@@ -141,4 +142,8 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideLeadSelfApi(retrofit: Retrofit): LeadSelfApi = retrofit.create(LeadSelfApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideProductApi(retrofit: Retrofit): ProductApi = retrofit.create(ProductApi::class.java)
 }

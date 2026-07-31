@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavController
@@ -33,6 +34,8 @@ import com.poshanforlife.android.feature.practitioner.patients.PatientListScreen
 import com.poshanforlife.android.feature.practitioner.schedule.ScheduleScreen
 import com.poshanforlife.android.feature.practitioner.upload.CaptureScreen
 import com.poshanforlife.android.feature.practitioner.upload.ReviewScreen
+import com.poshanforlife.android.feature.products.ProductDetailScreen
+import com.poshanforlife.android.feature.products.ProductsScreen
 import com.poshanforlife.android.ui.components.BottomNavItem
 import com.poshanforlife.android.ui.components.PlaceholderScreen
 import com.poshanforlife.android.ui.components.RoleScaffold
@@ -58,6 +61,8 @@ private const val ORDER_DETAIL_ROUTE = "practitioner/orders/{orderId}"
 private const val LEADS_ROUTE = "practitioner/leads"
 private const val LEAD_DETAIL_ROUTE = "practitioner/leads/{leadId}"
 private const val CONVERT_LEAD_ROUTE = "practitioner/leads/{leadId}/convert"
+private const val PRODUCTS_ROUTE = "practitioner/products"
+private const val PRODUCT_DETAIL_ROUTE = "practitioner/products/{productId}"
 private const val PROFILE_ROUTE = "practitioner/profile"
 
 // Role value on the wire stays DOCTOR (see Role.kt) — only user-facing text says "Practitioner".
@@ -68,6 +73,7 @@ private val items = listOf(
     BottomNavItem(SCHEDULE_ROUTE, "Schedule", Icons.Filled.Schedule),
     BottomNavItem(ORDERS_ROUTE, "Orders", Icons.Filled.ShoppingCart),
     BottomNavItem(DOCUMENTS_ROUTE, "Invoices", Icons.Filled.Receipt),
+    BottomNavItem(PRODUCTS_ROUTE, "Products", Icons.Filled.ShoppingBag),
     BottomNavItem("practitioner/profile", "Profile", Icons.Filled.Person),
 )
 
@@ -95,6 +101,11 @@ fun NavGraphBuilder.practitionerGraph(navController: NavController) {
                     LEADS_ROUTE -> LeadListScreen(
                         onOpenLead = { leadId -> navController.navigate("practitioner/leads/$leadId") },
                     )
+                    // Read-only for DOCTOR — see AdminNavGraph for the admin-mode instance of this same screen.
+                    PRODUCTS_ROUTE -> ProductsScreen(
+                        isAdmin = false,
+                        onOpenProduct = { productId -> navController.navigate("practitioner/products/$productId") },
+                    )
                     // Profile doesn't have a real screen of its own yet (a future prompt's
                     // job) — read-only Service Catalogue browse is the one concrete
                     // practitioner-facing surface this prompt asks for.
@@ -102,6 +113,9 @@ fun NavGraphBuilder.practitionerGraph(navController: NavController) {
                     else -> PlaceholderScreen(label = items.first { it.route == route }.label)
                 }
             }
+        }
+        composable(PRODUCT_DETAIL_ROUTE) {
+            ProductDetailScreen(onBack = { navController.popBackStack() })
         }
         // Opens as a full screen above the bottom-nav shell, same convention as the patient graph's sibling detail routes.
         composable(PATIENT_DETAIL_ROUTE) { backStackEntry ->

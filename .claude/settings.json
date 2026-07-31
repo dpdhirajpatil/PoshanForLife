@@ -288,7 +288,8 @@
       "Bash(export JAVA_HOME=/Users/dhiraj/Library/Java/JavaVirtualMachines/ms-21.0.9/Contents/Home)",
       "Bash(./gradlew :app:compileDebugKotlin --rerun-tasks)",
       "Bash(psql -U dhiraj -d poshan_api -c \"select id, name, email, role from users where role='DOCTOR' limit 5;\")",
-      "Bash(psql -U dhiraj -d poshan_api -c \"select id, name, email, role from users where role='PATIENT' limit 5;\")"
+      "Bash(psql -U dhiraj -d poshan_api -c \"select id, name, email, role from users where role='PATIENT' limit 5;\")",
+      "Bash(curl -s -o /dev/null -w \"http=%{http_code}\\\\n\" \"https://pdfliakdheartjetfedb.supabase.co/storage/v1/object/public/programme-covers/products/3251fe92-ce21-46e9-b4f0-5f0962fa6c43.png\")"
     ],
     "additionalDirectories": [
       "/private/tmp",

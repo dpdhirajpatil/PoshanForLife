@@ -30,11 +30,11 @@ class CatalogueRepositoryImpl @Inject constructor(
     override suspend fun update(type: String, id: String, request: UpdateCatalogueItemRequest): Result<CatalogueItemDto> =
         safeApiCall(json) { catalogueApi.update(type, id, request) }
 
-    override suspend fun uploadCoverImage(type: String, file: File): Result<String> {
+    override suspend fun uploadCoverImage(type: String, file: File, mimeType: String): Result<String> {
         val filePart = MultipartBody.Part.createFormData(
             "file",
             file.name,
-            file.asRequestBody("image/*".toMediaType()),
+            file.asRequestBody(mimeType.toMediaType()),
         )
         return when (val result = safeApiCall(json) { catalogueApi.uploadCoverImage(type, filePart) }) {
             is Result.Success -> Result.Success(result.data.url)

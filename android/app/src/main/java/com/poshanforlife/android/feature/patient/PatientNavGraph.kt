@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -25,6 +26,8 @@ import com.poshanforlife.android.feature.patient.reports.ReportDetailScreen
 import com.poshanforlife.android.feature.patient.reports.ReportsListScreen
 import com.poshanforlife.android.feature.patient.track.GoalsScreen
 import com.poshanforlife.android.feature.patient.track.TrackScreen
+import com.poshanforlife.android.feature.products.ProductDetailScreen
+import com.poshanforlife.android.feature.products.ProductsScreen
 import com.poshanforlife.android.ui.components.BottomNavItem
 import com.poshanforlife.android.ui.components.PlaceholderScreen
 import com.poshanforlife.android.ui.components.RoleScaffold
@@ -44,7 +47,9 @@ private const val PROGRAMMES_ROUTE = "patient/programmes"
 private const val APPOINTMENTS_ROUTE = "patient/appointments"
 private const val REPORTS_ROUTE = "patient/reports"
 private const val BADGES_ROUTE = "patient/badges"
+private const val PRODUCTS_ROUTE = "patient/products"
 private const val PROFILE_ROUTE = "patient/profile"
+private const val PRODUCT_DETAIL_ROUTE = "patient/products/{productId}"
 
 private val items = listOf(
     BottomNavItem(HOME_ROUTE, "Home", Icons.Filled.Home),
@@ -53,6 +58,7 @@ private val items = listOf(
     BottomNavItem(APPOINTMENTS_ROUTE, "Appointments", Icons.Filled.CalendarMonth),
     BottomNavItem(REPORTS_ROUTE, "Reports", Icons.Filled.Description),
     BottomNavItem(BADGES_ROUTE, "Badges", Icons.Filled.EmojiEvents),
+    BottomNavItem(PRODUCTS_ROUTE, "Products", Icons.Filled.ShoppingBag),
     BottomNavItem(PROFILE_ROUTE, "Profile", Icons.Filled.Person),
 )
 
@@ -83,6 +89,11 @@ fun NavGraphBuilder.patientGraph(navController: NavController) {
                         onOpenReport = { reportId -> navController.navigate("patient/reports/$reportId") },
                     )
                     BADGES_ROUTE -> BadgesScreen()
+                    // Read-only for every non-admin role — see AdminNavGraph for the admin-mode instance of this same screen.
+                    PRODUCTS_ROUTE -> ProductsScreen(
+                        isAdmin = false,
+                        onOpenProduct = { productId -> navController.navigate("patient/products/$productId") },
+                    )
                     PROFILE_ROUTE -> ProfileScreen()
                     else -> PlaceholderScreen(label = items.first { it.route == route }.label)
                 }
@@ -91,6 +102,9 @@ fun NavGraphBuilder.patientGraph(navController: NavController) {
         // Opens as a full screen above the bottom-nav shell (settings-style, not a tab).
         composable(GOALS_ROUTE) {
             GoalsScreen()
+        }
+        composable(PRODUCT_DETAIL_ROUTE) {
+            ProductDetailScreen(onBack = { navController.popBackStack() })
         }
         composable(REPORT_DETAIL_ROUTE) {
             ReportDetailScreen()

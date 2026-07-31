@@ -110,12 +110,16 @@ class CatalogueItemFormViewModel @Inject constructor(
     fun onCoverImagePicked(uri: Uri) {
         viewModelScope.launch {
             _uiState.update { it.copy(uploadingImage = true) }
-            val file = withContext(Dispatchers.IO) { copyUriToCacheFile(uri) }
+            // Backend validates the multipart Content-Type against an exact allowlist
+            // (image/jpeg|png|webp|gif) — must be the real resolved MIME type, not a
+            // wildcard like "image/*", or the upload 422s regardless of file bytes.
+            val mimeType = context.contentResolver.getType(uri) ?: "image/jpeg"
+            val file = withContext(Dispatchers.IO) { copyUriToCacheFile(uri, mimeType) }
             if (file == null) {
                 _uiState.update { it.copy(uploadingImage = false) }
                 return@launch
             }
-            when (val result = catalogueRepository.uploadCoverImage(type.pathSegment, file)) {
+            when (val result = catalogueRepository.uploadCoverImage(type.pathSegment, file, mimeType)) {
                 is Result.Success -> _uiState.update { it.copy(uploadingImage = false, coverImageUrl = result.data) }
                 is Result.Error -> _uiState.update { it.copy(uploadingImage = false) }
                 Result.Loading -> Unit
@@ -123,9 +127,15 @@ class CatalogueItemFormViewModel @Inject constructor(
         }
     }
 
-    private fun copyUriToCacheFile(uri: Uri): File? = runCatching {
+    private fun copyUriToCacheFile(uri: Uri, mimeType: String): File? = runCatching {
         val input = context.contentResolver.openInputStream(uri) ?: return null
-        val file = File(context.cacheDir, "cover_${System.currentTimeMillis()}.jpg")
+        val extension = when (mimeType) {
+            "image/png" -> "png"
+            "image/webp" -> "webp"
+            "image/gif" -> "gif"
+            else -> "jpg"
+        }
+        val file = File(context.cacheDir, "cover_${System.currentTimeMillis()}.$extension")
         input.use { inStream -> FileOutputStream(file).use { out -> inStream.copyTo(out) } }
         file
     }.getOrNull()
