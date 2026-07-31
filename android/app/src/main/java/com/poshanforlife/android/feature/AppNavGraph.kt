@@ -4,6 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -24,6 +27,7 @@ import com.poshanforlife.android.feature.notifications.NotificationPermissionReq
 import com.poshanforlife.android.feature.patient.patientGraph
 import com.poshanforlife.android.feature.practitioner.practitionerGraph
 import com.poshanforlife.android.ui.components.LoadingScreen
+import com.poshanforlife.android.ui.theme.PoshanPatientTheme
 
 /**
  * Root NavHost. AuthViewModel is created once here (scoped to whichever
@@ -59,6 +63,11 @@ fun AppNavGraph(navController: NavHostController = rememberNavController()) {
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
+    // AN-22: tracks the role seen on the *previous* authState transition (in-memory only,
+    // reset on process death) — only a LEAD->PATIENT transition observed live, not a cold
+    // start already at PATIENT, should ever show ConversionWelcomeScreen.
+    var previousRole by remember { mutableStateOf<Role?>(null) }
+
     LaunchedEffect(authState) {
         val state = authState
         val target = when (state) {
@@ -68,16 +77,25 @@ fun AppNavGraph(navController: NavHostController = rememberNavController()) {
                 // Fire-and-forget FCM token push — covers "app was offline when the
                 // token last rotated" retries, once per login/app-open (see AN-08).
                 navGraphViewModel.syncFcmToken()
-                when (state.role) {
-                    Role.PATIENT -> RootRoutes.PATIENT_GRAPH
+                val justConverted = previousRole == Role.LEAD && state.role == Role.PATIENT
+                val route = when (state.role) {
+                    Role.PATIENT ->
+                        if (justConverted && !navGraphViewModel.hasSeenConversionWelcome(state.userId)) {
+                            RootRoutes.CONVERSION_WELCOME
+                        } else {
+                            RootRoutes.PATIENT_GRAPH
+                        }
                     Role.DOCTOR -> RootRoutes.PRACTITIONER_GRAPH
                     Role.ADMIN -> RootRoutes.ADMIN_GRAPH
                     Role.LEAD -> RootRoutes.LEAD_GRAPH
                     // Unrecognized role (backend enum drift): fail safe to logged-out, never crash.
                     Role.UNKNOWN -> RootRoutes.AUTH_GRAPH
                 }
+                previousRole = state.role
+                route
             }
         }
+        if (state is AuthUiState.LoggedOut) previousRole = null
         if (target != null && navController.currentDestination?.route != target) {
             navController.navigate(target) {
                 popUpTo(0) { inclusive = true }
@@ -103,6 +121,19 @@ fun AppNavGraph(navController: NavHostController = rememberNavController()) {
     NavHost(navController = navController, startDestination = RootRoutes.LOADING) {
         composable(RootRoutes.LOADING) {
             LoadingScreen()
+        }
+        composable(RootRoutes.CONVERSION_WELCOME) {
+            PoshanPatientTheme {
+                ConversionWelcomeScreen(
+                    onContinue = {
+                        (authState as? AuthUiState.LoggedIn)?.let { navGraphViewModel.markConversionWelcomeSeen(it.userId) }
+                        navController.navigate(RootRoutes.PATIENT_GRAPH) {
+                            popUpTo(0) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
+                )
+            }
         }
         authGraph(navController, authViewModel)
         patientGraph(navController)

@@ -21,7 +21,7 @@ import javax.inject.Inject
 sealed class AuthUiState {
     data object Loading : AuthUiState()
     data object LoggedOut : AuthUiState()
-    data class LoggedIn(val role: Role) : AuthUiState()
+    data class LoggedIn(val role: Role, val userId: String) : AuthUiState()
 }
 
 data class LoginFormState(
@@ -46,7 +46,7 @@ class AuthViewModel @Inject constructor(
      * else needs to poll or explicitly detect an expired session.
      */
     val uiState: StateFlow<AuthUiState> = authRepository.currentUser()
-        .map { user -> if (user == null) AuthUiState.LoggedOut else AuthUiState.LoggedIn(Role.fromWire(user.role)) }
+        .map { user -> if (user == null) AuthUiState.LoggedOut else AuthUiState.LoggedIn(Role.fromWire(user.role), user.id) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AuthUiState.Loading)
 
     var loginForm by mutableStateOf(LoginFormState())
@@ -91,6 +91,9 @@ class AuthViewModel @Inject constructor(
     }
 
     // Never reveals which field was wrong — any 401 from /auth/login means bad credentials.
+    // The backend's login 401 body always carries its own "code":"AUTH_REQUIRED" (decoded by
+    // safeApiCall into Result.Error.code), so "HTTP_401" alone never matched a real login
+    // failure — every bad-password attempt fell through to the generic fallback message instead.
     private fun mapError(error: Result.Error): String =
-        if (error.code == "HTTP_401") "Invalid email or password" else "Something went wrong. Please try again."
+        if (error.code == "HTTP_401" || error.code == "AUTH_REQUIRED") "Invalid email or password" else "Something went wrong. Please try again."
 }

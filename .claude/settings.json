@@ -300,7 +300,15 @@
       "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -h localhost -c \"select email, role from users limit 10;\")",
       "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -h localhost -c \"select id, email, password_hash, role, name from users where email='admin@poshanforlife.com';\")",
       "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -h localhost -c ' *)",
-      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -h localhost -c \"DELETE FROM users WHERE email='testdoc1@example.com';\")"
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -h localhost -c \"DELETE FROM users WHERE email='testdoc1@example.com';\")",
+      "Bash(sort -t/ -k1)",
+      "Bash(awk '{print $2}')",
+      "Bash(kill 27366 27514)",
+      "Bash(nohup ./mvnw -o spring-boot:run > /tmp/backend.log 2>&1 & disown; sleep 1; echo \"launched, pid roots:\"; jobs -l)",
+      "Bash(ANDROID_HOME=$HOME/Library/Android/sdk; nohup $ANDROID_HOME/emulator/emulator -avd Medium_Phone_API_35 -no-snapshot-load -dns-server 8.8.8.8,8.8.4.4 > /tmp/emulator.log 2>&1 & disown; echo started)",
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -h localhost -c \"select name, criteria_type, criteria_value from badges;\")",
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -h localhost -c \"UPDATE badges SET criteria_type = 'STREAK_DAYS' WHERE criteria_type = 'streak_days' RETURNING name, criteria_type;\")",
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -h localhost -c \"UPDATE users SET role='PATIENT' WHERE email='testlead1@example.com' RETURNING id, email, role;\")"
     ],
     "additionalDirectories": [
       "/private/tmp",

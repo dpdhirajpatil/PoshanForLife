@@ -1,6 +1,8 @@
 package com.poshanforlife.android.core.data
 
 import com.poshanforlife.android.core.network.LeadSelfApi
+import com.poshanforlife.android.core.network.LeadStreakDto
+import com.poshanforlife.android.core.network.PatientBadgeStatusDto
 import com.poshanforlife.android.core.network.RequestConsultationRequest
 import com.poshanforlife.android.core.network.Result
 import com.poshanforlife.android.core.network.safeApiCall
@@ -22,4 +24,13 @@ class LeadSelfRepositoryImpl @Inject constructor(
             is Result.Error -> result
             Result.Loading -> Result.Loading
         }
+
+    override suspend fun getStreak(): Result<LeadStreakDto> =
+        safeApiCall(json) { leadSelfApi.getStreak() }
+
+    override suspend fun checkInStreak(): Result<LeadStreakDto> =
+        safeApiCall(json) { leadSelfApi.checkInStreak() }
+
+    override suspend fun getBadges(): Result<List<PatientBadgeStatusDto>> =
+        safeApiCall(json) { leadSelfApi.getBadges() }
 }
