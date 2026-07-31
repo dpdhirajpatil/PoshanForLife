@@ -17,6 +17,10 @@ private const val SlantFraction = 0.06f
  * A slightly slanted parallelogram — the recurring bar-behind-headline/CTA motif visible
  * throughout the CI guide. Distinct from a plain RoundedCornerShape button; use behind section
  * headers and primary CTAs where the brand guide shows this shape, not everywhere.
+ *
+ * Belongs to [PoshanPatientTheme] and [PoshanLeadTheme] only — [PoshanStaffTheme] (Admin,
+ * Practitioner) screens must never use this, matching the calmer staff mockup's plain rounded
+ * cards throughout. Enforced at each call site, not by disabling the component itself.
  */
 val TrapeziumShape = GenericShape { size, _ ->
     val slant = size.width * SlantFraction

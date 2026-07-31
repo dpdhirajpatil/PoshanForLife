@@ -3,10 +3,11 @@ package com.poshanforlife.android.feature.practitioner
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.ContactPhone
+import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.People
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.navigation.NavGraphBuilder
@@ -37,6 +38,8 @@ import com.poshanforlife.android.feature.practitioner.upload.ReviewScreen
 import com.poshanforlife.android.feature.products.ProductDetailScreen
 import com.poshanforlife.android.feature.products.ProductsScreen
 import com.poshanforlife.android.ui.components.BottomNavItem
+import com.poshanforlife.android.ui.components.MoreMenuItem
+import com.poshanforlife.android.ui.components.MoreMenuScreen
 import com.poshanforlife.android.ui.components.PlaceholderScreen
 import com.poshanforlife.android.ui.components.RoleScaffold
 
@@ -63,18 +66,29 @@ private const val LEAD_DETAIL_ROUTE = "practitioner/leads/{leadId}"
 private const val CONVERT_LEAD_ROUTE = "practitioner/leads/{leadId}/convert"
 private const val PRODUCTS_ROUTE = "practitioner/products"
 private const val PRODUCT_DETAIL_ROUTE = "practitioner/products/{productId}"
-private const val PROFILE_ROUTE = "practitioner/profile"
+private const val SETTINGS_ROUTE = "practitioner/settings"
+private const val MORE_ROUTE = "practitioner/more"
 
 // Role value on the wire stays DOCTOR (see Role.kt) — only user-facing text says "Practitioner".
+// PoshanStaffTheme's nav shape: 4 primary bottom tabs + a "More" overflow tab (standard Android
+// overflow pattern) rather than the flat 8-tab bar this graph used to have — Orders/Products/
+// Invoices/Settings moved to full-screen routes reached from MoreMenuScreen instead.
 private val items = listOf(
     BottomNavItem(PATIENTS_ROUTE, "Patients", Icons.Filled.People),
     BottomNavItem(LEADS_ROUTE, "Leads", Icons.Filled.ContactPhone),
     BottomNavItem("practitioner/upload", "Upload", Icons.Filled.CloudUpload),
     BottomNavItem(SCHEDULE_ROUTE, "Schedule", Icons.Filled.Schedule),
-    BottomNavItem(ORDERS_ROUTE, "Orders", Icons.Filled.ShoppingCart),
-    BottomNavItem(DOCUMENTS_ROUTE, "Invoices", Icons.Filled.Receipt),
-    BottomNavItem(PRODUCTS_ROUTE, "Products", Icons.Filled.ShoppingBag),
-    BottomNavItem("practitioner/profile", "Profile", Icons.Filled.Person),
+    BottomNavItem(MORE_ROUTE, "More", Icons.Filled.MoreHoriz),
+)
+
+// The prompt's own "More" list only names Orders/Products/Settings — Invoices (AN-16, already
+// shipped before this nav restructure) isn't mentioned there, but dropping a built feature
+// silently would be worse than a literal reading; kept alongside the other three.
+private val moreMenuItems = listOf(
+    MoreMenuItem("Orders", Icons.Filled.ShoppingCart, ORDERS_ROUTE),
+    MoreMenuItem("Products", Icons.Filled.ShoppingBag, PRODUCTS_ROUTE),
+    MoreMenuItem("Invoices", Icons.Filled.Receipt, DOCUMENTS_ROUTE),
+    MoreMenuItem("Settings", Icons.Filled.Settings, SETTINGS_ROUTE),
 )
 
 fun NavGraphBuilder.practitionerGraph(navController: NavController) {
@@ -91,31 +105,45 @@ fun NavGraphBuilder.practitionerGraph(navController: NavController) {
                     UPLOAD_ROUTE -> PatientListScreen(
                         onOpenPatient = { patientId -> navController.navigate("practitioner/upload/capture/$patientId") },
                     )
-                    DOCUMENTS_ROUTE -> DocumentsListScreen(
-                        onOpenDocument = { documentId -> navController.navigate("practitioner/documents/$documentId") },
-                        onCreateEstimate = { navController.navigate(CREATE_ESTIMATE_ROUTE) },
-                    )
-                    ORDERS_ROUTE -> OrdersAndTransactionsScreen(
-                        onOpenOrder = { orderId -> navController.navigate("practitioner/orders/$orderId") },
-                    )
                     LEADS_ROUTE -> LeadListScreen(
                         onOpenLead = { leadId -> navController.navigate("practitioner/leads/$leadId") },
                     )
-                    // Read-only for DOCTOR — see AdminNavGraph for the admin-mode instance of this same screen.
-                    PRODUCTS_ROUTE -> ProductsScreen(
-                        isAdmin = false,
-                        onOpenProduct = { productId -> navController.navigate("practitioner/products/$productId") },
+                    MORE_ROUTE -> MoreMenuScreen(
+                        items = moreMenuItems,
+                        onSelect = { menuRoute -> navController.navigate(menuRoute) },
                     )
-                    // Profile doesn't have a real screen of its own yet (a future prompt's
-                    // job) — read-only Service Catalogue browse is the one concrete
-                    // practitioner-facing surface this prompt asks for.
-                    PROFILE_ROUTE -> CatalogueScreen(isAdmin = false)
                     else -> PlaceholderScreen(label = items.first { it.route == route }.label)
                 }
             }
         }
         composable(PRODUCT_DETAIL_ROUTE) {
             ProductDetailScreen(onBack = { navController.popBackStack() })
+        }
+        // Reached from the "More" tab (MoreMenuScreen) rather than tab-rendered inside
+        // RoleScaffold now — same "full-screen sibling route, no visible back button, relies on
+        // system back gesture" convention already used by ORDER_DETAIL_ROUTE/PATIENT_PROGRAMME_DETAIL_ROUTE below.
+        composable(ORDERS_ROUTE) {
+            OrdersAndTransactionsScreen(
+                onOpenOrder = { orderId -> navController.navigate("practitioner/orders/$orderId") },
+            )
+        }
+        composable(PRODUCTS_ROUTE) {
+            // Read-only for DOCTOR — see AdminNavGraph for the admin-mode instance of this same screen.
+            ProductsScreen(
+                isAdmin = false,
+                onOpenProduct = { productId -> navController.navigate("practitioner/products/$productId") },
+            )
+        }
+        composable(DOCUMENTS_ROUTE) {
+            DocumentsListScreen(
+                onOpenDocument = { documentId -> navController.navigate("practitioner/documents/$documentId") },
+                onCreateEstimate = { navController.navigate(CREATE_ESTIMATE_ROUTE) },
+            )
+        }
+        composable(SETTINGS_ROUTE) {
+            // Doesn't have a real screen of its own yet (a future prompt's job) — read-only
+            // Service Catalogue browse is the one concrete practitioner-facing surface built so far.
+            CatalogueScreen(isAdmin = false)
         }
         // Opens as a full screen above the bottom-nav shell, same convention as the patient graph's sibling detail routes.
         composable(PATIENT_DETAIL_ROUTE) { backStackEntry ->

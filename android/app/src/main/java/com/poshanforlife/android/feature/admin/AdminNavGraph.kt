@@ -37,7 +37,7 @@ import com.poshanforlife.android.feature.products.ProductsScreen
 import com.poshanforlife.android.feature.products.SegmentManagementScreen
 import com.poshanforlife.android.ui.components.BottomNavItem
 import com.poshanforlife.android.ui.components.PlaceholderScreen
-import com.poshanforlife.android.ui.components.RoleScaffold
+import com.poshanforlife.android.ui.components.RoleScaffoldDrawer
 
 private const val ROOT = "admin/root"
 private const val DOCUMENTS_ROUTE = "admin/documents"
@@ -78,7 +78,10 @@ private val items = listOf(
 fun NavGraphBuilder.adminGraph(navController: NavController) {
     navigation(startDestination = ROOT, route = RootRoutes.ADMIN_GRAPH) {
         composable(ROOT) {
-            RoleScaffold(items = items) { route ->
+            // Admin is a many-destination, occasional-visits role — a ModalNavigationDrawer
+            // suits that better than a cramped bottom bar (diverges deliberately from every
+            // other role's bottom-tab pattern; see the compose-theme prompt's AN-02 update).
+            RoleScaffoldDrawer(items = items) { route ->
                 when (route) {
                     DOCUMENTS_ROUTE -> DocumentsListScreen(
                         onOpenDocument = { documentId -> navController.navigate("admin/documents/$documentId") },

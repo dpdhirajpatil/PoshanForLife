@@ -289,7 +289,18 @@
       "Bash(./gradlew :app:compileDebugKotlin --rerun-tasks)",
       "Bash(psql -U dhiraj -d poshan_api -c \"select id, name, email, role from users where role='DOCTOR' limit 5;\")",
       "Bash(psql -U dhiraj -d poshan_api -c \"select id, name, email, role from users where role='PATIENT' limit 5;\")",
-      "Bash(curl -s -o /dev/null -w \"http=%{http_code}\\\\n\" \"https://pdfliakdheartjetfedb.supabase.co/storage/v1/object/public/programme-covers/products/3251fe92-ce21-46e9-b4f0-5f0962fa6c43.png\")"
+      "Bash(curl -s -o /dev/null -w \"http=%{http_code}\\\\n\" \"https://pdfliakdheartjetfedb.supabase.co/storage/v1/object/public/programme-covers/products/3251fe92-ce21-46e9-b4f0-5f0962fa6c43.png\")",
+      "Bash(awk '{print $5, $6, $7, $8, $9}')",
+      "Bash(./gradlew :app:assembleDebug -q)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:8080/actuator/health)",
+      "Bash(ANDROID_HOME=$HOME/Library/Android/sdk; nohup $ANDROID_HOME/emulator/emulator -avd Medium_Phone_API_35 -no-snapshot-load -dns-server 8.8.8.8,8.8.4.4 > /tmp/emulator.log 2>&1 & disown; sleep 5; echo started)",
+      "Bash(export PGPASSWORD=)",
+      "Bash(psql -U dhiraj -d poshan_api -h localhost -c \"select email, role from users where role='DOCTOR' limit 3;\")",
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -h localhost -c \"select email, role from users where role='DOCTOR' limit 3;\")",
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -h localhost -c \"select email, role from users limit 10;\")",
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -h localhost -c \"select id, email, password_hash, role, name from users where email='admin@poshanforlife.com';\")",
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -h localhost -c ' *)",
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -h localhost -c \"DELETE FROM users WHERE email='testdoc1@example.com';\")"
     ],
     "additionalDirectories": [
       "/private/tmp",

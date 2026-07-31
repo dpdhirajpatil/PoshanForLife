@@ -6,13 +6,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 /**
- * Display/headline/title slots use [displayFontFamily] at ExtraBold/Medium per the CI Guidelines.
- * The guide mandates ALL CAPS for the display weight (Gilroy Heavy is always-caps in the brand
+ * Display/headline/title slots use [displayFontFamily] at ExtraBold per the CI Guidelines. The
+ * guide mandates ALL CAPS for the display weight (Gilroy Heavy is always-caps in the brand
  * guide) — Compose has no text-transform, so callers must `.uppercase()` the string themselves
  * wherever a displayLarge/displayMedium/displaySmall/headlineLarge/headlineMedium/headlineSmall
  * style is used; this Typography only sets font/weight/size, not casing.
+ *
+ * Shared by [PoshanPatientTheme] and [PoshanLeadTheme] — Lead's "gamified" direction changes
+ * which components a screen reaches for (streak chips, badge rows), not the type scale itself.
  */
-val Typography = Typography(
+val PoshanPatientTypography = Typography(
     displayLarge = TextStyle(
         fontFamily = displayFontFamily,
         fontWeight = FontWeight.ExtraBold,
@@ -120,10 +123,30 @@ val Typography = Typography(
     ),
 )
 
+/** Identical type scale to Patient — Lead's gamified feel comes from theme color + components, not typography. */
+val PoshanLeadTypography = PoshanPatientTypography
+
+/**
+ * Staff theme (Admin + Practitioner, "calm" direction): headline/title slots drop from ExtraBold
+ * to Medium and are NOT forced uppercase by callers — this is the single biggest driver of
+ * Staff's cleaner feel, more than the color changes. Body/label slots are unchanged from Patient.
+ */
+val PoshanStaffTypography = PoshanPatientTypography.copy(
+    displayLarge = PoshanPatientTypography.displayLarge.copy(fontWeight = FontWeight.Medium),
+    displayMedium = PoshanPatientTypography.displayMedium.copy(fontWeight = FontWeight.Medium),
+    displaySmall = PoshanPatientTypography.displaySmall.copy(fontWeight = FontWeight.Medium),
+    headlineLarge = PoshanPatientTypography.headlineLarge.copy(fontWeight = FontWeight.Medium),
+    headlineMedium = PoshanPatientTypography.headlineMedium.copy(fontWeight = FontWeight.Medium),
+    headlineSmall = PoshanPatientTypography.headlineSmall.copy(fontWeight = FontWeight.Medium),
+    titleLarge = PoshanPatientTypography.titleLarge.copy(fontWeight = FontWeight.Medium),
+)
+
 /**
  * The script accent font, for a single decorative word/flourish — never wired into a default
  * Material typography slot, and never `.uppercase()`d (the brand guide explicitly forbids
- * all-caps on the script font). Apply manually only where a screen specifically wants it.
+ * all-caps on the script font). Patient/Lead screens may use it sparingly; Staff-theme
+ * (Practitioner/Admin) screens should never use it at all — omit entirely, don't just avoid
+ * uppercasing it.
  */
 val AccentStyle = TextStyle(
     fontFamily = accentFontFamily,

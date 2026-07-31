@@ -8,7 +8,6 @@ import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.Timeline
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavController
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.poshanforlife.android.feature.RootRoutes
 import com.poshanforlife.android.feature.patient.track.GoalsScreen
@@ -18,6 +17,7 @@ import com.poshanforlife.android.feature.products.ProductsScreen
 import com.poshanforlife.android.ui.components.BottomNavItem
 import com.poshanforlife.android.ui.components.PlaceholderScreen
 import com.poshanforlife.android.ui.components.RoleScaffold
+import com.poshanforlife.android.ui.theme.leadThemedComposable
 
 private const val ROOT = "lead/root"
 private const val REQUEST_CONSULTATION_ROUTE = "lead/request-consultation"
@@ -43,7 +43,7 @@ private val items = listOf(
 
 fun NavGraphBuilder.leadGraph(navController: NavController) {
     navigation(startDestination = ROOT, route = RootRoutes.LEAD_GRAPH) {
-        composable(ROOT) {
+        leadThemedComposable(ROOT) {
             RoleScaffold(items = items) { route ->
                 when (route) {
                     HOME_ROUTE -> LeadHomeScreen(
@@ -64,13 +64,13 @@ fun NavGraphBuilder.leadGraph(navController: NavController) {
                 }
             }
         }
-        composable(GOALS_DETAIL_ROUTE) {
+        leadThemedComposable(GOALS_DETAIL_ROUTE) {
             GoalsScreen()
         }
-        composable(PRODUCT_DETAIL_ROUTE) {
+        leadThemedComposable(PRODUCT_DETAIL_ROUTE) {
             ProductDetailScreen(onBack = { navController.popBackStack() })
         }
-        composable(REQUEST_CONSULTATION_ROUTE) {
+        leadThemedComposable(REQUEST_CONSULTATION_ROUTE) {
             RequestConsultationScreen(onDone = { navController.popBackStack() })
         }
     }

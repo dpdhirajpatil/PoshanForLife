@@ -13,7 +13,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavController
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.poshanforlife.android.feature.RootRoutes
 import com.poshanforlife.android.feature.patient.appointments.AppointmentsListScreen
@@ -31,6 +30,7 @@ import com.poshanforlife.android.feature.products.ProductsScreen
 import com.poshanforlife.android.ui.components.BottomNavItem
 import com.poshanforlife.android.ui.components.PlaceholderScreen
 import com.poshanforlife.android.ui.components.RoleScaffold
+import com.poshanforlife.android.ui.theme.patientThemedComposable
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 
@@ -64,7 +64,7 @@ private val items = listOf(
 
 fun NavGraphBuilder.patientGraph(navController: NavController) {
     navigation(startDestination = ROOT, route = RootRoutes.PATIENT_GRAPH) {
-        composable(ROOT) {
+        patientThemedComposable(ROOT) {
             val tabSwitchRequests = remember { MutableSharedFlow<String>() }
             val scope = rememberCoroutineScope()
             RoleScaffold(items = items, tabSwitchRequests = tabSwitchRequests) { route ->
@@ -100,22 +100,22 @@ fun NavGraphBuilder.patientGraph(navController: NavController) {
             }
         }
         // Opens as a full screen above the bottom-nav shell (settings-style, not a tab).
-        composable(GOALS_ROUTE) {
+        patientThemedComposable(GOALS_ROUTE) {
             GoalsScreen()
         }
-        composable(PRODUCT_DETAIL_ROUTE) {
+        patientThemedComposable(PRODUCT_DETAIL_ROUTE) {
             ProductDetailScreen(onBack = { navController.popBackStack() })
         }
-        composable(REPORT_DETAIL_ROUTE) {
+        patientThemedComposable(REPORT_DETAIL_ROUTE) {
             ReportDetailScreen()
         }
-        composable(PROGRAMME_DETAIL_ROUTE) {
+        patientThemedComposable(PROGRAMME_DETAIL_ROUTE) {
             ProgrammeDetailScreen()
         }
-        composable(BOOK_APPOINTMENT_ROUTE) {
+        patientThemedComposable(BOOK_APPOINTMENT_ROUTE) {
             BookAppointmentScreen(onDone = { navController.popBackStack() })
         }
-        composable(RESCHEDULE_APPOINTMENT_ROUTE) { backStackEntry ->
+        patientThemedComposable(RESCHEDULE_APPOINTMENT_ROUTE) { backStackEntry ->
             BookAppointmentScreen(
                 preselectedPractitionerId = backStackEntry.arguments?.getString("practitionerId"),
                 rescheduleAppointmentId = backStackEntry.arguments?.getString("appointmentId"),
