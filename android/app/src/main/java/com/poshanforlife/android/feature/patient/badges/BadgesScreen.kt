@@ -83,15 +83,28 @@ fun BadgesScreen(
             }
 
             is BadgesUiState.Success -> {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(3),
-                    contentPadding = PaddingValues(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxSize(),
-                ) {
-                    items(state.badges, key = { it.id }) { badge ->
-                        BadgeTile(badge = badge, onClick = { selectedBadge = badge })
+                // An admin who hasn't defined any badges yet leaves this list genuinely
+                // empty, which would otherwise render as a blank screen with no explanation.
+                if (state.badges.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "No badges to earn yet — check back soon.",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(24.dp),
+                        )
+                    }
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(3),
+                        contentPadding = PaddingValues(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        items(state.badges, key = { it.id }) { badge ->
+                            BadgeTile(badge = badge, onClick = { selectedBadge = badge })
+                        }
                     }
                 }
             }

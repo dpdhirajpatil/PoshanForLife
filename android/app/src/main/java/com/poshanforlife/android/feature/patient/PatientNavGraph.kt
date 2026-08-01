@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.Timeline
@@ -34,6 +35,8 @@ import com.poshanforlife.android.feature.patient.track.TrackScreen
 import com.poshanforlife.android.feature.products.ProductDetailScreen
 import com.poshanforlife.android.feature.products.ProductsScreen
 import com.poshanforlife.android.ui.components.BottomNavItem
+import com.poshanforlife.android.ui.components.MoreMenuItem
+import com.poshanforlife.android.ui.components.MoreMenuScreen
 import com.poshanforlife.android.ui.components.PlaceholderScreen
 import com.poshanforlife.android.ui.components.RoleScaffold
 import com.poshanforlife.android.ui.theme.patientThemedComposable
@@ -60,16 +63,25 @@ private const val BADGES_ROUTE = "patient/badges"
 private const val PRODUCTS_ROUTE = "patient/products"
 private const val PROFILE_ROUTE = "patient/profile"
 private const val PRODUCT_DETAIL_ROUTE = "patient/products/{productId}"
+private const val MORE_ROUTE = "patient/more"
 
+// Five primary destinations plus a "More" overflow, following the same pattern the
+// practitioner graph already uses — the flat 8-tab bar this replaced was visibly cramped
+// (labels wrapped to two lines). Appointments/Badges/Products moved into More rather than
+// being dropped; they're full-screen sibling routes below, not tabs.
 private val items = listOf(
     BottomNavItem(HOME_ROUTE, "Home", Icons.Filled.Home),
     BottomNavItem(TRACK_ROUTE, "Track", Icons.Filled.Timeline),
     BottomNavItem(PROGRAMMES_ROUTE, "Programmes", Icons.AutoMirrored.Filled.MenuBook),
-    BottomNavItem(APPOINTMENTS_ROUTE, "Appointments", Icons.Filled.CalendarMonth),
     BottomNavItem(REPORTS_ROUTE, "Reports", Icons.Filled.Description),
-    BottomNavItem(BADGES_ROUTE, "Badges", Icons.Filled.EmojiEvents),
-    BottomNavItem(PRODUCTS_ROUTE, "Products", Icons.Filled.ShoppingBag),
     BottomNavItem(PROFILE_ROUTE, "Profile", Icons.Filled.Person),
+    BottomNavItem(MORE_ROUTE, "More", Icons.Filled.MoreHoriz),
+)
+
+private val moreMenuItems = listOf(
+    MoreMenuItem("Appointments", Icons.Filled.CalendarMonth, APPOINTMENTS_ROUTE),
+    MoreMenuItem("Badges", Icons.Filled.EmojiEvents, BADGES_ROUTE),
+    MoreMenuItem("Products", Icons.Filled.ShoppingBag, PRODUCTS_ROUTE),
 )
 
 fun NavGraphBuilder.patientGraph(navController: NavController) {
@@ -89,25 +101,14 @@ fun NavGraphBuilder.patientGraph(navController: NavController) {
                             navController.navigate("patient/programmes/$patientId/$programmeId")
                         },
                     )
-                    APPOINTMENTS_ROUTE -> AppointmentsListScreen(
-                        onBookAppointment = { navController.navigate(BOOK_APPOINTMENT_ROUTE) },
-                        onRescheduleAppointment = { appointmentId, practitionerId ->
-                            navController.navigate("patient/appointments/$appointmentId/reschedule/$practitionerId")
-                        },
-                        onJoinCall = { appointmentId ->
-                            navController.navigate("patient/appointments/$appointmentId/pre-call")
-                        },
-                    )
                     REPORTS_ROUTE -> ReportsListScreen(
                         onOpenReport = { reportId -> navController.navigate("patient/reports/$reportId") },
                     )
-                    BADGES_ROUTE -> BadgesScreen()
-                    // Read-only for every non-admin role — see AdminNavGraph for the admin-mode instance of this same screen.
-                    PRODUCTS_ROUTE -> ProductsScreen(
-                        isAdmin = false,
-                        onOpenProduct = { productId -> navController.navigate("patient/products/$productId") },
-                    )
                     PROFILE_ROUTE -> ProfileScreen()
+                    MORE_ROUTE -> MoreMenuScreen(
+                        items = moreMenuItems,
+                        onSelect = { menuRoute -> navController.navigate(menuRoute) },
+                    )
                     else -> PlaceholderScreen(label = items.first { it.route == route }.label)
                 }
             }
@@ -115,6 +116,30 @@ fun NavGraphBuilder.patientGraph(navController: NavController) {
         // Opens as a full screen above the bottom-nav shell (settings-style, not a tab).
         patientThemedComposable(GOALS_ROUTE) {
             GoalsScreen()
+        }
+        // Reached from the "More" tab rather than rendered as tabs themselves. Same
+        // "full-screen sibling route, system back gesture, no visible back affordance"
+        // convention the practitioner graph's More destinations already use.
+        patientThemedComposable(APPOINTMENTS_ROUTE) {
+            AppointmentsListScreen(
+                onBookAppointment = { navController.navigate(BOOK_APPOINTMENT_ROUTE) },
+                onRescheduleAppointment = { appointmentId, practitionerId ->
+                    navController.navigate("patient/appointments/$appointmentId/reschedule/$practitionerId")
+                },
+                onJoinCall = { appointmentId ->
+                    navController.navigate("patient/appointments/$appointmentId/pre-call")
+                },
+            )
+        }
+        patientThemedComposable(BADGES_ROUTE) {
+            BadgesScreen()
+        }
+        patientThemedComposable(PRODUCTS_ROUTE) {
+            // Read-only for every non-admin role — see AdminNavGraph for the admin-mode instance of this same screen.
+            ProductsScreen(
+                isAdmin = false,
+                onOpenProduct = { productId -> navController.navigate("patient/products/$productId") },
+            )
         }
         patientThemedComposable(PRODUCT_DETAIL_ROUTE) {
             ProductDetailScreen(onBack = { navController.popBackStack() })
