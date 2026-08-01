@@ -27,8 +27,16 @@ import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianLayerRangeProvider
+import com.patrykandpatrick.vico.core.common.data.ExtraStore
 import java.util.Locale
 import kotlin.math.abs
+
+/** Headroom above/below the data so the line never touches the plot edge. */
+private const val Y_PADDING_FRACTION = 0.15
+
+/** Floor for the padding calculation, so a perfectly flat series still gets a sane axis. */
+private const val MIN_Y_SPAN = 1.0
 
 /**
  * One metric's trend line over time, plus its latest value and the server-computed
@@ -59,6 +67,19 @@ fun HealthTrendChart(
         modelProducer.runTransaction { lineSeries { series(values) } }
     }
 
+    // Vico's default range anchors the Y axis at zero, which flattens these metrics into
+    // near-straight lines — a 7 kg change over 12 weeks is invisible on a 0..82 axis. Fit
+    // the axis to the data with a small margin so the trend is actually readable.
+    val rangeProvider = remember {
+        object : CartesianLayerRangeProvider {
+            override fun getMinY(minY: Double, maxY: Double, extraStore: ExtraStore) =
+                minY - (maxY - minY).coerceAtLeast(MIN_Y_SPAN) * Y_PADDING_FRACTION
+
+            override fun getMaxY(minY: Double, maxY: Double, extraStore: ExtraStore) =
+                maxY + (maxY - minY).coerceAtLeast(MIN_Y_SPAN) * Y_PADDING_FRACTION
+        }
+    }
+
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -84,6 +105,7 @@ fun HealthTrendChart(
                     lineProvider = LineCartesianLayer.LineProvider.series(
                         LineCartesianLayer.rememberLine(fill = LineCartesianLayer.LineFill.single(fill(lineColor))),
                     ),
+                    rangeProvider = rangeProvider,
                 ),
                 startAxis = VerticalAxis.rememberStart(),
                 bottomAxis = HorizontalAxis.rememberBottom(),

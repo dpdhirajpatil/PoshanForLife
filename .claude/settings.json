@@ -328,7 +328,16 @@
       "Bash(javap -classpath compose/cls com.patrykandpatrick.vico.compose.common.FillKt)",
       "Bash(javap -classpath core/cls com.patrykandpatrick.vico.core.common.Fill)",
       "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v 21\\) ./gradlew :app:assembleDebug --rerun-tasks)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/api/v1/auth/login --max-time 3)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/api/v1/auth/login --max-time 3)",
+      "Bash(psql -d poshan_api -c \"select role, count\\(*\\) from users group by role;\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:8080/api/v1/auth/login --max-time 3)",
+      "Bash(curl -s -w '\\\\nHTTP %{http_code}\\\\n' 'http://localhost:8080/api/v1/health-records/__TRACKED_VAR__?limit=180&fields=weight,bodyFat,bmi,skeletalMuscleMass' -H 'Authorization: Bearer __TRACKED_VAR__')",
+      "Bash(curl -s 'http://localhost:8080/api/v1/health-records/__TRACKED_VAR__?limit=180&fields=weight,bodyFat,bmi,skeletalMuscleMass' -H 'Authorization: Bearer __TRACKED_VAR__')",
+      "Bash(curl -s -w ' [HTTP %{http_code}]' 'http://localhost:8080/api/v1/health-records/__TRACKED_VAR__?limit=180&fields=weightKg,bodyFatPct,bmi,skeletalMuscleMassKg' -H 'Authorization: Bearer __TRACKED_VAR__')",
+      "Bash(pkill -f \"poshan\")",
+      "Bash(javap -classpath core/cls 'com.patrykandpatrick.vico.core.cartesian.data.CartesianLayerRangeProvider')",
+      "Bash(javap -classpath core/cls 'com.patrykandpatrick.vico.core.cartesian.data.CartesianLayerRangeProvider$Companion')",
+      "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v 21\\) ./gradlew :app:installDebug)"
     ],
     "additionalDirectories": [
       "/private/tmp",

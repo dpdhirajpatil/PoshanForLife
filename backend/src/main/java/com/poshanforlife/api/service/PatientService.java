@@ -294,6 +294,12 @@ public class PatientService {
                 && !doctorPatientRepository.existsByDoctorIdAndPatientId(UUID.fromString(caller.id()), patientId)) {
             throw new AccessDeniedException("This patient is not assigned to you");
         }
+        // A PATIENT reads only their own record. 404 rather than 403 so the response
+        // doesn't confirm that another patient with that id exists — same convention
+        // as Reports/Documents.
+        if (caller.role() == Role.PATIENT && !UUID.fromString(caller.id()).equals(patientId)) {
+            throw new ResourceNotFoundException("Patient", patientId);
+        }
     }
 
     private PatientSummaryDto toSummary(User patient, Instant lastReportDate) {
