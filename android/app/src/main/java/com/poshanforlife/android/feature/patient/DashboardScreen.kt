@@ -30,6 +30,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,6 +41,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.poshanforlife.android.core.reminder.nextOccurrenceLabel
+import com.poshanforlife.android.core.reminder.nextOccurrenceOf
+import com.poshanforlife.android.feature.patient.track.ReminderViewModel
 import com.poshanforlife.android.core.network.DocumentListItemDto
 import com.poshanforlife.android.core.network.HealthRecordDto
 import com.poshanforlife.android.core.network.PatientProgrammeDto
@@ -287,26 +291,62 @@ private fun OutstandingBalanceCard(invoices: List<DocumentListItemDto>, onPayInv
 }
 
 /**
- * The health-tracking module (medication/water/sleep reminders, AN-04) isn't
- * built yet, so this renders an honest empty state instead of fake data —
- * swap in the real "next 3 due today" list once AN-04 exposes it.
+ * The next three enabled reminders, soonest first, from AN-04's Room-backed
+ * reminder store. Reuses AN-04's own ReminderViewModel rather than re-reading the
+ * DAO here — Room is an app-wide singleton underneath, so a second Hilt-scoped
+ * instance costs nothing and keeps one source of truth for reminder state.
  */
 @Composable
-private fun UpcomingRemindersSection() {
+private fun UpcomingRemindersSection(viewModel: ReminderViewModel = hiltViewModel()) {
+    val reminders by viewModel.reminders.collectAsStateWithLifecycle()
+    val upcoming = remember(reminders) {
+        reminders.filter { it.enabled }
+            .mapNotNull { reminder ->
+                nextOccurrenceOf(reminder.timeOfDay, reminder.daysOfWeek)?.let { reminder to it }
+            }
+            .sortedBy { it.second }
+            .take(3)
+    }
+
     DashboardCard {
         Text(text = "Upcoming reminders", style = MaterialTheme.typography.titleLarge)
         Spacer(modifier = Modifier.height(12.dp))
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Icon(
-                imageVector = Icons.Filled.NotificationsNone,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                text = "No reminders yet",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+        if (upcoming.isEmpty()) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Icon(
+                    imageVector = Icons.Filled.NotificationsNone,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = "No reminders yet",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                upcoming.forEach { (reminder, _) ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.NotificationsNone,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                        Column {
+                            Text(text = reminder.label, style = MaterialTheme.typography.bodyLarge)
+                            Text(
+                                text = nextOccurrenceLabel(reminder.timeOfDay, reminder.daysOfWeek),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }

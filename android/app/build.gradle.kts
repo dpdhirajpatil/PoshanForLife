@@ -107,6 +107,9 @@ dependencies {
 
     implementation(libs.konfetti.compose)
 
+    // AN-05 InBody trend charts.
+    implementation(libs.vico.compose.m3)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

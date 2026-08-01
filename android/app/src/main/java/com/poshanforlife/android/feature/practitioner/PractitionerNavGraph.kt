@@ -10,12 +10,18 @@ import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.poshanforlife.android.core.network.CatalogueType
 import com.poshanforlife.android.feature.RootRoutes
+import com.poshanforlife.android.feature.patient.appointments.PreCallScreen
+import com.poshanforlife.android.feature.patient.appointments.VideoCallScreen
+import com.poshanforlife.android.feature.patient.appointments.VideoCallViewModel
 import com.poshanforlife.android.feature.patient.programmes.ProgrammeDetailScreen
 import com.poshanforlife.android.feature.patient.reports.CreateReportScreen
 import com.poshanforlife.android.feature.patient.reports.EditReportScreen
@@ -67,6 +73,11 @@ private const val CONVERT_LEAD_ROUTE = "practitioner/leads/{leadId}/convert"
 private const val PRODUCTS_ROUTE = "practitioner/products"
 private const val PRODUCT_DETAIL_ROUTE = "practitioner/products/{productId}"
 private const val SETTINGS_ROUTE = "practitioner/settings"
+
+// AN-13 telemedicine scaffold — the practitioner half of the same flow the patient
+// graph declares; both reuse the shared PreCallScreen/VideoCallScreen composables.
+private const val PRE_CALL_ROUTE = "practitioner/appointments/{appointmentId}/pre-call"
+private const val VIDEO_CALL_ROUTE = "practitioner/appointments/{appointmentId}/call"
 private const val MORE_ROUTE = "practitioner/more"
 
 // Role value on the wire stays DOCTOR (see Role.kt) — only user-facing text says "Practitioner".
@@ -96,7 +107,11 @@ fun NavGraphBuilder.practitionerGraph(navController: NavController) {
         composable(ROOT) {
             RoleScaffold(items = items) { route ->
                 when (route) {
-                    SCHEDULE_ROUTE -> ScheduleScreen()
+                    SCHEDULE_ROUTE -> ScheduleScreen(
+                        onJoinCall = { appointmentId ->
+                            navController.navigate("practitioner/appointments/$appointmentId/pre-call")
+                        },
+                    )
                     PATIENTS_ROUTE -> PatientListScreen(
                         onOpenPatient = { patientId -> navController.navigate("practitioner/patients/$patientId") },
                     )
@@ -115,6 +130,29 @@ fun NavGraphBuilder.practitionerGraph(navController: NavController) {
                     else -> PlaceholderScreen(label = items.first { it.route == route }.label)
                 }
             }
+        }
+        composable(PRE_CALL_ROUTE) { backStackEntry ->
+            val appointmentId = backStackEntry.arguments?.getString("appointmentId").orEmpty()
+            val viewModel: VideoCallViewModel = hiltViewModel()
+            val appointment by viewModel.appointment.collectAsStateWithLifecycle()
+            PreCallScreen(
+                // Mirror image of the patient side: each party sees the other's name.
+                otherPartyName = appointment?.patient?.name.orEmpty(),
+                onJoin = {
+                    navController.navigate("practitioner/appointments/$appointmentId/call") {
+                        popUpTo(PRE_CALL_ROUTE) { inclusive = true }
+                    }
+                },
+                onCancel = { navController.popBackStack() },
+            )
+        }
+        composable(VIDEO_CALL_ROUTE) {
+            val viewModel: VideoCallViewModel = hiltViewModel()
+            val appointment by viewModel.appointment.collectAsStateWithLifecycle()
+            VideoCallScreen(
+                otherPartyName = appointment?.patient?.name.orEmpty(),
+                onLeave = { navController.popBackStack() },
+            )
         }
         composable(PRODUCT_DETAIL_ROUTE) {
             ProductDetailScreen(onBack = { navController.popBackStack() })

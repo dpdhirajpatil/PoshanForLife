@@ -16,6 +16,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material3.Button
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -54,6 +56,7 @@ fun AppointmentsListScreen(
     viewModel: AppointmentsViewModel = hiltViewModel(),
     onBookAppointment: () -> Unit = {},
     onRescheduleAppointment: (appointmentId: String, practitionerId: String) -> Unit = { _, _ -> },
+    onJoinCall: (appointmentId: String) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
@@ -121,6 +124,7 @@ fun AppointmentsListScreen(
                                         appointment = appointment,
                                         onReschedule = { appointmentToReschedule = appointment },
                                         onCancel = { appointmentToCancel = appointment },
+                                        onJoinCall = { onJoinCall(appointment.id) },
                                     )
                                 }
                             }
@@ -182,6 +186,7 @@ private fun AppointmentCard(
     appointment: AppointmentDto,
     onReschedule: () -> Unit,
     onCancel: () -> Unit,
+    onJoinCall: () -> Unit,
 ) {
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -208,6 +213,31 @@ private fun AppointmentCard(
                     )
                 }
                 StatusBadge(status = appointment.status)
+            }
+            // AN-13: shown for every video appointment so the patient knows it's a
+            // video consultation at all, but only tappable inside the join window.
+            if (appointment.isVideo && appointment.status == "scheduled") {
+                val canJoin = appointment.canJoinVideoCall()
+                Button(
+                    onClick = onJoinCall,
+                    enabled = canJoin,
+                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Videocam,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Text(text = "Join call", modifier = Modifier.padding(start = 8.dp))
+                }
+                if (!canJoin) {
+                    Text(
+                        text = "You can join from 5 minutes before your appointment.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                }
             }
             if (appointment.status == "scheduled") {
                 Row(

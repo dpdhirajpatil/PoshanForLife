@@ -37,7 +37,8 @@ class MedicationReminderScheduler @Inject constructor(
             cancel(reminder.id)
             return
         }
-        val delayMillis = millisUntilNextOccurrence(reminder.timeOfDay, reminder.daysOfWeek) ?: return
+        val delayMillis = nextOccurrenceOf(reminder.timeOfDay, reminder.daysOfWeek)
+            ?.let { java.time.Duration.between(LocalDateTime.now(), it).toMillis() } ?: return
         val request = OneTimeWorkRequestBuilder<MedicationReminderWorker>()
             .setInitialDelay(delayMillis, TimeUnit.MILLISECONDS)
             .setInputData(
@@ -56,26 +57,29 @@ class MedicationReminderScheduler @Inject constructor(
 
     private fun uniqueWorkName(reminderId: Long) = "medication_reminder_$reminderId"
 
-    /** Null when daysOfWeek is empty (reminder has nowhere to fire). */
-    private fun millisUntilNextOccurrence(timeOfDay: String, daysOfWeek: String): Long? {
-        val time = runCatching { LocalTime.parse(timeOfDay, DateTimeFormatter.ofPattern(TIME_FORMAT)) }
-            .getOrNull() ?: return null
-        val allowedDays = daysOfWeek.split(",")
-            .mapNotNull { runCatching { DayOfWeek.valueOf(it.trim()) }.getOrNull() }
-            .toSet()
-        if (allowedDays.isEmpty()) return null
+}
 
-        val now = LocalDateTime.now()
-        for (dayOffset in 0..7) {
-            val candidateDate = now.toLocalDate().plusDays(dayOffset.toLong())
-            if (candidateDate.dayOfWeek !in allowedDays) continue
-            val candidate = LocalDateTime.of(candidateDate, time)
-            if (candidate.isAfter(now)) {
-                return java.time.Duration.between(now, candidate).toMillis()
-            }
-        }
-        return null
+/**
+ * When this reminder next fires, or null when it never will (unparseable time, or
+ * no days selected). Shared by the scheduler's delay calculation and the dashboard's
+ * "next 3 upcoming" ordering so both agree on what "next" means.
+ */
+fun nextOccurrenceOf(timeOfDay: String, daysOfWeek: String): LocalDateTime? {
+    val time = runCatching { LocalTime.parse(timeOfDay, DateTimeFormatter.ofPattern(TIME_FORMAT)) }
+        .getOrNull() ?: return null
+    val allowedDays = daysOfWeek.split(",")
+        .mapNotNull { runCatching { DayOfWeek.valueOf(it.trim()) }.getOrNull() }
+        .toSet()
+    if (allowedDays.isEmpty()) return null
+
+    val now = LocalDateTime.now()
+    for (dayOffset in 0..7) {
+        val candidateDate = now.toLocalDate().plusDays(dayOffset.toLong())
+        if (candidateDate.dayOfWeek !in allowedDays) continue
+        val candidate = LocalDateTime.of(candidateDate, time)
+        if (candidate.isAfter(now)) return candidate
     }
+    return null
 }
 
 /** For UI display — the actual scheduling math lives above. */

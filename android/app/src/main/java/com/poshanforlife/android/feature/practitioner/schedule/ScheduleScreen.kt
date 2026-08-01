@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -45,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.poshanforlife.android.core.network.AppointmentDto
+import com.poshanforlife.android.feature.patient.appointments.canJoinVideoCall
 import com.poshanforlife.android.ui.components.AppDatePickerDialog
 import java.time.Instant
 import java.time.LocalDate
@@ -57,6 +59,7 @@ import java.time.format.FormatStyle
 fun ScheduleScreen(
     modifier: Modifier = Modifier,
     viewModel: ScheduleViewModel = hiltViewModel(),
+    onJoinCall: (appointmentId: String) -> Unit = {},
 ) {
     val selectedDate by viewModel.selectedDate.collectAsState()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -150,6 +153,10 @@ fun ScheduleScreen(
                 viewModel.saveNotes(appointment.id, notes)
                 selectedAppointment = null
             },
+            onJoinCall = {
+                selectedAppointment = null
+                onJoinCall(appointment.id)
+            },
         )
     }
 
@@ -239,6 +246,7 @@ private fun AppointmentDetailDialog(
     onDismiss: () -> Unit,
     onMarkCompleted: (notes: String?) -> Unit,
     onSaveNotes: (notes: String) -> Unit,
+    onJoinCall: () -> Unit,
 ) {
     var notes by remember(appointment.id) { mutableStateOf(appointment.notes.orEmpty()) }
 
@@ -258,6 +266,17 @@ private fun AppointmentDetailDialog(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                // AN-13: the practitioner half of the video call. Same shared join-window
+                // rule as the patient's card, so both sides open and close together.
+                if (appointment.isVideo && appointment.status == "scheduled") {
+                    Button(
+                        onClick = { onJoinCall() },
+                        enabled = appointment.canJoinVideoCall(),
+                        modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                    ) {
+                        Text("Join call")
+                    }
+                }
                 OutlinedTextField(
                     value = notes,
                     onValueChange = { notes = it },

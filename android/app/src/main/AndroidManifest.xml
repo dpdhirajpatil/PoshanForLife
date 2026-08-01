@@ -9,6 +9,9 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- AN-10: capturing an InBody report photo for upload. -->
     <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- AN-13: video consultations (pre-call self-preview + the eventual call itself). -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- Not required so the app still installs on camera-less devices/emulators; CaptureScreen handles the ungranted/unavailable case itself. -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 

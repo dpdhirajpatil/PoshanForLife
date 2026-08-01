@@ -47,12 +47,26 @@ data class PatientSummaryDto(
 @Serializable
 data class UpdateDoctorNotesRequest(val doctorNotes: String)
 
+/**
+ * One day's health snapshot. Originally modelled only for the patient dashboard's
+ * "latest vitals" card; AN-05's trend charts added recordDate, skeletalMuscleMassKg
+ * and the `*Delta` fields (all default-null, so the dashboard's existing use is
+ * unaffected). Every delta is server-computed — this record's value minus the
+ * previous record's for the same patient, null when there's no preceding record —
+ * so never recompute them client-side.
+ */
 @Serializable
 data class HealthRecordDto(
     val id: String,
+    val recordDate: String? = null,
     val weightKg: Double? = null,
+    val weightKgDelta: Double? = null,
     val bodyFatPct: Double? = null,
+    val bodyFatPctDelta: Double? = null,
     val bmi: Double? = null,
+    val bmiDelta: Double? = null,
+    val skeletalMuscleMassKg: Double? = null,
+    val skeletalMuscleMassKgDelta: Double? = null,
 )
 
 /**

@@ -2,7 +2,13 @@ package com.poshanforlife.android.core.network
 
 import kotlinx.serialization.Serializable
 
-/** status is the lowercase wire enum ("scheduled"/"completed"/"cancelled"). */
+/**
+ * status is the lowercase wire enum ("scheduled"/"completed"/"cancelled").
+ *
+ * [videoRoomId] stays null until a video provider is actually integrated — AN-13
+ * builds everything around the call except the call itself, so nothing populates
+ * this field yet on either side.
+ */
 @Serializable
 data class AppointmentDto(
     val id: String,
@@ -12,6 +18,8 @@ data class AppointmentDto(
     val durationMinutes: Int,
     val status: String,
     val notes: String? = null,
+    val isVideo: Boolean = false,
+    val videoRoomId: String? = null,
     val createdAt: String,
 )
 

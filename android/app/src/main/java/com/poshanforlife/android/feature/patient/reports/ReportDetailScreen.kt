@@ -26,6 +26,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -47,7 +50,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.poshanforlife.android.core.domain.model.Role
+import com.poshanforlife.android.core.network.HealthRecordDto
 import com.poshanforlife.android.core.network.InBodyDataDto
+import com.poshanforlife.android.ui.components.HealthTrendChart
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -62,6 +67,8 @@ fun ReportDetailScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentUserRole by viewModel.currentUserRole.collectAsStateWithLifecycle()
     val deleteState by viewModel.deleteState.collectAsStateWithLifecycle()
+    val trends by viewModel.trends.collectAsStateWithLifecycle()
+    val trendWindow by viewModel.trendWindow.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -191,11 +198,104 @@ fun ReportDetailScreen(
                             ) { Text("View original PDF") }
                         }
                     }
+
+                    // Trends are patient-wide, not specific to this report — only meaningful
+                    // for body-composition reports, so they're hidden for lab/prescription/other.
+                    if (report.type == "inbody") {
+                        item {
+                            TrendsSection(
+                                state = trends,
+                                selectedWindow = trendWindow,
+                                onWindowChange = viewModel::onTrendWindowChange,
+                            )
+                        }
+                    }
                 }
             }
         }
     }
 }
+
+/**
+ * AN-05's trend charts: weight, body fat, BMI and skeletal muscle mass over the
+ * selected window, each fed by the same `GET /health-records` response.
+ */
+@Composable
+private fun TrendsSection(
+    state: TrendsUiState,
+    selectedWindow: TrendWindow,
+    onWindowChange: (TrendWindow) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Text(text = "Trends", style = MaterialTheme.typography.titleLarge)
+
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            TrendWindow.entries.forEachIndexed { index, window ->
+                SegmentedButton(
+                    selected = window == selectedWindow,
+                    onClick = { onWindowChange(window) },
+                    shape = SegmentedButtonDefaults.itemShape(index = index, count = TrendWindow.entries.size),
+                ) { Text(window.label) }
+            }
+        }
+
+        when (state) {
+            TrendsUiState.Loading -> Box(
+                modifier = Modifier.fillMaxWidth().padding(24.dp),
+                contentAlignment = Alignment.Center,
+            ) { CircularProgressIndicator() }
+
+            is TrendsUiState.Error -> Text(
+                text = "Couldn't load trends: ${state.message}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            is TrendsUiState.Success -> {
+                val records = state.records
+                if (records.isEmpty()) {
+                    Text(
+                        text = "No health records yet.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    TREND_METRICS.forEach { metric ->
+                        HealthTrendChart(
+                            label = metric.label,
+                            unit = metric.unit,
+                            values = records.mapNotNull(metric.value),
+                            latestDelta = records.lastNotNullOf(metric.delta),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** The four metrics AN-05 charts, paired with the server-computed delta for each. */
+private data class TrendMetric(
+    val label: String,
+    val unit: String,
+    val value: (HealthRecordDto) -> Double?,
+    val delta: (HealthRecordDto) -> Double?,
+)
+
+private val TREND_METRICS = listOf(
+    TrendMetric("Weight", "kg", { it.weightKg }, { it.weightKgDelta }),
+    TrendMetric("Body fat", "%", { it.bodyFatPct }, { it.bodyFatPctDelta }),
+    TrendMetric("BMI", "", { it.bmi }, { it.bmiDelta }),
+    TrendMetric("Skeletal muscle mass", "kg", { it.skeletalMuscleMassKg }, { it.skeletalMuscleMassKgDelta }),
+)
+
+/**
+ * The delta belonging to the most recent record that actually has one — the newest
+ * record can legitimately be missing a metric (a manual weight-only log between two
+ * InBody scans), in which case the last real reading's delta is the honest thing to show.
+ */
+private fun <T> List<T>.lastNotNullOf(selector: (T) -> Double?): Double? =
+    asReversed().firstNotNullOfOrNull(selector)
 
 @Composable
 private fun LowConfidenceBadge() {
