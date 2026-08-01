@@ -308,7 +308,9 @@
       "Bash(ANDROID_HOME=$HOME/Library/Android/sdk; nohup $ANDROID_HOME/emulator/emulator -avd Medium_Phone_API_35 -no-snapshot-load -dns-server 8.8.8.8,8.8.4.4 > /tmp/emulator.log 2>&1 & disown; echo started)",
       "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -h localhost -c \"select name, criteria_type, criteria_value from badges;\")",
       "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -h localhost -c \"UPDATE badges SET criteria_type = 'STREAK_DAYS' WHERE criteria_type = 'streak_days' RETURNING name, criteria_type;\")",
-      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -h localhost -c \"UPDATE users SET role='PATIENT' WHERE email='testlead1@example.com' RETURNING id, email, role;\")"
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -U dhiraj -d poshan_api -h localhost -c \"UPDATE users SET role='PATIENT' WHERE email='testlead1@example.com' RETURNING id, email, role;\")",
+      "Bash(/usr/libexec/java_home -v 21)",
+      "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v 21\\) ./gradlew :app:compileDebugKotlin --rerun-tasks)"
     ],
     "additionalDirectories": [
       "/private/tmp",

@@ -2,12 +2,9 @@ package com.poshanforlife.android.feature.patient
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
-import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -51,14 +48,15 @@ private const val PRODUCTS_ROUTE = "patient/products"
 private const val PROFILE_ROUTE = "patient/profile"
 private const val PRODUCT_DETAIL_ROUTE = "patient/products/{productId}"
 
+// Matches the product nav spec exactly: Home · Track · Programmes · Reports · Profile.
+// Appointments/Badges/Products still exist as screens (routes/when-branches below) but are
+// no longer reachable from the bottom nav — left in place rather than deleted in case a
+// future spec revision restores them as tabs.
 private val items = listOf(
     BottomNavItem(HOME_ROUTE, "Home", Icons.Filled.Home),
     BottomNavItem(TRACK_ROUTE, "Track", Icons.Filled.Timeline),
     BottomNavItem(PROGRAMMES_ROUTE, "Programmes", Icons.AutoMirrored.Filled.MenuBook),
-    BottomNavItem(APPOINTMENTS_ROUTE, "Appointments", Icons.Filled.CalendarMonth),
     BottomNavItem(REPORTS_ROUTE, "Reports", Icons.Filled.Description),
-    BottomNavItem(BADGES_ROUTE, "Badges", Icons.Filled.EmojiEvents),
-    BottomNavItem(PRODUCTS_ROUTE, "Products", Icons.Filled.ShoppingBag),
     BottomNavItem(PROFILE_ROUTE, "Profile", Icons.Filled.Person),
 )
 
