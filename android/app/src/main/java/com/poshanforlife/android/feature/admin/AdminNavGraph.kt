@@ -4,8 +4,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContactPhone
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavController
@@ -62,16 +64,14 @@ private const val PRODUCT_NEW_ROUTE = "admin/products/new"
 private const val PRODUCT_EDIT_ROUTE = "admin/products/{productId}/edit"
 private const val MANAGE_SEGMENTS_ROUTE = "admin/products/segments"
 
-// Matches the product nav spec exactly: Dashboard · Patients · Leads · Orders · Transactions ·
-// Settings. Invoices/Products are no longer reachable from the drawer — their routes/screens
-// (DOCUMENTS_ROUTE/PRODUCTS_ROUTE, still handled below) are left registered but orphaned
-// rather than deleted.
 private val items = listOf(
     BottomNavItem("admin/dashboard", "Dashboard", Icons.Filled.Dashboard),
     BottomNavItem("admin/patients", "Patients", Icons.Filled.People),
     BottomNavItem(LEADS_ROUTE, "Leads", Icons.Filled.ContactPhone),
     BottomNavItem(ORDERS_ROUTE, "Orders", Icons.Filled.ShoppingCart),
     BottomNavItem(TRANSACTIONS_ROUTE, "Transactions", Icons.Filled.Receipt),
+    BottomNavItem(DOCUMENTS_ROUTE, "Invoices", Icons.Filled.Description),
+    BottomNavItem(PRODUCTS_ROUTE, "Products", Icons.Filled.ShoppingBag),
     BottomNavItem("admin/settings", "Settings", Icons.Filled.Settings),
 )
 

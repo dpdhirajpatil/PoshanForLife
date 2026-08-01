@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.Timeline
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavController
@@ -31,14 +32,12 @@ private const val PROFILE_ROUTE = "lead/profile"
 private const val GOALS_DETAIL_ROUTE = "lead/goals"
 private const val PRODUCT_DETAIL_ROUTE = "lead/products/{productId}"
 
-// "Health-only mode" self-signup accounts (Role.LEAD) — see backend prompt 11/mobile signup.
-// Matches the product nav spec exactly: Home · Track · Goals · Profile. Products is no longer
-// reachable from the bottom nav — its route/screen (PRODUCTS_ROUTE, still handled below) is
-// left registered but orphaned rather than deleted.
+/** "Health-only mode" self-signup accounts (Role.LEAD) — see backend prompt 11/mobile signup. */
 private val items = listOf(
     BottomNavItem(HOME_ROUTE, "Home", Icons.Filled.Home),
     BottomNavItem(TRACK_ROUTE, "Track", Icons.Filled.Timeline),
     BottomNavItem(GOALS_TAB_ROUTE, "Goals", Icons.Filled.Flag),
+    BottomNavItem(PRODUCTS_ROUTE, "Products", Icons.Filled.ShoppingBag),
     BottomNavItem(PROFILE_ROUTE, "Profile", Icons.Filled.Person),
 )
 
