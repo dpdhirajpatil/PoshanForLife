@@ -67,6 +67,15 @@ app:
     # persistent disk — the value is decoded in-memory, never written to disk).
     credentials-path: ${FIREBASE_CREDENTIALS_PATH:}
     credentials-base64: ${FIREBASE_CREDENTIALS_BASE64:}
+  msg91:
+    # Transactional SMS for phone-number (OTP) login/signup. The auth key is a
+    # secret — env only, never committed. template-id and sender-id must both
+    # be DLT-approved through MSG91 before real sends work in India; until then
+    # the local/dev profiles accept a fixed code instead (see PhoneOtpService).
+    auth-key: ${MSG91_AUTH_KEY:}
+    template-id: ${MSG91_TEMPLATE_ID:}
+    sender-id: ${MSG91_SENDER_ID:}
+    base-url: ${MSG91_BASE_URL:}
   anthropic:
     api-key: ${ANTHROPIC_API_KEY:}
     model: ${ANTHROPIC_MODEL:claude-sonnet-5}

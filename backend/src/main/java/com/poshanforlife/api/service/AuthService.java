@@ -75,13 +75,56 @@ public class AuthService {
         user.setPhone(request.phone());
         user = userRepository.save(user);
 
+        createLeadFor(user, request.phone(), email, request.city(), request.healthGoal());
+        return issueTokens(user);
+    }
+
+    /**
+     * The phone-OTP counterpart to {@link #signup}: same role, same Lead
+     * linkage, same notifications — the only differences are that identity is
+     * proven by a verified phone instead of an email, and the account has no
+     * password at all. A LEAD created this way is indistinguishable downstream,
+     * so conversion to PATIENT needs no special casing.
+     *
+     * <p>Called only by PhoneOtpService, after the OTP has been verified.
+     *
+     * @param phone already normalised to E.164 and confirmed unclaimed
+     */
+    @Transactional
+    public AuthResponse signupWithVerifiedPhone(String phone, String name) {
+        User user = new User();
+        user.setName(name.trim());
+        user.setEmail(null);
+        user.setPasswordHash(null);
+        user.setRole(Role.LEAD);
+        user.setPhone(phone);
+        user.setPhoneVerified(true);
+        user = userRepository.save(user);
+
+        createLeadFor(user, phone, null, null, null);
+        return issueTokens(user);
+    }
+
+    /** Token pair for an already-authenticated-by-other-means user (e.g. a verified OTP login). */
+    @Transactional
+    public AuthResponse issueTokensFor(User user) {
+        return issueTokens(user);
+    }
+
+    /**
+     * Creates the CRM Lead row that mirrors a self-signup account and tells
+     * every active admin about it. convertedPatient points at the new user
+     * from the start so LeadService.convert promotes in place rather than
+     * creating a duplicate.
+     */
+    private void createLeadFor(User user, String phone, String email, String city, String healthGoal) {
         Lead lead = new Lead();
         lead.setName(user.getName());
-        lead.setPhone(request.phone());
+        lead.setPhone(phone);
         lead.setEmail(email);
-        lead.setCity(request.city());
+        lead.setCity(city);
         lead.setSource(LeadSource.MOBILE_APP);
-        lead.setHealthGoal(request.healthGoal());
+        lead.setHealthGoal(healthGoal);
         lead.setStage(LeadStage.NEW);
         lead.setConvertedPatient(user);
         lead.setCreatedBy(user);
@@ -92,8 +135,6 @@ public class AuthService {
                     "New sign-up", user.getName() + " signed up via the mobile app",
                     "lead", lead.getId());
         }
-
-        return issueTokens(user);
     }
 
     @Transactional
@@ -101,7 +142,10 @@ public class AuthService {
         User user = userRepository.findByEmail(normalize(request.email()))
                 .orElseThrow(() -> new ApiException(ErrorCode.AUTH_REQUIRED, BAD_CREDENTIALS));
 
-        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+        // A phone-signup account has no password at all. Reject before reaching
+        // the encoder, which would otherwise log a warning on every attempt.
+        if (user.getPasswordHash() == null
+                || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             throw new ApiException(ErrorCode.AUTH_REQUIRED, BAD_CREDENTIALS);
         }
         // Deactivated (soft-deleted) accounts get the same opaque message

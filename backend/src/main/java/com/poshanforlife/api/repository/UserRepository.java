@@ -19,6 +19,15 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     boolean existsByEmail(String email);
 
     /**
+     * The single account that has proven ownership of this number. Only
+     * verified phones are unique, so an unverified duplicate sitting on an
+     * abandoned signup never shadows the real owner.
+     */
+    Optional<User> findByPhoneAndPhoneVerifiedTrue(String phone);
+
+    boolean existsByPhoneAndPhoneVerifiedTrue(String phone);
+
+    /**
      * search must be non-null — pass "" for no filter. A null String param
      * inside lower()/like makes the PG driver bind bytea and blow up with
      * "function lower(bytea) does not exist".

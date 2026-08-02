@@ -21,11 +21,17 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String name;
 
-    /** Stored lowercase; uniqueness enforced by the DB. */
-    @Column(nullable = false, unique = true)
+    /**
+     * Stored lowercase; uniqueness enforced by the DB. Null for an OTP-only
+     * account created via phone signup — a DB CHECK guarantees such a user
+     * always has a verified phone instead, so no account is ever left with
+     * no way to identify itself.
+     */
+    @Column(unique = true)
     private String email;
 
-    @Column(name = "password_hash", nullable = false)
+    /** Null for phone-only accounts, which authenticate by OTP and have no password. */
+    @Column(name = "password_hash")
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
@@ -34,6 +40,14 @@ public class User extends BaseEntity {
 
     @Column(length = 32)
     private String phone;
+
+    /**
+     * True once an OTP sent to {@link #phone} has been confirmed. Only verified
+     * phones are unique (partial unique index) and only a verified phone can be
+     * used to log in — an unverified number is just unproven profile text.
+     */
+    @Column(name = "phone_verified", nullable = false)
+    private boolean phoneVerified = false;
 
     @Column(name = "avatar_url", length = 512)
     private String avatarUrl;
