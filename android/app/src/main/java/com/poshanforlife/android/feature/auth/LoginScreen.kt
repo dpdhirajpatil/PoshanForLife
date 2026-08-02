@@ -14,6 +14,9 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -29,11 +32,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+
+private enum class LoginMethod(val label: String) { EMAIL("Email"), PHONE("Phone") }
 
 @Composable
-fun LoginScreen(authViewModel: AuthViewModel, modifier: Modifier = Modifier, onSignUp: () -> Unit = {}) {
+fun LoginScreen(
+    authViewModel: AuthViewModel,
+    modifier: Modifier = Modifier,
+    onSignUp: () -> Unit = {},
+    phoneAuthViewModel: PhoneAuthViewModel = hiltViewModel(),
+) {
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
+    var method by rememberSaveable { mutableStateOf(LoginMethod.EMAIL) }
     val formState = authViewModel.loginForm
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -63,48 +75,70 @@ fun LoginScreen(authViewModel: AuthViewModel, modifier: Modifier = Modifier, onS
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Spacer(modifier = Modifier.height(32.dp))
-
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password") },
-                singleLine = true,
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                modifier = Modifier.fillMaxWidth(),
-            )
             Spacer(modifier = Modifier.height(24.dp))
 
-            Button(
-                onClick = { authViewModel.login(email.trim(), password) },
-                enabled = !formState.isLoading && email.isNotBlank() && password.isNotBlank(),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-            ) {
-                if (formState.isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        strokeWidth = 2.dp,
-                    )
-                } else {
-                    Text("Sign in")
+            // Swaps the form in place rather than navigating — role still isn't
+            // known pre-auth, so both methods stay inside this one
+            // StaffTheme-wrapped screen (same reasoning as AN-02's original choice).
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                LoginMethod.entries.forEachIndexed { index, entry ->
+                    SegmentedButton(
+                        selected = method == entry,
+                        onClick = { method = entry },
+                        shape = SegmentedButtonDefaults.itemShape(index = index, count = LoginMethod.entries.size),
+                    ) { Text(entry.label) }
                 }
             }
+            Spacer(modifier = Modifier.height(24.dp))
 
-            TextButton(onClick = onSignUp, modifier = Modifier.fillMaxWidth()) {
-                Text("Don't have an account? Sign up")
+            when (method) {
+                LoginMethod.EMAIL -> {
+                    OutlinedTextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        label = { Text("Email") },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = { Text("Password") },
+                        singleLine = true,
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Button(
+                        onClick = { authViewModel.login(email.trim(), password) },
+                        enabled = !formState.isLoading && email.isNotBlank() && password.isNotBlank(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                    ) {
+                        if (formState.isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                strokeWidth = 2.dp,
+                            )
+                        } else {
+                            Text("Sign in")
+                        }
+                    }
+
+                    TextButton(onClick = onSignUp, modifier = Modifier.fillMaxWidth()) {
+                        Text("Don't have an account? Sign up")
+                    }
+                }
+
+                // No separate sign-up link needed: an unknown number offers to
+                // sign up inline, so one flow covers both.
+                LoginMethod.PHONE -> PhoneAuthForm(viewModel = phoneAuthViewModel)
             }
         }
     }

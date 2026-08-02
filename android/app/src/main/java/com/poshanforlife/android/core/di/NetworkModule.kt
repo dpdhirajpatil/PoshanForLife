@@ -4,6 +4,7 @@ import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFact
 import com.poshanforlife.android.BuildConfig
 import com.poshanforlife.android.core.network.AppointmentApi
 import com.poshanforlife.android.core.network.AuthApi
+import com.poshanforlife.android.core.network.OtpApi
 import com.poshanforlife.android.core.network.AuthInterceptor
 import com.poshanforlife.android.core.network.CatalogueApi
 import com.poshanforlife.android.core.network.DocumentApi
@@ -94,6 +95,10 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideAuthApi(retrofit: Retrofit): AuthApi = retrofit.create(AuthApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideOtpApi(retrofit: Retrofit): OtpApi = retrofit.create(OtpApi::class.java)
 
     @Provides
     @Singleton

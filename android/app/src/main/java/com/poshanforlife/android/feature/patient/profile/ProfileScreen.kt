@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.poshanforlife.android.feature.auth.LinkPhoneCard
 import java.text.DateFormat
 import java.util.Date
 
@@ -55,6 +56,13 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: ProfileViewModel = h
             onInstall = { settingsLauncher.launch(viewModel.playStoreIntent()) },
             onSyncNow = viewModel::syncNow,
             onDisconnect = { settingsLauncher.launch(viewModel.healthConnectSettingsIntent()) },
+        )
+
+        // AN-23: lets an email-signup account add OTP sign-in. Re-reads the
+        // profile on success so the card flips to the confirmed state.
+        LinkPhoneCard(
+            verifiedPhone = state.verifiedPhone,
+            onLinked = viewModel::refreshVerifiedPhone,
         )
 
         TextButton(onClick = viewModel::logout) { Text("Log out") }

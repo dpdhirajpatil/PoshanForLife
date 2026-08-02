@@ -22,6 +22,10 @@ data class RefreshRequest(val refreshToken: String)
 @Serializable
 data class AuthResponse(val accessToken: String, val refreshToken: String, val user: UserDto)
 
-/** role is the raw wire string (e.g. "DOCTOR") — parse with Role.fromWire before branching on it. */
+/**
+ * role is the raw wire string (e.g. "DOCTOR") — parse with Role.fromWire before branching on it.
+ * email is null for a phone-OTP account (AN-23), which has a verified phone instead — the
+ * backend enforces that every user always has at least one of the two.
+ */
 @Serializable
-data class UserDto(val id: String, val name: String, val email: String, val role: String)
+data class UserDto(val id: String, val name: String, val email: String? = null, val role: String)

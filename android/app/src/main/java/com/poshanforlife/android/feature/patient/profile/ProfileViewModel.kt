@@ -6,6 +6,8 @@ import com.poshanforlife.android.core.data.AuthRepository
 import com.poshanforlife.android.core.datastore.HealthConnectSyncStateDataStore
 import com.poshanforlife.android.core.healthconnect.HealthConnectManager
 import com.poshanforlife.android.core.healthconnect.HealthConnectSyncScheduler
+import com.poshanforlife.android.core.data.UserRepository
+import com.poshanforlife.android.core.network.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,6 +23,8 @@ data class ProfileUiState(
     val isHealthConnectAvailable: Boolean = true,
     val isHealthConnectConnected: Boolean = false,
     val lastSyncedAtMillis: Long? = null,
+    /** Non-null only when the number has been OTP-verified — drives the "link phone" card. */
+    val verifiedPhone: String? = null,
 )
 
 @HiltViewModel
@@ -29,6 +33,7 @@ class ProfileViewModel @Inject constructor(
     private val syncScheduler: HealthConnectSyncScheduler,
     private val syncStateDataStore: HealthConnectSyncStateDataStore,
     private val authRepository: AuthRepository,
+    private val userRepository: UserRepository,
 ) : ViewModel() {
 
     val requiredPermissions: Set<String> get() = healthConnectManager.permissions
@@ -38,21 +43,41 @@ class ProfileViewModel @Inject constructor(
 
     private val isConnected = MutableStateFlow(false)
 
+    /**
+     * The cached UserDto has no phone field, so the verified number comes from
+     * GET /users/me. Re-fetched on demand (init, and again after a successful
+     * link) rather than observed, since nothing else changes it.
+     */
+    private val verifiedPhone = MutableStateFlow<String?>(null)
+
     val uiState: StateFlow<ProfileUiState> = combine(
         isConnected,
         syncStateDataStore.lastSyncedAtMillis,
         authRepository.currentUser(),
-    ) { connected, lastSynced, user ->
+        verifiedPhone,
+    ) { connected, lastSynced, user, phone ->
         ProfileUiState(
             userName = user?.name,
             isHealthConnectAvailable = healthConnectManager.isAvailable(),
             isHealthConnectConnected = connected,
             lastSyncedAtMillis = lastSynced,
+            verifiedPhone = phone,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProfileUiState())
 
     init {
         refreshConnectionState()
+        refreshVerifiedPhone()
+    }
+
+    /** Called on load and again after the link-phone flow reports success. */
+    fun refreshVerifiedPhone() {
+        viewModelScope.launch {
+            val result = userRepository.getMe()
+            if (result is Result.Success) {
+                verifiedPhone.value = result.data.phone?.takeIf { result.data.phoneVerified }
+            }
+        }
     }
 
     fun refreshConnectionState() {

@@ -62,7 +62,11 @@ class TokenDataStore @Inject constructor(
         context.dataStore.edit { prefs ->
             prefs[Keys.USER_ID] = user.id
             prefs[Keys.USER_NAME] = user.name
-            prefs[Keys.USER_EMAIL] = user.email
+            // A phone-OTP account has no email. Remove the key rather than
+            // storing "", so currentUser() reads back a genuine null and
+            // screens can tell "no email" apart from "blank email".
+            val email = user.email
+            if (email == null) prefs.remove(Keys.USER_EMAIL) else prefs[Keys.USER_EMAIL] = email
             prefs[Keys.USER_ROLE] = user.role
         }
     }
@@ -75,7 +79,7 @@ class TokenDataStore @Inject constructor(
             UserDto(
                 id = id,
                 name = prefs[Keys.USER_NAME].orEmpty(),
-                email = prefs[Keys.USER_EMAIL].orEmpty(),
+                email = prefs[Keys.USER_EMAIL],
                 role = prefs[Keys.USER_ROLE].orEmpty(),
             )
         }

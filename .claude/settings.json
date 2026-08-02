@@ -354,7 +354,13 @@
       "Bash(sed -i '' '/^import com.poshanforlife.api.entity.PhoneOtp;$/d' src/main/java/com/poshanforlife/api/service/OtpAttemptRecorder.java)",
       "Bash(sed -i '' 's/otpAttemptRecorder.recordFailedAttempt\\(record\\);/otpAttemptRecorder.recordFailedAttempt\\(record.getId\\(\\)\\);/' src/main/java/com/poshanforlife/api/service/PhoneOtpService.java)",
       "Bash(sed -i '' 's/verify\\(otpAttemptRecorder\\).recordFailedAttempt\\(pending\\);/verify\\(otpAttemptRecorder\\).recordFailedAttempt\\(pending.getId\\(\\)\\);/' src/test/java/com/poshanforlife/api/service/PhoneOtpServiceTest.java)",
-      "Bash(curl -s -o /dev/null --max-time 2 http://localhost:8080/api/v1/health)"
+      "Bash(curl -s -o /dev/null --max-time 2 http://localhost:8080/api/v1/health)",
+      "Bash(git ls-remote *)",
+      "Bash(awk '{print substr\\($1,1,7\\)\"  \"$2}')",
+      "Bash(echo \"compile exit=$?\")",
+      "Bash(curl -s http://localhost:8080/api/v1/auth/login -X POST -H 'Content-Type: application/json' -d '{\"email\":\"admin@poshanforlife.com\",\"password\":\"Admin@123\"}' --max-time 5)",
+      "Bash(python3 -c \"import sys,json;d=json.load\\(sys.stdin\\)['data'];print\\({k:d[k] for k in \\('name','email','phone','phoneVerified'\\)}\\)\")",
+      "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v 25 || /usr/libexec/java_home\\) ./mvnw -o -q test -Dtest=PhoneOtpServiceTest)"
     ],
     "additionalDirectories": [
       "/private/tmp",
