@@ -1,0 +1,62 @@
+import SwiftUI
+
+/// Practitioner navigation — four primary tabs plus a More tab we build
+/// ourselves: Patients · Leads · Upload · Schedule · More.
+///
+/// The prompt notes SwiftUI's `TabView` auto-collapses overflow into a native
+/// "More" list. That only happens beyond five items, and it lands you in a
+/// system-styled list that ignores the app theme. With exactly five, the fifth
+/// tab is ours, so this builds it explicitly.
+///
+/// Every label here says "Practitioner"; the wire role stays `DOCTOR`.
+struct PractitionerTabView: View {
+    @Environment(\.appTheme) private var theme
+
+    var body: some View {
+        TabView {
+            tab("Patients", systemImage: "person.2.fill")
+            tab("Leads", systemImage: "person.badge.plus")
+            tab("Upload", systemImage: "arrow.up.doc.fill")
+            tab("Schedule", systemImage: "calendar")
+
+            NavigationStack {
+                PractitionerMoreScreen()
+            }
+            .tabItem { Label("More", systemImage: "ellipsis.circle") }
+        }
+        .tint(theme.onBackground)
+    }
+
+    private func tab(_ title: String, systemImage: String) -> some View {
+        NavigationStack {
+            PlaceholderScreen(title: title)
+        }
+        .tabItem { Label(title, systemImage: systemImage) }
+    }
+}
+
+/// The overflow destinations: Orders, Products, Settings.
+struct PractitionerMoreScreen: View {
+    @Environment(\.appTheme) private var theme
+
+    private static let items: [MenuRowItem] = [
+        MenuRowItem(title: "Orders", systemImage: "shippingbox.fill"),
+        MenuRowItem(title: "Products", systemImage: "bag.fill"),
+        MenuRowItem(title: "Settings", systemImage: "gearshape.fill"),
+    ]
+
+    var body: some View {
+        List(Self.items) { item in
+            NavigationLink(value: item) {
+                MenuRow(item: item)
+            }
+        }
+        .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .background(theme.background.ignoresSafeArea())
+        .navigationTitle("More")
+        .navigationDestination(for: MenuRowItem.self) { item in
+            PlaceholderScreen(title: item.title, showsSignOut: item.title == "Settings")
+        }
+    }
+}

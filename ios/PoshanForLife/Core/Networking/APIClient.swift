@@ -1,12 +1,10 @@
+import Combine
 import Foundation
 
 /// Thin async wrapper over `URLSession`. Attaches the bearer token, unwraps the
-/// backend's success envelope, and converts every failure into a typed
-/// ``APIError`` so ViewModels never see `URLSession` or raw status codes.
-///
-/// Deliberately not an actor: it holds no mutable state of its own, and every
-/// method is already `async`. Token reads go to the Keychain, which is
-/// thread-safe on its own.
+/// backend's success envelope, refreshes an expired session once, and converts
+/// every failure into a typed ``APIError`` so ViewModels never see
+/// `URLSession` or raw status codes.
 final class APIClient {
 
     static let defaultEncoder: JSONEncoder = {
@@ -21,10 +19,16 @@ final class APIClient {
         return decoder
     }()
 
+    /// Fires when the session is unrecoverable — refresh failed or there was
+    /// nothing to refresh with. `AuthViewModel` subscribes and drops to the
+    /// login screen; nothing else needs a "check my session" call.
+    let sessionExpired = PassthroughSubject<Void, Never>()
+
     private let baseURL: URL
     private let session: URLSession
     private let tokenStore: TokenStore
     private let decoder: JSONDecoder
+    private let refreshCoordinator = TokenRefreshCoordinator()
 
     init(
         baseURL: URL = BaseURL.current,
@@ -41,26 +45,42 @@ final class APIClient {
     /// Throwing form — use when a caller genuinely wants to `try`.
     /// Repositories should prefer ``send(_:)``.
     func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
+        try await request(endpoint, allowRefresh: true)
+    }
+
+    /// Non-throwing form — mirrors the Android client's `Result` convention so
+    /// both apps' ViewModels read the same way.
+    func send<T: Decodable>(_ endpoint: Endpoint) async -> Result<T, APIError> {
+        do {
+            return .success(try await request(endpoint))
+        } catch let error as APIError {
+            return .failure(error)
+        } catch {
+            return .failure(.decoding)
+        }
+    }
+
+    // MARK: - Core
+
+    private func request<T: Decodable>(_ endpoint: Endpoint, allowRefresh: Bool) async throws -> T {
         // A missing or unreadable token isn't fatal here — the request goes out
-        // unauthenticated and the backend answers 401, which IOS-02's refresh
-        // seam handles uniformly with an expired one.
+        // unauthenticated and the backend answers 401, which lands in the same
+        // refresh path as an expired one.
         let accessToken: String? = endpoint.requiresAuth ? (try? tokenStore.accessToken()) : nil
         let urlRequest = try endpoint.urlRequest(baseURL: baseURL, accessToken: accessToken)
 
-        let data: Data
-        let response: URLResponse
-        do {
-            (data, response) = try await session.data(for: urlRequest)
-        } catch let error as URLError where error.code == .cancelled {
-            // A cancelled task is the caller going away (view dismissed, search
-            // superseded), not a failure worth showing anyone.
-            throw APIError.transport(code: "CANCELLED", message: "Request cancelled")
-        } catch {
-            throw APIError.network
-        }
+        let (data, http) = try await perform(urlRequest)
 
-        guard let http = response as? HTTPURLResponse else {
-            throw APIError.decoding
+        if http.statusCode == 401, endpoint.requiresAuth, allowRefresh {
+            let refreshed = await refreshCoordinator.refresh { [weak self] in
+                await self?.performRefresh() ?? false
+            }
+            if refreshed {
+                // Rebuilt from scratch so it picks up the new access token.
+                return try await request(endpoint, allowRefresh: false)
+            }
+            endSession()
+            throw APIError(error: "Your session has expired. Please sign in again.", code: "AUTH_REQUIRED")
         }
 
         guard (200..<300).contains(http.statusCode) else {
@@ -88,16 +108,60 @@ final class APIClient {
         }
     }
 
-    /// Non-throwing form — mirrors the Android client's `Result` convention so
-    /// both apps' ViewModels read the same way.
-    func send<T: Decodable>(_ endpoint: Endpoint) async -> Result<T, APIError> {
+    private func perform(_ urlRequest: URLRequest) async throws -> (Data, HTTPURLResponse) {
+        let data: Data
+        let response: URLResponse
         do {
-            return .success(try await request(endpoint))
-        } catch let error as APIError {
-            return .failure(error)
+            (data, response) = try await session.data(for: urlRequest)
+        } catch let error as URLError where error.code == .cancelled {
+            // A cancelled task is the caller going away (view dismissed, search
+            // superseded), not a failure worth showing anyone.
+            throw APIError.transport(code: "CANCELLED", message: "Request cancelled")
         } catch {
-            return .failure(.decoding)
+            throw APIError.network
         }
+        guard let http = response as? HTTPURLResponse else {
+            throw APIError.decoding
+        }
+        return (data, http)
+    }
+
+    // MARK: - Refresh
+
+    /// Talks to `/auth/refresh` with a hand-built request rather than going back
+    /// through ``request(_:allowRefresh:)``. A refresh that 401s must never
+    /// trigger another refresh — same reason Android gives the refresh call its
+    /// own Retrofit instance with no Authenticator attached.
+    private func performRefresh() async -> Bool {
+        guard let refreshToken = try? tokenStore.refreshToken(), !refreshToken.isEmpty else {
+            return false
+        }
+
+        do {
+            let endpoint = try Endpoint.json(
+                path: "auth/refresh",
+                method: .post,
+                body: RefreshRequest(refreshToken: refreshToken),
+                requiresAuth: false
+            )
+            let urlRequest = try endpoint.urlRequest(baseURL: baseURL, accessToken: nil)
+            let (data, http) = try await perform(urlRequest)
+            guard (200..<300).contains(http.statusCode) else { return false }
+
+            let envelope = try decoder.decode(APIResponse<AuthResponse>.self, from: data)
+            guard let auth = envelope.data else { return false }
+            try tokenStore.saveTokens(access: auth.accessToken, refresh: auth.refreshToken)
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    /// Clears credentials and tells whoever is listening. Safe to call twice —
+    /// two requests can lose the race to the same dead session.
+    private func endSession() {
+        try? tokenStore.clear()
+        sessionExpired.send()
     }
 
     /// Parses the backend's error envelope, falling back to the bare HTTP status

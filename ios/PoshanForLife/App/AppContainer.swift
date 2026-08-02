@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 
 /// Composition root. Holds one instance of each long-lived dependency and hands
@@ -21,6 +22,12 @@ final class AppContainer: ObservableObject {
         let client = APIClient(tokenStore: tokenStore)
         self.apiClient = client
         self.authRepository = AuthRepositoryImpl(client: client, tokenStore: tokenStore)
+    }
+
+    /// Refresh failed and the session is gone — `AuthViewModel` listens and
+    /// drops to the login screen.
+    var sessionExpired: AnyPublisher<Void, Never> {
+        apiClient.sessionExpired.eraseToAnyPublisher()
     }
 
     /// Everything in memory — for previews and tests.

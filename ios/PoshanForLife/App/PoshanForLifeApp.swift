@@ -8,8 +8,11 @@ struct PoshanForLifeApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView(authRepository: container.authRepository)
-                .environmentObject(container)
+            RootView(
+                authRepository: container.authRepository,
+                sessionExpired: container.sessionExpired
+            )
+            .environmentObject(container)
         }
     }
 }

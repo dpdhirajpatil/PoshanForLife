@@ -5,20 +5,54 @@ minimum. No third-party dependencies.
 
 ## Status
 
-IOS-01 (scaffold, networking, DI, Keychain) is written. The Xcode project
-itself has **not** been generated — this machine has Command Line Tools only,
-no Xcode, so there is no iOS SDK, no Simulator, and no `xcodebuild`.
+Written: **IOS-01** (scaffold, networking, DI, Keychain), **IOS-03** (theme
+system — built early because IOS-02 depends on it), **IOS-02** (auth,
+role-based navigation, theme selection, token refresh).
+
+The Xcode project itself has **not** been generated — this machine has Command
+Line Tools only, no Xcode, so there is no iOS SDK, no Simulator, and no
+`xcodebuild`.
 
 What that means in practice:
 
-- All 12 Swift files **type-check clean** against the macOS SDK
+- All 25 Swift files **type-check clean** against the macOS SDK
   (`swiftc -typecheck -target arm64-apple-macos13.0 -swift-version 5`).
-- The envelope/Keychain/Endpoint logic is **verified at runtime**, including
+  Three files need 9 lines shimmed for that run only — `insetGrouped`,
+  `keyboardType`, `textContentType`, `textInputAutocapitalization`,
+  `scrollDismissesKeyboard` are iOS-only. The committed sources keep the
+  iOS-correct calls.
+- Envelope, Keychain, and Endpoint logic **verified at runtime**, including
   against the live backend on `localhost:8080` — real 401 and real 422
   responses decode correctly, with validation field messages intact.
+- Token refresh **verified against a stubbed transport**: retry-after-refresh,
+  refresh-failure sign-out, no-refresh-token, no refresh on a public-endpoint
+  401, and six concurrent 401s collapsing into exactly one refresh call.
 - Not yet verified: anything needing the iOS SDK — that the app launches, that
   the Simulator reaches `localhost`, that the Keychain accessibility flag
-  behaves on device, and that the two Info.plists wire up as intended.
+  behaves on device, that the two Info.plists wire up, and every question about
+  how the UI actually *looks*. No screen has been rendered.
+
+## Navigation by role
+
+| Role (wire) | Structure | Theme | Destinations |
+| --- | --- | --- | --- |
+| PATIENT | TabView, 5 tabs | Patient | Home · Track · Programmes · Reports · Profile |
+| LEAD | TabView, 4 tabs | Lead | Home · Track · Goals · Profile |
+| DOCTOR | TabView, 4 + More | Staff | Patients · Leads · Upload · Schedule · More (Orders, Products, Settings) |
+| ADMIN | NavigationStack + List | Staff | Dashboard · Patients · Leads · Orders · Transactions · Products · Settings |
+
+Admin is a settings-style List, not a tab bar — the iOS-native answer to the
+"Admin needs a drawer" question Android solved with `RoleScaffoldDrawer`. Seven
+destinations don't fit a tab bar, and each is visited occasionally.
+
+The login screen is wrapped in **StaffTheme**: the role isn't known until login
+succeeds, so the neutral theme is the only honest choice. It re-themes the
+instant `state` becomes `.loggedIn`.
+
+Themes are injected with `.appTheme(PatientTheme.self)` rather than
+`.environment(\.appTheme, PatientTheme())`. The latter captures one appearance
+at construction and never updates, which would freeze the whole app in light
+mode. See `UI/Theme/AppTheme.swift`.
 
 ## Getting it running (once Xcode is installed)
 

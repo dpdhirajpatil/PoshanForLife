@@ -1,84 +1,102 @@
+import Combine
 import SwiftUI
 
-/// Picks which role's navigation stack to show. Each role's view is wrapped in
-/// its own theme — that wrapping is the IOS-02/IOS-03 seam and is marked below.
+/// Does two things off one piece of state: picks the navigation structure for
+/// the signed-in role, and picks the theme that wraps it.
 struct RootView: View {
 
-    @EnvironmentObject private var container: AppContainer
     @StateObject private var authViewModel: AuthViewModel
 
-    init(authRepository: AuthRepository) {
-        _authViewModel = StateObject(wrappedValue: AuthViewModel(authRepository: authRepository))
+    init(authRepository: AuthRepository, sessionExpired: AnyPublisher<Void, Never>) {
+        _authViewModel = StateObject(
+            wrappedValue: AuthViewModel(
+                authRepository: authRepository,
+                sessionExpired: sessionExpired
+            )
+        )
     }
 
     var body: some View {
-        Group {
-            switch authViewModel.state {
-            case .loading:
-                LoadingView()
-
-            case .signedOut:
-                // IOS-02 replaces this with LoginView.
-                PlaceholderView(title: "Signed out", detail: "Login arrives in IOS-02.")
-
-            case .signedIn(let user):
-                signedIn(user)
+        content
+            .environmentObject(authViewModel)
+            .task {
+                await authViewModel.restoreSession()
             }
-        }
-        .task {
-            await authViewModel.restoreSession()
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        switch authViewModel.state {
+        case .loading:
+            // Staff theme: neutral, and the role isn't known yet anyway.
+            LaunchView().appTheme(StaffTheme.self)
+
+        case .loggedOut:
+            // Same reasoning — re-themes into the role's own theme the instant
+            // login succeeds.
+            LoginScreen(viewModel: authViewModel).appTheme(StaffTheme.self)
+
+        case .loggedIn(let user):
+            signedIn(user)
         }
     }
 
-    /// SEAM — IOS-02 wires navigation and IOS-03's themes in here:
-    ///   PatientNavigationView().environment(\.appTheme, PatientTheme())
-    ///   LeadNavigationView().environment(\.appTheme, LeadTheme())
-    ///   StaffNavigationView(role:).environment(\.appTheme, StaffTheme())
-    /// Admin and Practitioner (wire role DOCTOR) share the one StaffTheme.
     @ViewBuilder
     private func signedIn(_ user: User) -> some View {
         switch user.role {
         case .patient:
-            PlaceholderView(title: "Patient", detail: "Navigation arrives in IOS-02.")
+            PatientTabView().appTheme(PatientTheme.self)
+
         case .lead:
-            PlaceholderView(title: "Lead", detail: "Navigation arrives in IOS-02.")
+            LeadTabView().appTheme(LeadTheme.self)
+
         case .doctor:
-            PlaceholderView(title: "Practitioner", detail: "Navigation arrives in IOS-02.")
+            // Practitioner in every label; DOCTOR on the wire.
+            PractitionerTabView().appTheme(StaffTheme.self)
+
         case .admin:
-            PlaceholderView(title: "Admin", detail: "Navigation arrives in IOS-02.")
+            // Admin and Practitioner share the one StaffTheme, not two.
+            AdminRootView().appTheme(StaffTheme.self)
+
         case .none:
-            // A role this build doesn't know about: don't guess at permissions.
-            PlaceholderView(
-                title: "Unsupported account",
-                detail: "This app version doesn't recognise your account type. Please update."
-            )
+            // A role this build doesn't know: don't guess at permissions, and
+            // don't strand them — signing out is the only safe way forward.
+            UnsupportedRoleView().appTheme(StaffTheme.self)
         }
     }
 }
 
-struct LoadingView: View {
+private struct LaunchView: View {
+    @Environment(\.appTheme) private var theme
+
     var body: some View {
-        VStack(spacing: 12) {
-            ProgressView()
-            Text("Loading…")
-                .font(.body)
+        ZStack {
+            theme.background.ignoresSafeArea()
+            VStack(spacing: 12) {
+                ProgressView().tint(theme.primary)
+                Text("Loading…")
+                    .font(.bodyFont(size: 14))
+                    .foregroundStyle(theme.onBackground.opacity(0.7))
+            }
         }
     }
 }
 
-/// Temporary stand-in so IOS-01 has something that runs. Deleted by IOS-02.
-struct PlaceholderView: View {
-    let title: String
-    let detail: String
+private struct UnsupportedRoleView: View {
+    @Environment(\.appTheme) private var theme
 
     var body: some View {
-        VStack(spacing: 8) {
-            Text(title)
-                .font(.title2)
-            Text(detail)
-                .font(.footnote)
-                .multilineTextAlignment(.center)
+        ZStack {
+            theme.background.ignoresSafeArea()
+            VStack(spacing: 12) {
+                Text("Unsupported account").themedHeading(size: 22)
+                Text("This version of the app doesn't recognise your account type. Please update.")
+                    .font(.bodyFont(size: 14))
+                    .foregroundStyle(theme.onBackground.opacity(0.7))
+                    .multilineTextAlignment(.center)
+                SignOutButton().padding(.top, 16)
+            }
+            .padding(24)
         }
-        .padding()
     }
 }
