@@ -1,0 +1,20 @@
+#include "Base.xcconfig"
+
+// Optional per-machine overrides (DEV_LAN_HOST, signing team). Gitignored, and
+// the leading ? makes the include silent when the file doesn't exist.
+#include? "Local.xcconfig"
+
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DEBUG
+SWIFT_OPTIMIZATION_LEVEL = -Onone
+GCC_PREPROCESSOR_DEFINITIONS = $(inherited) DEBUG=1
+ONLY_ACTIVE_ARCH = YES
+
+// A separate plist per configuration — NOT one plist with a DEBUG flag. App
+// Transport Security is read out of Info.plist by CFNetwork at connection time,
+// so no compile-time or runtime check can gate it; the only way to keep the
+// exception out of Release is for it to live in a file Release never uses.
+INFOPLIST_FILE = PoshanForLife/Info-Debug.plist
+
+// The Mac's LAN IP, for running on a physical device. The Simulator ignores
+// this and uses localhost. Override in Local.xcconfig rather than editing here.
+DEV_LAN_HOST = 192.168.1.42

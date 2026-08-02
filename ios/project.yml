@@ -1,0 +1,49 @@
+# XcodeGen spec — generates PoshanForLife.xcodeproj from this directory tree.
+#
+#   brew install xcodegen && cd ios && xcodegen generate
+#
+# The .xcodeproj is deliberately NOT committed: it's a generated artifact whose
+# pbxproj format merge-conflicts on every parallel branch. This file is the
+# source of truth; regenerate after adding files.
+
+name: PoshanForLife
+
+options:
+  bundleIdPrefix: com.poshanforlife
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+configs:
+  Debug: debug
+  Release: release
+
+targets:
+  PoshanForLife:
+    type: application
+    platform: iOS
+    sources:
+      - path: PoshanForLife
+        excludes:
+          # Referenced through INFOPLIST_FILE in the xcconfigs; listing them as
+          # sources would also copy them into the bundle as stray resources.
+          - "Info-Debug.plist"
+          - "Info-Release.plist"
+          - "**/.gitkeep"
+    # Per-configuration xcconfigs carry the base URLs and the Debug-only ATS
+    # exception. See Config/Debug.xcconfig for why ATS must be split by file
+    # rather than gated with a compile-time flag.
+    configFiles:
+      Debug: Config/Debug.xcconfig
+      Release: Config/Release.xcconfig
+
+schemes:
+  PoshanForLife:
+    build:
+      targets:
+        PoshanForLife: all
+    run:
+      config: Debug
+    archive:
+      config: Release

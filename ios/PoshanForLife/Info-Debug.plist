@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string>Poshan</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>UILaunchScreen</key>
+	<dict/>
+
+	<!-- Debug only. Fed by DEV_LAN_HOST in Debug.xcconfig; read by BaseURL.swift
+	     when running on a physical device. Absent from Info-Release.plist. -->
+	<key>DevLANHost</key>
+	<string>$(DEV_LAN_HOST)</string>
+
+	<!-- Debug only: reach the local Spring Boot backend over cleartext HTTP.
+	     Scoped rather than blanket — NSAllowsArbitraryLoads would open every
+	     host on the internet, which is far more than a dev backend needs.
+	     NSAllowsLocalNetworking covers the private-range LAN IP used on a
+	     physical device; the explicit localhost exception covers the Simulator,
+	     which resolves to loopback rather than a local-network address.
+	     This mirrors android/app/src/debug/res/xml/network_security_config.xml,
+	     which whitelists exactly 10.0.2.2 and localhost. -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>localhost</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
+		</dict>
+	</dict>
+</dict>
+</plist>

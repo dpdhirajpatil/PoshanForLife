@@ -1,0 +1,10 @@
+#include "Base.xcconfig"
+
+SWIFT_OPTIMIZATION_LEVEL = -O
+SWIFT_COMPILATION_MODE = wholemodule
+VALIDATE_PRODUCT = YES
+
+// Carries no NSAppTransportSecurity key at all, so ATS applies in full. Never
+// point this at Info-Debug.plist "just to test something" — shipping with ATS
+// relaxed is an App Store review flag and a real production weakness.
+INFOPLIST_FILE = PoshanForLife/Info-Release.plist

@@ -1,0 +1,9 @@
+# Per-machine overrides (LAN IP, signing team) — never committed.
+Config/Local.xcconfig
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+DerivedData/
+.DS_Store
+PoshanForLife.xcodeproj/
