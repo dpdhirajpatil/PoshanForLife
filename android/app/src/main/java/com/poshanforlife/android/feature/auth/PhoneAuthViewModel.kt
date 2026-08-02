@@ -34,8 +34,16 @@ data class PhoneAuthState(
     val linked: Boolean = false,
 ) {
     val requiresName: Boolean get() = purpose == OtpPurpose.SIGNUP
+
+    /**
+     * Mirrors the backend's own `@Size(min = 2)` on the signup name. Without
+     * this the server rejects a one-character name with a bare "Validation
+     * failed", which tells the user nothing about what to fix.
+     */
+    val isNameValid: Boolean get() = !requiresName || name.trim().length >= MIN_NAME_LENGTH
+
     val canSubmitOtp: Boolean
-        get() = otp.length == OTP_LENGTH && !isLoading && (!requiresName || name.isNotBlank())
+        get() = otp.length == OTP_LENGTH && !isLoading && isNameValid
 
     /** E.164, which is what the backend stores and compares — it also normalises, but sending it canonical keeps the two in step. */
     val e164: String get() = countryCode + phone.filter(Char::isDigit)
@@ -43,6 +51,7 @@ data class PhoneAuthState(
     companion object {
         const val DEFAULT_COUNTRY_CODE = "+91"
         const val OTP_LENGTH = 6
+        const val MIN_NAME_LENGTH = 2
     }
 }
 

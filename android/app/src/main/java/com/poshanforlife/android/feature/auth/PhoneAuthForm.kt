@@ -112,13 +112,29 @@ private fun OtpEntry(state: PhoneAuthState, viewModel: PhoneAuthViewModel) {
     Spacer(Modifier.height(16.dp))
 
     // Collected on the same step as the code rather than as a third screen —
-    // one submit, one round trip.
+    // one submit, one round trip. Required: the backend rejects a SIGNUP
+    // verify with no name, and a new account needs something to be called.
     if (state.requiresName) {
+        // Only turns red once the code is complete — i.e. once the user has
+        // actually tried to submit. Marking it as an error the moment the step
+        // opens would scold them before they've had a chance to type.
+        val showNameError = !state.isNameValid && state.otp.length == PhoneAuthState.OTP_LENGTH
         OutlinedTextField(
             value = state.name,
             onValueChange = viewModel::onNameChange,
-            label = { Text("Your name") },
+            label = { Text("Your name *") },
             singleLine = true,
+            isError = showNameError,
+            // Material 3 already colours supporting text by error state.
+            supportingText = {
+                Text(
+                    when {
+                        !showNameError -> "Required"
+                        state.name.isBlank() -> "Enter your name to create your account"
+                        else -> "Name must be at least ${PhoneAuthState.MIN_NAME_LENGTH} characters"
+                    },
+                )
+            },
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(16.dp))
@@ -131,8 +147,9 @@ private fun OtpEntry(state: PhoneAuthState, viewModel: PhoneAuthViewModel) {
         enabled = !state.isLoading,
         errorMessage = state.error,
         // Auto-submit only when nothing else is outstanding, so a signup can't
-        // fire before the name has been typed.
-        onCompleted = { if (!state.requiresName || state.name.isNotBlank()) viewModel.verify() },
+        // fire before a valid name has been typed. When it is outstanding the
+        // name field above turns red instead, rather than nothing happening.
+        onCompleted = { if (state.isNameValid) viewModel.verify() },
         modifier = Modifier.fillMaxWidth(),
     )
 
