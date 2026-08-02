@@ -49,6 +49,7 @@ import com.poshanforlife.android.core.network.HealthRecordDto
 import com.poshanforlife.android.core.network.PatientProgrammeDto
 import com.poshanforlife.android.core.network.UserDetailDto
 import com.poshanforlife.android.ui.components.shimmerPlaceholder
+import com.poshanforlife.android.ui.theme.TrapeziumSectionLabel
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
@@ -80,7 +81,14 @@ fun DashboardScreen(
 
             val programmeState = uiState.programme
             if (programmeState is CardState.Success && programmeState.data != null) {
-                item { ActiveProgrammeCard(programmeState.data) }
+                item {
+                    // Direction A's signature pattern: the trapezium label chip sits
+                    // ABOVE the card rather than being a header row inside it.
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TrapeziumSectionLabel("Active programme")
+                        ActiveProgrammeCard(programmeState.data)
+                    }
+                }
             }
 
             val invoicesState = uiState.invoices

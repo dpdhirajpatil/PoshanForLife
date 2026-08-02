@@ -151,7 +151,8 @@ fun ReportDetailScreen(
                 ) {
                     item {
                         Column {
-                            Text(text = report.title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+                            // ALL CAPS per Type.kt's headline contract (Patient theme).
+                            Text(text = report.title.uppercase(), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
                             Text(
                                 text = report.patient?.name ?: "",
                                 style = MaterialTheme.typography.bodyLarge,

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import com.poshanforlife.android.ui.theme.TrapeziumSectionLabel
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
@@ -72,7 +73,8 @@ fun LeadHomeScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = if (userName.isNotBlank()) "Hi, $userName" else "Welcome",
+                    // ALL CAPS per Type.kt's headline contract (Lead theme).
+                    text = (if (userName.isNotBlank()) "Hi, $userName" else "Welcome").uppercase(),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.SemiBold,
                 )
@@ -82,36 +84,45 @@ fun LeadHomeScreen(
 
         if (!gamification.loading) {
             item {
-                GamificationCard(
-                    streak = gamification.streak,
-                    badges = gamification.badges,
-                    checkingIn = gamification.checkingIn,
-                    onCheckIn = viewModel::checkInToday,
-                )
+                // Label chip above the card, matching Patient's Direction A pattern —
+                // Lead shares the brand-forward foundation and adds gamified
+                // components on top of it, rather than styling sections differently.
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TrapeziumSectionLabel("Your streak")
+                    GamificationCard(
+                        streak = gamification.streak,
+                        badges = gamification.badges,
+                        checkingIn = gamification.checkingIn,
+                        onCheckIn = viewModel::checkInToday,
+                    )
+                }
             }
         }
 
         item {
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Column(modifier = Modifier.padding(20.dp)) {
-                    Text(
-                        text = "Ready to talk to a practitioner?",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    )
-                    Text(
-                        text = "Request a consultation and we'll get you set up with a personalized plan.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.padding(top = 6.dp),
-                    )
-                    Button(onClick = onRequestConsultation, modifier = Modifier.padding(top = 16.dp)) {
-                        Text("Request consultation")
+            // The label chip carries the shortened "Ready to talk?" rather than the
+            // full "Ready to talk to a practitioner?" — at ExtraBold labelLarge the
+            // long form runs ~330dp wide, which wraps to two lines on a 360dp
+            // screen and turns the slanted chip into a slanted block. The full
+            // question would still be legible thanks to the bar's minHeight, but it
+            // reads as a broken chip rather than a section label. Meaning is
+            // unchanged; the body line below still says "a practitioner".
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                TrapeziumSectionLabel("Ready to talk?")
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Column(modifier = Modifier.padding(20.dp)) {
+                        Text(
+                            text = "Request a consultation and we'll get you set up with a personalized plan.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                        Button(onClick = onRequestConsultation, modifier = Modifier.padding(top = 16.dp)) {
+                            Text("Request consultation")
+                        }
                     }
                 }
             }
@@ -210,12 +221,12 @@ private fun GamificationCard(
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = "Your streak", style = MaterialTheme.typography.titleLarge)
-
+            // The "Your streak" heading now lives in the TrapeziumSectionLabel
+            // above this card — keeping it here too would show it twice.
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 12.dp),
+                // Was padding(top = 12.dp) to clear the heading that used to sit
+                // here; with the heading hoisted out, that would just be a gap.
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 ProgressRing(percentComplete = streak?.percentComplete ?: 0)

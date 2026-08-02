@@ -67,7 +67,8 @@ fun RequestConsultationScreen(
             .padding(PaddingValues(24.dp)),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Text(text = "Request a consultation", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+        // ALL CAPS per Type.kt's headline contract (Lead theme).
+        Text(text = "Request a consultation".uppercase(), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
         Text(
             text = "Tell us a bit about what you're looking for and a practitioner will reach out.",
             style = MaterialTheme.typography.bodyLarge,

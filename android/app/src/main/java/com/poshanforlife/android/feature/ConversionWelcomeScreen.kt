@@ -48,7 +48,11 @@ fun ConversionWelcomeScreen(onContinue: () -> Unit, modifier: Modifier = Modifie
             )
         }
         Text(
-            text = "You're officially a patient!",
+            // ALL CAPS per Type.kt's headline contract. This screen is always
+            // wrapped in PoshanPatientTheme by AppNavGraph — it IS the re-theme
+            // reveal — so it's bound by the Patient contract despite living
+            // outside feature/patient/.
+            text = "You're officially a patient!".uppercase(),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.ExtraBold,
             textAlign = TextAlign.Center,

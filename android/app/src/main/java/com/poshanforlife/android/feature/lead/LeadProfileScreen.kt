@@ -31,7 +31,8 @@ fun LeadProfileScreen(
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Text(text = user?.name.orEmpty(), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+        // ALL CAPS per Type.kt's headline contract (Lead theme).
+        Text(text = user?.name.orEmpty().uppercase(), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
         // A phone-signup lead has no email at all — show the verified number
         // instead of an empty line.
         val subtitle = user?.email ?: verifiedPhone

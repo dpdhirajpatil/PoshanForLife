@@ -69,7 +69,8 @@ fun ProgrammeDetailScreen(
                 item {
                     Column {
                         Text(
-                            text = programme.catalogueItem?.name ?: "Service",
+                            // ALL CAPS per Type.kt's headline contract (Patient theme).
+                            text = (programme.catalogueItem?.name ?: "Service").uppercase(),
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.SemiBold,
                         )

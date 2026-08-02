@@ -1,9 +1,39 @@
 package com.poshanforlife.android.ui.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+
+/**
+ * Whether the current theme renders display/headline text ALL CAPS.
+ *
+ * True under [PoshanPatientTheme]/[PoshanLeadTheme], false under
+ * [PoshanStaffTheme] — each theme provides it, so the value always matches
+ * whatever theme is actually in scope.
+ *
+ * The default is `false` deliberately: an un-themed preview or a screen that
+ * forgets to wrap gets the calm treatment rather than silently shouting.
+ */
+val LocalHeadingUppercase = staticCompositionLocalOf { false }
+
+/**
+ * Applies the in-scope theme's heading-casing rule to [text].
+ *
+ * Use this in any composable that renders under MORE THAN ONE theme —
+ * ProductDetailScreen, for instance, is reachable from the Patient graph AND
+ * from Practitioner/Admin, so a hard-coded `.uppercase()` there would leak
+ * ALL CAPS into the Staff direction. Screens that only ever appear under one
+ * theme can call `.uppercase()` directly; it reads more plainly at the call
+ * site, and the theme can't change underneath them.
+ */
+@Composable
+@ReadOnlyComposable
+fun brandHeading(text: String): String =
+    if (LocalHeadingUppercase.current) text.uppercase() else text
 
 /**
  * Display/headline/title slots use [displayFontFamily] at ExtraBold per the CI Guidelines. The

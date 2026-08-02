@@ -8,6 +8,7 @@ import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
@@ -135,12 +136,14 @@ fun PoshanPatientTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
-    MaterialTheme(
-        colorScheme = if (darkTheme) PatientDarkColorScheme else PatientLightColorScheme,
-        typography = PoshanPatientTypography,
-        shapes = PoshanRoundedShapes,
-        content = content,
-    )
+    CompositionLocalProvider(LocalHeadingUppercase provides true) {
+        MaterialTheme(
+            colorScheme = if (darkTheme) PatientDarkColorScheme else PatientLightColorScheme,
+            typography = PoshanPatientTypography,
+            shapes = PoshanRoundedShapes,
+            content = content,
+        )
+    }
 }
 
 /** Gamified Lead theme — same base palette as Patient; reach for [streakChipBackground]/[badgeEarnedBackground] on this screen's ColorScheme. */
@@ -149,12 +152,14 @@ fun PoshanLeadTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
-    MaterialTheme(
-        colorScheme = if (darkTheme) LeadDarkColorScheme else LeadLightColorScheme,
-        typography = PoshanLeadTypography,
-        shapes = PoshanRoundedShapes,
-        content = content,
-    )
+    CompositionLocalProvider(LocalHeadingUppercase provides true) {
+        MaterialTheme(
+            colorScheme = if (darkTheme) LeadDarkColorScheme else LeadLightColorScheme,
+            typography = PoshanLeadTypography,
+            shapes = PoshanRoundedShapes,
+            content = content,
+        )
+    }
 }
 
 /**
@@ -166,10 +171,15 @@ fun PoshanStaffTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
-    MaterialTheme(
-        colorScheme = if (darkTheme) StaffDarkColorScheme else StaffLightColorScheme,
-        typography = PoshanStaffTypography,
-        shapes = PoshanStaffShapes,
-        content = content,
-    )
+    // Explicitly false, not just relying on the default — Staff headings must
+    // never be uppercased, and stating it here means a future change to the
+    // default can't quietly flip this theme.
+    CompositionLocalProvider(LocalHeadingUppercase provides false) {
+        MaterialTheme(
+            colorScheme = if (darkTheme) StaffDarkColorScheme else StaffLightColorScheme,
+            typography = PoshanStaffTypography,
+            shapes = PoshanStaffShapes,
+            content = content,
+        )
+    }
 }

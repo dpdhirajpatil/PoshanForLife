@@ -36,6 +36,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.poshanforlife.android.feature.practitioner.documents.formatInr
+import com.poshanforlife.android.ui.theme.brandHeading
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,7 +105,12 @@ fun ProductDetailScreen(
 
                     item {
                         Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                            Text(text = product.name, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+                            // brandHeading(), not a hard-coded .uppercase(): this
+                            // one screen is reachable from the Patient graph AND
+                            // from Practitioner/Admin, so the casing has to follow
+                            // whichever theme is actually in scope. Uppercasing
+                            // unconditionally here would leak ALL CAPS into Staff.
+                            Text(text = brandHeading(product.name), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
                             product.segmentName?.let {
                                 Text(
                                     text = it,
