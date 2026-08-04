@@ -19,6 +19,8 @@ struct PatientTheme: AppTheme {
     var onSurface: Color { isLight ? .brandNavyDarkest : .brandOffWhite }
     var secondary: Color { isLight ? .brandNavyLightest : .brandNavySecondaryDark }
     var error: Color { isLight ? .brandBerry700 : .brandBerry500 }
+    var tertiary: Color { isLight ? .brandGold500 : .brandGold300 }
+    var onTertiary: Color { .brandNavyDarkest }
 
     var useTrapeziumMotif: Bool { true }
     var headingWeight: Font.Weight { .heavy }
@@ -47,6 +49,8 @@ struct LeadTheme: AppTheme {
     var onSurface: Color { base.onSurface }
     var secondary: Color { base.secondary }
     var error: Color { base.error }
+    var tertiary: Color { base.tertiary }
+    var onTertiary: Color { base.onTertiary }
 
     var useTrapeziumMotif: Bool { true }
     var headingWeight: Font.Weight { .heavy }
@@ -96,6 +100,10 @@ struct StaffTheme: AppTheme {
     var onSurface: Color { isLight ? .brandNavyDarkest : .brandOffWhiteMuted }
     var secondary: Color { isLight ? .brandStaffSecondaryLight : .brandStaffSecondaryDark }
     var error: Color { isLight ? .brandBerry700 : .brandBerry500 }
+    // Olive, not the Patient/Lead gold — matches Android's Staff colour scheme,
+    // where tertiary is BrandOlive500 in both appearances.
+    var tertiary: Color { .brandOlive500 }
+    var onTertiary: Color { .brandNavyDarkest }
 
     var useTrapeziumMotif: Bool { false }
     /// NOT .heavy, and NOT uppercase — this pair, more than any colour choice,

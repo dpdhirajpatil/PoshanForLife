@@ -5,9 +5,10 @@ minimum. No third-party dependencies.
 
 ## Status
 
-Written: **IOS-01** (scaffold, networking, DI, Keychain), **IOS-03** (theme
-system — built early because IOS-02 depends on it), **IOS-02** (auth,
-role-based navigation, theme selection, token refresh).
+Written: **IOS-01** (scaffold, networking, DI, Keychain), the **SETUP theme
+prompt** (built early because IOS-02 depends on it), **IOS-02** (auth,
+role-based navigation, theme selection, token refresh), **IOS-03** (patient
+dashboard).
 
 The Xcode project itself has **not** been generated — this machine has Command
 Line Tools only, no Xcode, so there is no iOS SDK, no Simulator, and no
@@ -15,7 +16,7 @@ Line Tools only, no Xcode, so there is no iOS SDK, no Simulator, and no
 
 What that means in practice:
 
-- All 25 Swift files **type-check clean** against the macOS SDK
+- All 34 Swift files **type-check clean** against the macOS SDK
   (`swiftc -typecheck -target arm64-apple-macos13.0 -swift-version 5`).
   Three files need 9 lines shimmed for that run only — `insetGrouped`,
   `keyboardType`, `textContentType`, `textInputAutocapitalization`,
@@ -27,6 +28,9 @@ What that means in practice:
 - Token refresh **verified against a stubbed transport**: retry-after-refresh,
   refresh-failure sign-out, no-refresh-token, no refresh on a public-endpoint
   401, and six concurrent 401s collapsing into exactly one refresh call.
+- Dashboard date/currency logic and all four of its endpoints **verified live**,
+  including that health records come back ascending (so the newest is `.last`)
+  and that the documents API rejects `status=pending`.
 - Not yet verified: anything needing the iOS SDK — that the app launches, that
   the Simulator reaches `localhost`, that the Keychain accessibility flag
   behaves on device, that the two Info.plists wire up, and every question about

@@ -6,10 +6,15 @@ import SwiftUI
 /// there; when those arrive here they go the same way, not into a sixth tab.
 struct PatientTabView: View {
     @Environment(\.appTheme) private var theme
+    @EnvironmentObject private var container: AppContainer
 
     var body: some View {
         TabView {
-            tab("Home", systemImage: "house.fill")
+            NavigationStack {
+                DashboardView(repository: container.dashboardRepository)
+            }
+            .tabItem { Label("Home", systemImage: "house.fill") }
+
             tab("Track", systemImage: "chart.xyaxis.line")
             tab("Programmes", systemImage: "book.fill")
             tab("Reports", systemImage: "doc.text.fill")

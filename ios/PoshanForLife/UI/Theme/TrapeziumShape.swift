@@ -23,15 +23,44 @@ struct TrapeziumShape: Shape {
 }
 
 /// Convenience wrapper matching Android's `TrapeziumBar`.
+///
+/// A minimum height rather than a fixed one, so a long label at a large font
+/// scale grows the bar instead of being clipped inside it.
 struct TrapeziumBar<Content: View>: View {
-    @Environment(\.appTheme) private var theme
     var color: Color = .brandNavy
+    var minHeight: CGFloat = 48
     @ViewBuilder var content: () -> Content
 
     var body: some View {
         content()
             .padding(.horizontal, 20)
-            .frame(height: 48)
+            .padding(.vertical, 8)
+            .frame(minHeight: minHeight, alignment: .leading)
             .background(color, in: TrapeziumShape())
+    }
+}
+
+/// The canonical use of the motif: a short ALL-CAPS label chip sitting directly
+/// above the card it introduces — the "ACTIVE PROGRAMME" pattern. A section
+/// header accent, NOT a container style; don't wrap ordinary cards in it.
+///
+/// Hard-codes uppercase and the off-white foreground because the component is
+/// Patient/Lead-only by contract and the bar is always navy in both
+/// appearances — the theme's `onSurface` would vanish against it in light mode.
+struct TrapeziumSectionLabel: View {
+    let text: String
+    var color: Color = .brandNavy
+
+    init(_ text: String, color: Color = .brandNavy) {
+        self.text = text
+        self.color = color
+    }
+
+    var body: some View {
+        TrapeziumBar(color: color, minHeight: 40) {
+            Text(text.uppercased())
+                .font(.displayFont(.heavy, size: 13))
+                .foregroundStyle(Color.brandOffWhite)
+        }
     }
 }

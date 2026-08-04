@@ -21,6 +21,10 @@ protocol AppTheme {
     /// Not in the original spec, but every theme needs one and error red is a
     /// brand decision, not a system one.
     var error: Color { get }
+    /// The amber accent. Used as a full card fill (the dashboard's outstanding
+    /// balance card), so ``onTertiary`` must stay legible against it.
+    var tertiary: Color { get }
+    var onTertiary: Color { get }
 
     var useTrapeziumMotif: Bool { get }
     var headingWeight: Font.Weight { get }

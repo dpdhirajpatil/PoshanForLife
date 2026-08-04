@@ -16,12 +16,14 @@ final class AppContainer: ObservableObject {
     let tokenStore: TokenStore
     let apiClient: APIClient
     let authRepository: AuthRepository
+    let dashboardRepository: DashboardRepository
 
     init(tokenStore: TokenStore = KeychainTokenStore()) {
         self.tokenStore = tokenStore
         let client = APIClient(tokenStore: tokenStore)
         self.apiClient = client
         self.authRepository = AuthRepositoryImpl(client: client, tokenStore: tokenStore)
+        self.dashboardRepository = DashboardRepositoryImpl(client: client)
     }
 
     /// Refresh failed and the session is gone — `AuthViewModel` listens and
