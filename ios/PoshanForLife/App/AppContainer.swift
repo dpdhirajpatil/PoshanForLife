@@ -11,6 +11,12 @@ import Foundation
 ///
 /// `ObservableObject` purely so it can travel through `.environmentObject`; it
 /// publishes nothing itself, since the dependencies never change after launch.
+///
+/// `@MainActor` because it constructs the UI-facing stores (health tracking,
+/// goals, reminders), which are main-actor isolated so views can read them
+/// without hopping. It's only ever built from `App.body`, which is already on
+/// the main actor.
+@MainActor
 final class AppContainer: ObservableObject {
 
     let tokenStore: TokenStore
@@ -18,12 +24,22 @@ final class AppContainer: ObservableObject {
     let authRepository: AuthRepository
     let dashboardRepository: DashboardRepository
 
+    /// These three are `ObservableObject`s held for the app's lifetime rather
+    /// than per-screen: the dashboard reads reminders that the Track tab
+    /// writes, so a second instance would show stale data.
+    let healthTracking: HealthTrackingRepository
+    let goalsStore: GoalsStore
+    let reminderScheduler: ReminderScheduler
+
     init(tokenStore: TokenStore = KeychainTokenStore()) {
         self.tokenStore = tokenStore
         let client = APIClient(tokenStore: tokenStore)
         self.apiClient = client
         self.authRepository = AuthRepositoryImpl(client: client, tokenStore: tokenStore)
         self.dashboardRepository = DashboardRepositoryImpl(client: client)
+        self.healthTracking = HealthTrackingRepository(client: client)
+        self.goalsStore = GoalsStore()
+        self.reminderScheduler = ReminderScheduler()
     }
 
     /// Refresh failed and the session is gone — `AuthViewModel` listens and

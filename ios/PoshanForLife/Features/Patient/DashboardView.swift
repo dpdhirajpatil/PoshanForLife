@@ -12,8 +12,11 @@ struct DashboardView: View {
     @StateObject private var viewModel: DashboardViewModel
     @Environment(\.appTheme) private var theme
 
-    init(repository: DashboardRepository) {
+    @ObservedObject private var reminders: ReminderScheduler
+
+    init(repository: DashboardRepository, reminders: ReminderScheduler) {
         _viewModel = StateObject(wrappedValue: DashboardViewModel(repository: repository))
+        self.reminders = reminders
     }
 
     var body: some View {
@@ -25,7 +28,7 @@ struct DashboardView: View {
                     InBodyScoreCard(state: viewModel.healthRecord)
                     ActiveProgrammeCard(state: viewModel.programme)
                     OutstandingBalanceCard(state: viewModel.invoices)
-                    UpcomingRemindersCard()
+                    UpcomingRemindersCard(scheduler: reminders)
                 }
                 .padding(.horizontal, 16)
             }
@@ -33,7 +36,12 @@ struct DashboardView: View {
         }
         .background(theme.background.ignoresSafeArea())
         .refreshable { await viewModel.load() }
-        .task { await viewModel.load() }
+        .task {
+            await viewModel.load()
+            // Reminders live on disk, not the network — the dashboard needs
+            // them loaded even if the user hasn't opened Track yet.
+            await reminders.load()
+        }
         .navigationDestination(for: DashboardRoute.self) { route in
             switch route {
             case .fullReport:
@@ -321,14 +329,47 @@ private struct OutstandingBalanceCard: View {
     }
 }
 
-/// Placeholder for IOS-04's tracking module, which owns reminders and doesn't
-/// exist yet. Structure and copy are final; only the data source is missing, so
-/// wiring it up later is a one-line change here.
+/// The next three reminders, soonest first, from IOS-04's scheduler. Ordered by
+/// next occurrence rather than clock time, so a 22:00 reminder tonight sorts
+/// ahead of a 07:00 one tomorrow.
 private struct UpcomingRemindersCard: View {
+    @ObservedObject var scheduler: ReminderScheduler
+    @Environment(\.appTheme) private var theme
+
+    private var upcoming: [(reminder: MedicationReminder, date: Date)] {
+        scheduler.reminders
+            .filter(\.enabled)
+            .compactMap { reminder in
+                reminder.nextOccurrence().map { (reminder, $0) }
+            }
+            .sorted { $0.1 < $1.1 }
+            .prefix(3)
+            .map { ($0.0, $0.1) }
+    }
+
     var body: some View {
         DashboardCard {
             CardTitle(text: "Upcoming reminders")
-            CardMessage(text: "No reminders yet")
+
+            if upcoming.isEmpty {
+                CardMessage(text: "No reminders yet")
+            } else {
+                ForEach(upcoming, id: \.reminder.id) { item in
+                    HStack(spacing: 10) {
+                        Image(systemName: "bell")
+                            .foregroundStyle(theme.primary)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(item.reminder.label)
+                                .font(.bodyFont(size: 15))
+                                .foregroundStyle(theme.onSurface)
+                            Text("\(item.reminder.timeLabel) · \(item.reminder.daysLabel)")
+                                .font(.bodyFont(size: 12))
+                                .foregroundStyle(theme.onSurface.opacity(0.7))
+                        }
+                        Spacer()
+                    }
+                }
+            }
         }
     }
 }

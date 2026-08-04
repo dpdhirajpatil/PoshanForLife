@@ -11,11 +11,22 @@ struct PatientTabView: View {
     var body: some View {
         TabView {
             NavigationStack {
-                DashboardView(repository: container.dashboardRepository)
+                DashboardView(
+                    repository: container.dashboardRepository,
+                    reminders: container.reminderScheduler
+                )
             }
             .tabItem { Label("Home", systemImage: "house.fill") }
 
-            tab("Track", systemImage: "chart.xyaxis.line")
+            NavigationStack {
+                TrackView(
+                    repository: container.healthTracking,
+                    goalsStore: container.goalsStore,
+                    reminders: container.reminderScheduler
+                )
+            }
+            .tabItem { Label("Track", systemImage: "chart.xyaxis.line") }
+
             tab("Programmes", systemImage: "book.fill")
             tab("Reports", systemImage: "doc.text.fill")
             tab("Profile", systemImage: "person.crop.circle.fill", showsSignOut: true)

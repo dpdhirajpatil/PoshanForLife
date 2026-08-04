@@ -8,7 +8,7 @@ minimum. No third-party dependencies.
 Written: **IOS-01** (scaffold, networking, DI, Keychain), the **SETUP theme
 prompt** (built early because IOS-02 depends on it), **IOS-02** (auth,
 role-based navigation, theme selection, token refresh), **IOS-03** (patient
-dashboard).
+dashboard), **IOS-04** (health tracking, reminders, goals).
 
 **The app builds and runs on the Simulator.** Xcode 26.6 (iOS 26.5 SDK).
 
@@ -33,8 +33,13 @@ Verification status:
 - Dashboard date/currency logic and all four of its endpoints **verified live**,
   including that health records come back ascending (so the newest is `.last`)
   and that the documents API rejects `status=pending`.
-- **Rendered on Simulator**: login → patient dashboard → all five tabs, driven
-  by the `PoshanForLifeUITests` XCUITest target (see "Driving the UI" below).
+- **Rendered on Simulator**: login → patient dashboard → Track (water, sleep,
+  weight, goals) → all five tabs, driven by the `PoshanForLifeUITests` XCUITest
+  target (see "Driving the UI" below).
+- IOS-04 logic verified against the live backend: weight reaches
+  `health_records` as `patient_manual` and upserts by day, water/nutrition/sleep
+  never queue for a sync they can't complete, and the backend correctly rejects
+  both `source=manual` and a foreign `patientId` from a patient-role caller.
 - Still unverified: behaviour on a **physical device** — the LAN base URL, and
   the Keychain `ThisDeviceOnly` accessibility flag under a real lock screen.
 
@@ -159,3 +164,32 @@ unchanged. It signs out first if a previous run left a session in the Keychain.
 
 Note iOS excludes `SecureField` content from screen captures, so a filled
 password field looks empty in screenshots. That's the platform, not a bug.
+
+
+## What syncs, and what doesn't (IOS-04)
+
+`health_records` stores **body composition only**. There is no column for water
+intake, calories or sleep, and no endpoint that accepts them — `bodyWaterL` is
+an InBody measurement, not drinking water.
+
+So of everything on the Track tab, only **weight** reaches the server. The rest
+is local-only by design, and `HealthEntry.syncState` says so explicitly with a
+`localOnly` case. That case matters: without it every water tap would sit
+forever in a pending queue, retrying an upload that has nowhere to land.
+
+Writing weight as a patient has two rules worth remembering, both enforced
+server-side and both verified in the tests:
+
+- `source` **must** be `patient_manual` or `wearable_sync`. Sending `manual`
+  (the staff value) is a 422.
+- `patientId` **must not** be sent. A patient may only write their own record,
+  and naming one — even their own — is rejected.
+
+## Local cache: iOS 16 vs 17
+
+SwiftData would be the obvious choice and is deliberately not used: it needs
+iOS 17 and this app targets iOS 16. The alternatives were GRDB, which buys real
+querying at the cost of the zero-dependency rule, or a JSON file. The data is a
+few hundred small rows read wholesale on one screen, so `JSONFileStore` is
+enough. **If the deployment target ever rises to 17, delete that file and use
+SwiftData** — the repository is the only thing that touches it.
