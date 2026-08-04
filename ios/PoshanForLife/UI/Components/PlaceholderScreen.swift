@@ -16,8 +16,8 @@ struct PlaceholderScreen: View {
             theme.background.ignoresSafeArea()
 
             VStack(spacing: 12) {
-                Text(title).themedHeading(size: 24)
-
+                // No title Text here: `.navigationTitle` below already renders
+                // it, and having both showed the name twice on every screen.
                 Text(detail)
                     .font(.bodyFont(size: 14))
                     .foregroundStyle(theme.onBackground.opacity(0.7))

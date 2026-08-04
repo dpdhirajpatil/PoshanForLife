@@ -38,12 +38,33 @@ targets:
       Debug: Config/Debug.xcconfig
       Release: Config/Release.xcconfig
 
+  # Drives the real app on a Simulator. The only way to script taps and typing
+  # from the command line — simctl has no touch injection, and AppleScript
+  # keystrokes need an Accessibility grant the CLI doesn't have.
+  PoshanForLifeUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: PoshanForLifeUITests
+    dependencies:
+      - target: PoshanForLife
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.poshanforlife.ios.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: PoshanForLife
+
 schemes:
   PoshanForLife:
     build:
       targets:
         PoshanForLife: all
+        PoshanForLifeUITests: [test]
     run:
       config: Debug
+    test:
+      config: Debug
+      targets:
+        - PoshanForLifeUITests
     archive:
       config: Release

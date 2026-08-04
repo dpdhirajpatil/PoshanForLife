@@ -10,11 +10,13 @@ prompt** (built early because IOS-02 depends on it), **IOS-02** (auth,
 role-based navigation, theme selection, token refresh), **IOS-03** (patient
 dashboard).
 
-The Xcode project itself has **not** been generated — this machine has Command
-Line Tools only, no Xcode, so there is no iOS SDK, no Simulator, and no
-`xcodebuild`.
+**The app builds and runs on the Simulator.** Xcode 26.6 (iOS 26.5 SDK).
 
-What that means in practice:
+> `xcode-select -p` still points at the Command Line Tools, so prefix commands
+> with `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`, or run
+> `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer` once.
+
+Verification status:
 
 - All 34 Swift files **type-check clean** against the macOS SDK
   (`swiftc -typecheck -target arm64-apple-macos13.0 -swift-version 5`).
@@ -31,10 +33,10 @@ What that means in practice:
 - Dashboard date/currency logic and all four of its endpoints **verified live**,
   including that health records come back ascending (so the newest is `.last`)
   and that the documents API rejects `status=pending`.
-- Not yet verified: anything needing the iOS SDK — that the app launches, that
-  the Simulator reaches `localhost`, that the Keychain accessibility flag
-  behaves on device, that the two Info.plists wire up, and every question about
-  how the UI actually *looks*. No screen has been rendered.
+- **Rendered on Simulator**: login → patient dashboard → all five tabs, driven
+  by the `PoshanForLifeUITests` XCUITest target (see "Driving the UI" below).
+- Still unverified: behaviour on a **physical device** — the LAN base URL, and
+  the Keychain `ThisDeviceOnly` accessibility flag under a real lock screen.
 
 ## Navigation by role
 
@@ -58,7 +60,7 @@ Themes are injected with `.appTheme(PatientTheme.self)` rather than
 at construction and never updates, which would freeze the whole app in light
 mode. See `UI/Theme/AppTheme.swift`.
 
-## Getting it running (once Xcode is installed)
+## Getting it running
 
 ```sh
 brew install xcodegen
@@ -115,8 +117,9 @@ PoshanForLife/
     Domain/             domain models
     Keychain/           token storage
   Features/             Auth, Patient, Practitioner, Admin, Lead
+PoshanForLifeUITests/   XCUITest target that drives the app on a Simulator
   UI/
-    Theme/              IOS-03 fills this (BrandColors, fonts, AppTheme)
+    Theme/              BrandColors, fonts, AppTheme, TrapeziumShape
     Components/         shared views
 ```
 
@@ -133,3 +136,26 @@ tree won.
   A non-optional email crashed the first phone signup on Android.
 - `APIError.details` is a field → message **map**, not a string. The backend
   types it as `Object` and bean-validation failures fill it in.
+
+
+## Driving the UI
+
+`simctl` has no touch injection, and AppleScript keystrokes need an
+Accessibility grant the CLI doesn't have. The working route is the XCUITest
+target, which types, taps and saves screenshots as attachments:
+
+```sh
+export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+xcodebuild test -project PoshanForLife.xcodeproj -scheme PoshanForLife \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  -resultBundlePath /tmp/Result.xcresult
+xcrun xcresulttool export attachments \
+  --path /tmp/Result.xcresult --output-path /tmp/shots
+```
+
+`DashboardUITests` needs the backend on `localhost:8080` and valid patient
+credentials, so it's an integration smoke test — not something to put in CI
+unchanged. It signs out first if a previous run left a session in the Keychain.
+
+Note iOS excludes `SecureField` content from screen captures, so a filled
+password field looks empty in screenshots. That's the platform, not a bug.

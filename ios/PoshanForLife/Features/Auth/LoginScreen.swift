@@ -26,7 +26,7 @@ struct LoginScreen: View {
                         .font(.bodyFont(size: 15))
                         .foregroundStyle(theme.onBackground.opacity(0.7))
 
-                    VStack(spacing: 12) {
+                    VStack(spacing: 0) {
                         TextField("Email", text: $viewModel.email)
                             .textContentType(.emailAddress)
                             .keyboardType(.emailAddress)
@@ -35,8 +35,16 @@ struct LoginScreen: View {
                             .focused($focusedField, equals: .email)
                             .submitLabel(.next)
                             .onSubmit { focusedField = .password }
+                            .padding(.bottom, 12)
+
+                        // Without a rule between them the two fields read as one
+                        // control inside a single border — and iOS excludes
+                        // secure text from screenshots, so the lower row can look
+                        // empty with no cue that it's a separate field.
+                        Divider().overlay(theme.onBackground.opacity(0.12))
 
                         SecureField("Password", text: $viewModel.password)
+                            .padding(.top, 12)
                             .textContentType(.password)
                             .focused($focusedField, equals: .password)
                             .submitLabel(.go)
