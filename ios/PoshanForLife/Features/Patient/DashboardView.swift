@@ -13,6 +13,7 @@ struct DashboardView: View {
     @Environment(\.appTheme) private var theme
 
     @ObservedObject private var reminders: ReminderScheduler
+    @EnvironmentObject private var container: AppContainer
 
     init(repository: DashboardRepository, reminders: ReminderScheduler) {
         _viewModel = StateObject(wrappedValue: DashboardViewModel(repository: repository))
@@ -45,7 +46,11 @@ struct DashboardView: View {
         .navigationDestination(for: DashboardRoute.self) { route in
             switch route {
             case .fullReport:
-                PlaceholderScreen(title: "Full report", detail: "Reports arrive in a later prompt.")
+                // IOS-05 landed, so this is a real destination now.
+                ReportsListView(
+                    repository: container.reportsRepository,
+                    profile: container.dashboardRepository
+                )
             case .invoice(let id):
                 PlaceholderScreen(title: "Invoice", detail: "Invoice \(id) opens in IOS-16.")
             }

@@ -28,7 +28,14 @@ struct PatientTabView: View {
             .tabItem { Label("Track", systemImage: "chart.xyaxis.line") }
 
             tab("Programmes", systemImage: "book.fill")
-            tab("Reports", systemImage: "doc.text.fill")
+            NavigationStack {
+                ReportsListView(
+                    repository: container.reportsRepository,
+                    profile: container.dashboardRepository
+                )
+            }
+            .tabItem { Label("Reports", systemImage: "doc.text.fill") }
+
             tab("Profile", systemImage: "person.crop.circle.fill", showsSignOut: true)
         }
         .tint(theme.onBackground)

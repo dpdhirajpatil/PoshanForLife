@@ -430,7 +430,16 @@
       "Bash(rm -rf __TRACKED_VAR__/ResultA.xcresult)",
       "Bash(rm -rf __TRACKED_VAR__/shotsA)",
       "Bash(mkdir -p __TRACKED_VAR__/shotsA)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" --max-time 3 http://localhost:8080/api/v1/users/me)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" --max-time 3 http://localhost:8080/api/v1/users/me)",
+      "Bash(grep -v \"^import\\\\|^package\\\\|^$\" backend/src/main/java/com/poshanforlife/api/dto/InBodyDataDto.java)",
+      "Bash(grep -v \"^import\\\\|^package\\\\|^$\" backend/src/main/java/com/poshanforlife/api/dto/ReportDetailDto.java)",
+      "Bash(grep -v \"^import\\\\|^package\\\\|^$\\\\|^\\\\s*\\\\*\\\\|^/\\\\*\\\\|^\\\\s*//\" backend/src/main/java/com/poshanforlife/api/entity/InBodyData.java)",
+      "Bash(grep -v \"^import\\\\|^package\\\\|^$\" backend/src/main/java/com/poshanforlife/api/dto/HealthRecordDto.java)",
+      "Bash(rm -rf __TRACKED_VAR__/ResultB.xcresult)",
+      "Bash(open -a Simulator)",
+      "Bash([ -f \"$SP/testC.log\" ])",
+      "Bash(rm -rf __TRACKED_VAR__/shotsC)",
+      "Bash(mkdir -p __TRACKED_VAR__/shotsC)"
     ],
     "additionalDirectories": [
       "/private/tmp",

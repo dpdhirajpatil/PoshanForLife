@@ -8,7 +8,7 @@ minimum. No third-party dependencies.
 Written: **IOS-01** (scaffold, networking, DI, Keychain), the **SETUP theme
 prompt** (built early because IOS-02 depends on it), **IOS-02** (auth,
 role-based navigation, theme selection, token refresh), **IOS-03** (patient
-dashboard), **IOS-04** (health tracking, reminders, goals).
+dashboard), **IOS-04** (health tracking, reminders, goals), **IOS-05** (InBody report list, detail, Swift Charts trends).
 
 **The app builds and runs on the Simulator.** Xcode 26.6 (iOS 26.5 SDK).
 
@@ -193,3 +193,32 @@ querying at the cost of the zero-dependency rule, or a JSON file. The data is a
 few hundred small rows read wholesale on one screen, so `JSONFileStore` is
 enough. **If the deployment target ever rises to 17, delete that file and use
 SwiftData** — the repository is the only thing that touches it.
+
+
+## Reports & trends (IOS-05)
+
+Three contract details that are easy to get wrong, all verified against the
+running backend:
+
+- The `fields` param on `health-records` accepts only `weight`, `bodyFat`,
+  `bmi`, `skeletalMuscleMass`, `visceralFat`, `bodyWater`, `protein`,
+  `mineral`, `bmr`. An unknown name is **silently ignored** and the metric
+  comes back null — so a typo produces an empty chart with no error. Note the
+  query name (`bodyFat`) differs from the JSON field (`bodyFatPct`).
+- `ReportType` and `ReportStatus` are **lowercase** on the wire (`"inbody"`).
+  The backend uppercases query values, so `type=INBODY` works as a filter — but
+  comparing a response against `"INBODY"` will not.
+- `GET /reports` returns `{reports: [...], stats: {...}}`, not a bare array.
+
+`confidence` is only on the report *detail*, never the list, so the
+low-confidence warning lives on the detail screen — putting a badge in the list
+would mean fetching every report's detail just to draw it.
+
+There is **no segmental (arm/trunk/leg) data** in the backend, so there is no
+Segmental Lean Analysis section. "Goals & control" takes its place — target
+weight and the weight/fat/muscle control figures, which are real InBody outputs
+that had nowhere else to appear.
+
+Deltas shown next to each trend are the backend's own pre-computed values, not
+recomputed here: the client only holds a windowed slice, so it often doesn't
+have the reading immediately before the first point on screen.

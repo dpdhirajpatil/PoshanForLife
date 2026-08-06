@@ -58,13 +58,83 @@ struct UserDetail: Decodable, Equatable, Identifiable {
 
 /// One InBody measurement. Every metric is optional — a record may be captured
 /// from a partial scan or a manual weight-only entry.
+///
+/// The `*Delta` values are this record minus the previous one for the same
+/// patient, **computed server-side**, and nil when either side is missing.
+/// Trend tooltips use them rather than recomputing: the backend knows what the
+/// true previous record was even when the client is only holding a windowed
+/// slice, where the record before the first one on screen isn't loaded at all.
 struct HealthRecord: Decodable, Equatable, Identifiable {
     let id: String
     let recordDate: String?
     let weightKg: Double?
+    let weightKgDelta: Double?
     let bmi: Double?
+    let bmiDelta: Double?
     let bodyFatPct: Double?
+    let bodyFatPctDelta: Double?
     let skeletalMuscleMassKg: Double?
+    let skeletalMuscleMassKgDelta: Double?
+
+    var date: Date? { ISO8601.date(from: recordDate) }
+
+    func value(for metric: TrendMetric) -> Double? {
+        switch metric {
+        case .weight: return weightKg
+        case .bodyFat: return bodyFatPct
+        case .bmi: return bmi
+        case .skeletalMuscleMass: return skeletalMuscleMassKg
+        }
+    }
+
+    func delta(for metric: TrendMetric) -> Double? {
+        switch metric {
+        case .weight: return weightKgDelta
+        case .bodyFat: return bodyFatPctDelta
+        case .bmi: return bmiDelta
+        case .skeletalMuscleMass: return skeletalMuscleMassKgDelta
+        }
+    }
+}
+
+/// The four metrics the trend charts plot.
+///
+/// `wireField` is the name the `fields` query param expects — and it is NOT the
+/// same as the JSON property. Body fat is `bodyFat` on the query but
+/// `bodyFatPct` in the response. Passing the wrong name is silently ignored by
+/// the backend and nulls that metric out, producing an empty chart with no
+/// error anywhere, so these two spellings must stay in sync deliberately.
+enum TrendMetric: String, CaseIterable, Identifiable {
+    case weight, bodyFat, bmi, skeletalMuscleMass
+
+    var id: String { rawValue }
+
+    var wireField: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .weight: return "Weight"
+        case .bodyFat: return "Body fat"
+        case .bmi: return "BMI"
+        case .skeletalMuscleMass: return "Skeletal muscle"
+        }
+    }
+
+    var unit: String {
+        switch self {
+        case .weight, .skeletalMuscleMass: return "kg"
+        case .bodyFat: return "%"
+        case .bmi: return ""
+        }
+    }
+
+    /// For weight and body fat a fall is progress; for muscle a rise is.
+    var lowerIsBetter: Bool {
+        switch self {
+        case .weight, .bodyFat, .bmi: return true
+        case .skeletalMuscleMass: return false
+        }
+    }
 }
 
 struct ServiceRef: Decodable, Equatable {

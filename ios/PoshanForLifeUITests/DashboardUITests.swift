@@ -55,7 +55,7 @@ final class DashboardUITests: XCTestCase {
         snapshot("01-login")
 
         email.tap()
-        email.typeText("neha.kapoor@example.com")
+        email.typeText("testpatient1@example.com")
 
         let password = app.secureTextFields.firstMatch
         password.tap()
@@ -69,7 +69,7 @@ final class DashboardUITests: XCTestCase {
         // uppercased name: seeing it proves login, role routing AND the
         // Patient theme's heading rule all worked.
         let greeting = app.staticTexts.containing(
-            NSPredicate(format: "label CONTAINS[c] %@", "NEHA")
+            NSPredicate(format: "label CONTAINS[c] %@", "TEST")
         ).firstMatch
         XCTAssertTrue(greeting.waitForExistence(timeout: 25), "dashboard greeting never appeared")
 
@@ -131,8 +131,30 @@ final class DashboardUITests: XCTestCase {
         snapshot("08-goals")
         app.navigationBars.buttons.element(boundBy: 0).tap()
 
+        // --- Reports tab (IOS-05) ---
+        app.tabBars.buttons["Reports"].tap()
+        XCTAssertTrue(app.staticTexts["Past reports"].waitForExistence(timeout: 15), "Reports tab never appeared")
+        snapshot("09-reports")
+
+        // Trend charts render from health records; the window picker is the
+        // one control that must exist even when there's nothing to plot.
+        if app.buttons["90d"].waitForExistence(timeout: 5) {
+            app.buttons["180d"].tap()
+            snapshot("10-reports-180d")
+        }
+
+        // Open the first report, if this patient has one.
+        let firstReport = app.buttons.containing(
+            NSPredicate(format: "label CONTAINS[c] %@", "InBody")
+        ).firstMatch
+        if firstReport.waitForExistence(timeout: 5) {
+            firstReport.tap()
+            snapshot("11-report-detail")
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+        }
+
         // --- Remaining tabs ---
-        for tab in ["Programmes", "Reports", "Profile"] {
+        for tab in ["Programmes", "Profile"] {
             let button = app.tabBars.buttons[tab]
             if button.exists {
                 button.tap()
