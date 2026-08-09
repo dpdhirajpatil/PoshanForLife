@@ -8,7 +8,9 @@ minimum. No third-party dependencies.
 Written: **IOS-01** (scaffold, networking, DI, Keychain), the **SETUP theme
 prompt** (built early because IOS-02 depends on it), **IOS-02** (auth,
 role-based navigation, theme selection, token refresh), **IOS-03** (patient
-dashboard), **IOS-04** (health tracking, reminders, goals), **IOS-05** (InBody report list, detail, Swift Charts trends).
+dashboard), **IOS-04** (health tracking, reminders, goals), **IOS-05** (InBody
+report list, detail, Swift Charts trends), **IOS-06** (programmes, sessions and
+challenges with check-in).
 
 **The app builds and runs on the Simulator.** Xcode 26.6 (iOS 26.5 SDK).
 
@@ -222,3 +224,77 @@ that had nowhere else to appear.
 Deltas shown next to each trend are the backend's own pre-computed values, not
 recomputed here: the client only holds a windowed slice, so it often doesn't
 have the reading immediately before the first point on screen.
+
+
+## Programmes & sessions (IOS-06)
+
+`GET /patients/{id}/programmes` returns every field the detail screen shows, so
+tapping a row pushes the model rather than re-fetching it.
+
+**There is no service description, and there cannot be one.** The prompt asks
+the detail screen for a full description; `ServiceRefDto` carries only id, name,
+serviceCode and a duration, and the catalogue endpoint that holds the
+description (`/catalogue/{type}`) is class-level `@AdminOrDoctor` — a patient
+gets `403 INSUFFICIENT_ROLE`, verified live. Android doesn't show one either.
+
+The three service types measure different things, so each gets its own
+treatment rather than one shared progress bar:
+
+| Type | Progress shown | Source |
+| --- | --- | --- |
+| Programme | elapsed / total calendar days | computed from start+end |
+| Challenge | check-ins completed | server's `percentComplete` + streak |
+| Session | Completed · Today · In N days | derived from `startDate` |
+
+Challenges deliberately do **not** use calendar progress, which the prompt
+implies. A challenge measures what you did, not what day it is — elapsed time
+would tell someone who has never checked in that they're 80% done. The cost is
+an N+1: the list endpoint carries no check-in data, so each challenge row needs
+its own `/progress` call. Bounded by only fetching for `challenge` rows (asking
+for a programme or session is a **404**, not an empty result) and by running
+them concurrently.
+
+Sessions are single-day — `endDate == startDate` — and their *assignment
+status* stays `active` long after the appointment has happened, so "has it
+happened yet" is derived from the date, never from `status`.
+
+Ordering is re-done client-side. The backend sorts by `createdAt` descending,
+which is data-entry order and puts a finished consultation above the 12-week
+programme the patient is halfway through.
+
+### The keyboard-over-the-tab-bar bug (found by these tests)
+
+Returning from Goals to Track brought the keyboard back up unprompted, and its
+`ToolbarItemGroup(placement: .keyboard)` Done button renders **over the tab
+bar** — so the next tap on Reports or Profile hit the keyboard and silently
+typed a digit into the weight field instead of switching tabs (the field read
+`70.53` after a test typed `70.5`).
+
+Clearing `@FocusState` does not fix it: tried on disappear, on appear, and on
+the next runloop pass, and the keyboard stayed up every time. `TrackView` now
+also calls `resignFirstResponder` directly. `DashboardUITests` asserts the
+keyboard is down before it changes tabs, so a recurrence names itself instead
+of surfacing as "Reports tab never appeared".
+
+### Test fixtures
+
+`ProgrammesUITests` needs two accounts that the seed data doesn't provide:
+
+| Account | Purpose |
+| --- | --- |
+| `ios6.patient@example.com` | one programme, two sessions (one past, one future), one challenge |
+| `ios6.empty@example.com` | no assignments at all — the empty state |
+
+Both use `Ios6Test@123` and were created via `POST /users` as admin. Note that
+route does **not** create a `patient_profiles` row, so weight logged by these
+accounts stays local and never reaches `health_records` — an artifact of the
+fixture, not a sync bug.
+
+`testProgrammesListAndDetail` checks in to the challenge, so re-running it needs
+the progress reset first:
+
+```sql
+delete from challenge_progress cp using patient_programmes pp
+ where cp.patient_programme_id = pp.id
+   and pp.patient_id = (select id from users where email = 'ios6.patient@example.com');
+```

@@ -54,6 +54,28 @@ struct TrackView: View {
             }
         }
         .task { await viewModel.load() }
+        // Leaving for Goals and coming back otherwise restores whatever
+        // @FocusState held when we left, popping the keyboard open unprompted.
+        // The number pad then covers the tab bar, so the next tap on Reports or
+        // Profile lands on a number key instead of the tab — it silently types
+        // into the weight field rather than navigating.
+        //
+        // Returning from Goals brings the keyboard back up on its own, and its
+        // Done toolbar renders *over* the tab bar — so the next tap on Reports
+        // or Profile lands on the keyboard and silently types a digit into the
+        // weight field instead of switching tabs. Reproduced and captured.
+        //
+        // Clearing @FocusState alone does not fix it (tried on disappear, on
+        // appear, and on the next runloop pass — the keyboard stayed up every
+        // time), so the responder is dismissed directly as well.
+        .onAppear {
+            DispatchQueue.main.async {
+                focusedField = nil
+                UIApplication.shared.sendAction(
+                    #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
+                )
+            }
+        }
     }
 }
 

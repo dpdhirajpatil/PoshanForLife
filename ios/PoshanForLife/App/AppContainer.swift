@@ -24,6 +24,7 @@ final class AppContainer: ObservableObject {
     let authRepository: AuthRepository
     let dashboardRepository: DashboardRepository
     let reportsRepository: ReportsRepository
+    let programmesRepository: ProgrammesRepository
 
     /// These three are `ObservableObject`s held for the app's lifetime rather
     /// than per-screen: the dashboard reads reminders that the Track tab
@@ -39,6 +40,7 @@ final class AppContainer: ObservableObject {
         self.authRepository = AuthRepositoryImpl(client: client, tokenStore: tokenStore)
         self.dashboardRepository = DashboardRepositoryImpl(client: client)
         self.reportsRepository = ReportsRepositoryImpl(client: client)
+        self.programmesRepository = ProgrammesRepositoryImpl(client: client)
         self.healthTracking = HealthTrackingRepository(client: client)
         self.goalsStore = GoalsStore()
         self.reminderScheduler = ReminderScheduler()

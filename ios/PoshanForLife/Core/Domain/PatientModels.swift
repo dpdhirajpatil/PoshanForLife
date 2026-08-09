@@ -137,30 +137,57 @@ enum TrendMetric: String, CaseIterable, Identifiable {
     }
 }
 
-struct ServiceRef: Decodable, Equatable {
+/// Exactly one of the three durations is populated, chosen by the item's type.
+///
+/// There is deliberately **no `description`** here: `ServiceRefDto` doesn't
+/// carry one, and the catalogue endpoint that does is `@AdminOrDoctor` — a
+/// patient gets 403. See `ProgrammesRepository` for what that costs the
+/// detail screen.
+struct ServiceRef: Decodable, Equatable, Hashable {
     let id: String
     let name: String
     let serviceCode: String?
     let durationWeeks: Int?
+    let durationMinutes: Int?
+    let durationDays: Int?
+
+    /// "12 weeks" / "45 min" / "30 days" — whichever this item actually has.
+    var durationLabel: String? {
+        if let durationWeeks { return durationWeeks == 1 ? "1 week" : "\(durationWeeks) weeks" }
+        if let durationDays { return durationDays == 1 ? "1 day" : "\(durationDays) days" }
+        if let durationMinutes { return "\(durationMinutes) min" }
+        return nil
+    }
 }
 
-struct UserRef: Decodable, Equatable {
+struct UserRef: Decodable, Equatable, Hashable {
     let id: String
     let name: String
 }
 
 /// `status` is the lowercase wire enum: "active" / "completed" / "cancelled".
-struct PatientProgramme: Decodable, Equatable, Identifiable {
+///
+/// `Hashable` so it can travel as a `NavigationLink` value: the list response
+/// already contains every field the detail screen shows, so pushing the model
+/// itself avoids a re-fetch that would buy nothing.
+struct PatientProgramme: Decodable, Equatable, Identifiable, Hashable {
     let id: String
     let serviceType: String?
     let catalogueItem: ServiceRef?
     let startDate: String?
+    /// For a session this equals `startDate` — the backend stores a single-day
+    /// appointment as a zero-length range rather than leaving the end null.
     let endDate: String?
     let priceInr: Double?
     let status: String
+    let notes: String?
     let assignedDoctor: UserRef?
 
     static let activeStatus = "active"
+
+    var type: ServiceType? { serviceType.flatMap(ServiceType.init(rawValue:)) }
+    var parsedStatus: AssignmentStatus? { AssignmentStatus(rawValue: status) }
+    var displayName: String { catalogueItem?.name ?? "Service" }
 }
 
 struct DocumentPartyRef: Decodable, Equatable {

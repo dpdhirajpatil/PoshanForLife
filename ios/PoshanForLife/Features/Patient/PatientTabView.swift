@@ -27,7 +27,14 @@ struct PatientTabView: View {
             }
             .tabItem { Label("Track", systemImage: "chart.xyaxis.line") }
 
-            tab("Programmes", systemImage: "book.fill")
+            NavigationStack {
+                ProgrammesListView(
+                    repository: container.programmesRepository,
+                    profile: container.dashboardRepository
+                )
+            }
+            .tabItem { Label("Programmes", systemImage: "book.fill") }
+
             NavigationStack {
                 ReportsListView(
                     repository: container.reportsRepository,
