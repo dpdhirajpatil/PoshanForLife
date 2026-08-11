@@ -1,6 +1,8 @@
 package com.poshanforlife.android.feature.lead
 
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,18 +18,25 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.poshanforlife.android.feature.auth.LinkPhoneCard
+import com.poshanforlife.android.feature.settings.AppearanceViewModel
+import com.poshanforlife.android.ui.components.AppearanceCard
 
 @Composable
 fun LeadProfileScreen(
     modifier: Modifier = Modifier,
     viewModel: LeadProfileViewModel = hiltViewModel(),
+    appearanceViewModel: AppearanceViewModel = hiltViewModel(),
 ) {
     val user by viewModel.user.collectAsStateWithLifecycle()
     val verifiedPhone by viewModel.verifiedPhone.collectAsStateWithLifecycle()
+    val themeMode by appearanceViewModel.themeMode.collectAsStateWithLifecycle()
 
     Column(
         modifier = modifier
             .fillMaxSize()
+            // Scrollable since the Appearance card was added — see the patient
+            // Profile screen for the same reasoning.
+            .verticalScroll(rememberScrollState())
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -47,6 +56,11 @@ fun LeadProfileScreen(
         LinkPhoneCard(
             verifiedPhone = verifiedPhone,
             onLinked = viewModel::refreshVerifiedPhone,
+        )
+
+        AppearanceCard(
+            selected = themeMode,
+            onSelect = appearanceViewModel::setThemeMode,
         )
 
         OutlinedButton(onClick = viewModel::logout, modifier = Modifier.fillMaxWidth().padding(top = 16.dp)) {

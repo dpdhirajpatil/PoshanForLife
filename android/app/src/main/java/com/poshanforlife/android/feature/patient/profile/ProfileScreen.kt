@@ -2,7 +2,9 @@ package com.poshanforlife.android.feature.patient.profile
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,12 +25,23 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.poshanforlife.android.feature.auth.LinkPhoneCard
+import com.poshanforlife.android.feature.settings.AppearanceViewModel
+import com.poshanforlife.android.ui.components.AppearanceCard
 import java.text.DateFormat
 import java.util.Date
 
 @Composable
-fun ProfileScreen(modifier: Modifier = Modifier, viewModel: ProfileViewModel = hiltViewModel()) {
+fun ProfileScreen(
+    modifier: Modifier = Modifier,
+    viewModel: ProfileViewModel = hiltViewModel(),
+    // A second ViewModel rather than folding theme state into ProfileViewModel:
+    // the same card also appears on Lead's Profile and on the staff Appearance
+    // screen, and DataStore underneath is a singleton, so every instance stays
+    // in sync. Same precedent as LeadHomeScreen reusing TrackViewModel.
+    appearanceViewModel: AppearanceViewModel = hiltViewModel(),
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val themeMode by appearanceViewModel.themeMode.collectAsStateWithLifecycle()
 
     val permissionLauncher = rememberLauncherForActivityResult(viewModel.permissionRequestContract()) { granted ->
         viewModel.onPermissionResult(granted)
@@ -42,6 +55,10 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: ProfileViewModel = h
     Column(
         modifier = modifier
             .fillMaxSize()
+            // Scrollable since the Appearance card was added: Health Connect +
+            // Link phone + Appearance + Log out overflow a phone screen, and
+            // without this the last option is simply unreachable.
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -63,6 +80,11 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: ProfileViewModel = h
         LinkPhoneCard(
             verifiedPhone = state.verifiedPhone,
             onLinked = viewModel::refreshVerifiedPhone,
+        )
+
+        AppearanceCard(
+            selected = themeMode,
+            onSelect = appearanceViewModel::setThemeMode,
         )
 
         TextButton(onClick = viewModel::logout) { Text("Log out") }

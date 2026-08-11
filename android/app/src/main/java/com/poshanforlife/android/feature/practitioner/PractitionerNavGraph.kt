@@ -3,6 +3,7 @@ package com.poshanforlife.android.feature.practitioner
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.ContactPhone
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Receipt
@@ -44,6 +45,7 @@ import com.poshanforlife.android.feature.practitioner.upload.ReviewScreen
 import com.poshanforlife.android.feature.products.ProductDetailScreen
 import com.poshanforlife.android.feature.products.ProductsScreen
 import com.poshanforlife.android.ui.components.BottomNavItem
+import com.poshanforlife.android.feature.settings.AppearanceScreen
 import com.poshanforlife.android.ui.components.MoreMenuItem
 import com.poshanforlife.android.ui.components.MoreMenuScreen
 import com.poshanforlife.android.ui.components.PlaceholderScreen
@@ -73,6 +75,7 @@ private const val CONVERT_LEAD_ROUTE = "practitioner/leads/{leadId}/convert"
 private const val PRODUCTS_ROUTE = "practitioner/products"
 private const val PRODUCT_DETAIL_ROUTE = "practitioner/products/{productId}"
 private const val SETTINGS_ROUTE = "practitioner/settings"
+private const val APPEARANCE_ROUTE = "practitioner/appearance"
 
 // AN-13 telemedicine scaffold — the practitioner half of the same flow the patient
 // graph declares; both reuse the shared PreCallScreen/VideoCallScreen composables.
@@ -100,6 +103,7 @@ private val moreMenuItems = listOf(
     MoreMenuItem("Products", Icons.Filled.ShoppingBag, PRODUCTS_ROUTE),
     MoreMenuItem("Invoices", Icons.Filled.Receipt, DOCUMENTS_ROUTE),
     MoreMenuItem("Settings", Icons.Filled.Settings, SETTINGS_ROUTE),
+    MoreMenuItem("Appearance", Icons.Filled.DarkMode, APPEARANCE_ROUTE),
 )
 
 fun NavGraphBuilder.practitionerGraph(navController: NavController) {
@@ -177,6 +181,11 @@ fun NavGraphBuilder.practitionerGraph(navController: NavController) {
                 onOpenDocument = { documentId -> navController.navigate("practitioner/documents/$documentId") },
                 onCreateEstimate = { navController.navigate(CREATE_ESTIMATE_ROUTE) },
             )
+        }
+        composable(APPEARANCE_ROUTE) {
+            // Light/dark/system. Same full-screen-sibling convention as the other
+            // "More" destinations — no back button, system gesture returns.
+            AppearanceScreen()
         }
         composable(SETTINGS_ROUTE) {
             // Doesn't have a real screen of its own yet (a future prompt's job) — read-only

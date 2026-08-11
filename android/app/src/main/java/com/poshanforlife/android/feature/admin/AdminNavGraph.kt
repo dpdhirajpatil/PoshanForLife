@@ -2,6 +2,7 @@ package com.poshanforlife.android.feature.admin
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContactPhone
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Description
@@ -36,6 +37,7 @@ import com.poshanforlife.android.feature.products.ProductFormScreen
 import com.poshanforlife.android.feature.products.ProductsScreen
 import com.poshanforlife.android.feature.products.SegmentManagementScreen
 import com.poshanforlife.android.ui.components.BottomNavItem
+import com.poshanforlife.android.feature.settings.AppearanceScreen
 import com.poshanforlife.android.ui.components.PlaceholderScreen
 import com.poshanforlife.android.ui.components.RoleScaffoldDrawer
 
@@ -63,6 +65,7 @@ private const val PRODUCT_DETAIL_ROUTE = "admin/products/{productId}"
 private const val PRODUCT_NEW_ROUTE = "admin/products/new"
 private const val PRODUCT_EDIT_ROUTE = "admin/products/{productId}/edit"
 private const val MANAGE_SEGMENTS_ROUTE = "admin/products/segments"
+private const val APPEARANCE_ROUTE = "admin/appearance"
 
 private val items = listOf(
     BottomNavItem("admin/dashboard", "Dashboard", Icons.Filled.Dashboard),
@@ -73,6 +76,7 @@ private val items = listOf(
     BottomNavItem(DOCUMENTS_ROUTE, "Invoices", Icons.Filled.Description),
     BottomNavItem(PRODUCTS_ROUTE, "Products", Icons.Filled.ShoppingBag),
     BottomNavItem("admin/settings", "Settings", Icons.Filled.Settings),
+    BottomNavItem(APPEARANCE_ROUTE, "Appearance", Icons.Filled.DarkMode),
 )
 
 fun NavGraphBuilder.adminGraph(navController: NavController) {
@@ -111,6 +115,9 @@ fun NavGraphBuilder.adminGraph(navController: NavController) {
                         onEditProduct = { productId -> navController.navigate("admin/products/$productId/edit") },
                         onManageSegments = { navController.navigate(MANAGE_SEGMENTS_ROUTE) },
                     )
+                    // Light/dark/system. Rendered inside the drawer scaffold, which
+                    // already owns the top bar — AppearanceScreen adds none of its own.
+                    APPEARANCE_ROUTE -> AppearanceScreen()
                     else -> PlaceholderScreen(label = items.first { it.route == route }.label)
                 }
             }

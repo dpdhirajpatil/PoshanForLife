@@ -45,3 +45,38 @@ val BrandStaffSecondaryDark = Color(0xFF2C3060)
 val BrandStreakChipDark = Color(0xFF3F2A00) // Lead theme streak-chip background, dark mode
 val BrandPlumTintDark = Color(0xFF4A2A3C) // Lead theme badge-chip background, dark mode
 val BrandIndigoTintDark = Color(0xFF2E2F5C) // Lead theme badge-chip background, dark mode
+
+// ---------------------------------------------------------------------------------------------
+// Dark-mode container ladder.
+//
+// Material's surfaceContainer* / *Container / onSurfaceVariant slots are NOT derived from the
+// slots a darkColorScheme(...) call sets — anything left unspecified falls back to M3's own
+// baseline palette, which in dark mode is near-black grey. That matters here because the app
+// reads those slots constantly (onSurfaceVariant ~162 call sites, surfaceContainerLow ~39 — every
+// Card), so leaving them unset put a near-black card on every screen in dark mode, in direct
+// violation of the no-black rule the palette above exists to enforce.
+//
+// In dark mode a "higher" container reads as nearer the light source, so these ascend.
+// ---------------------------------------------------------------------------------------------
+
+val BrandNavyContainerLowestDark = Color(0xFF1E2358)
+val BrandNavyContainerLowDark = Color(0xFF2D3370)
+val BrandNavyContainerDark = Color(0xFF333A7C)
+val BrandNavyContainerHighDark = Color(0xFF3A4189)
+val BrandNavyContainerHighestDark = Color(0xFF414996)
+val BrandNavyOutlineDark = Color(0xFF6B72A8)
+
+// Staff's ladder is darker and more desaturated than Patient/Lead's, matching how its light
+// scheme avoids their tinted surfaces.
+val BrandStaffContainerLowestDark = Color(0xFF191D3E)
+val BrandStaffContainerLowDark = Color(0xFF232858)
+val BrandStaffContainerDark = Color(0xFF282D62)
+val BrandStaffContainerHighDark = Color(0xFF2E336C)
+val BrandStaffContainerHighestDark = Color(0xFF343976)
+val BrandStaffOutlineDark = Color(0xFF5A5F8C)
+val BrandStaffOnVariantDark = Color(0xFFB9BCD4)
+
+// Error container pair — M3's baseline dark error container is a desaturated maroon that clashes
+// with BrandBerry; these are derived from BrandBerry instead.
+val BrandBerryContainerDark = Color(0xFF5A1E30)
+val BrandBerryOnContainerDark = Color(0xFFFFD9E2)

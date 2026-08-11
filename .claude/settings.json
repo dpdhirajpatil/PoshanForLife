@@ -489,7 +489,10 @@
       "Bash(plutil -convert xml1 -o - \"App UI hierarchy for com.poshanforlife.png\")",
       "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -d poshan_api -c 'select u.email, count\\(hr.id\\) as health_records from users u left join health_records hr on hr.patient_id=u.id where u.email like '\\\\''ios6%'\\\\'' group by u.email;')",
       "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -d poshan_api -c 'select count\\(*\\) filter \\(where patient_id in \\(select id from users where email like '\\\\''ios6%'\\\\''\\)\\) as mine, count\\(*\\) filter \\(where patient_id not in \\(select id from users where email like '\\\\''ios6%'\\\\''\\)\\) as seeded from patient_programmes;')",
-      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -d poshan_api -c 'select u.email, pp.id is not null as has_profile from users u left join patient_profiles pp on pp.user_id=u.id where u.role='\\\\''PATIENT'\\\\'' order by u.email;')"
+      "Bash(/opt/homebrew/opt/postgresql@16/bin/psql -d poshan_api -c 'select u.email, pp.id is not null as has_profile from users u left join patient_profiles pp on pp.user_id=u.id where u.role='\\\\''PATIENT'\\\\'' order by u.email;')",
+      "Bash(curl -s -o /dev/null -w \"backend: %{http_code}\\\\n\" http://localhost:8080/api/v1/auth/login -X POST -H 'Content-Type: application/json' -d '{}')",
+      "Bash(grep -vE \"^\\\\s*//|^\\\\s*$|^import|^package\" Color.kt)",
+      "Bash(curl -s -o /dev/null -w \"curl admin login: %{http_code}\\\\n\" http://localhost:8080/api/v1/auth/login -X POST -H 'Content-Type: application/json' -d '{\"email\":\"admin@poshanforlife.com\",\"password\":\"Admin@123\"}')"
     ],
     "additionalDirectories": [
       "/private/tmp",

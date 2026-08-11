@@ -16,6 +16,10 @@ import androidx.compose.ui.unit.dp
 // dark schemes) is a real brand color or a tint derived from one, never Color.Black/near-black
 // gray. A "calm/minimal" dark mode (Staff) is the one most tempting to default to near-black —
 // resist that here too.
+//
+// All three themes take their light/dark state from [LocalDarkTheme] (the user's Appearance
+// choice, already resolved against the device setting), falling back to the system setting when
+// nothing provided it — so a preview or test that renders a theme directly still behaves.
 
 // ---------------------------------------------------------------------------------------------
 // THEME 1 — PoshanPatientTheme (brand-forward: navy header blocks, loud lime CTAs, trapezium
@@ -44,8 +48,34 @@ private val PatientDarkColorScheme = darkColorScheme(
     primary = BrandGreen, // stays exactly as bright — matches the logo's dark-bg treatment
     onPrimary = BrandNavyDarkest,
     secondary = BrandNavySecondaryDark,
+    onSecondary = BrandOffWhite,
     tertiary = BrandGold300,
+    onTertiary = BrandNavyDarkest,
     error = BrandBerry500,
+    onError = BrandNavyDarkest,
+    // Everything below is what the app actually paints most of its UI with. Left unset these
+    // fall back to M3's near-black baseline — see Color.kt's container-ladder note.
+    surfaceContainerLowest = BrandNavyContainerLowestDark,
+    surfaceContainerLow = BrandNavyContainerLowDark,
+    surfaceContainer = BrandNavyContainerDark,
+    surfaceContainerHigh = BrandNavyContainerHighDark,
+    surfaceContainerHighest = BrandNavyContainerHighestDark,
+    surfaceVariant = BrandNavySecondaryDark,
+    onSurfaceVariant = BrandNavyLightest, // secondary text: readable on navy, clearly below onSurface
+    outline = BrandNavyOutlineDark,
+    outlineVariant = BrandNavySecondaryDark,
+    primaryContainer = BrandGreenDarkest,
+    onPrimaryContainer = BrandGreenLightest,
+    secondaryContainer = BrandNavySecondaryDark,
+    onSecondaryContainer = BrandOffWhite,
+    tertiaryContainer = BrandGold700,
+    onTertiaryContainer = BrandGold300,
+    errorContainer = BrandBerryContainerDark,
+    onErrorContainer = BrandBerryOnContainerDark,
+    // Snackbars invert — without these they'd come back as M3's near-white/near-black pair.
+    inverseSurface = BrandOffWhite,
+    inverseOnSurface = BrandNavyDarkest,
+    inversePrimary = BrandGreenDarkest,
 )
 
 // ---------------------------------------------------------------------------------------------
@@ -87,8 +117,33 @@ private val StaffDarkColorScheme = darkColorScheme(
     primary = BrandGreen,
     onPrimary = BrandNavyDarkest,
     secondary = BrandStaffSecondaryDark,
+    onSecondary = BrandOffWhiteMuted,
     tertiary = BrandOlive500,
+    onTertiary = BrandNavyDarkest,
     error = BrandBerry500,
+    onError = BrandNavyDarkest,
+    // Same reasoning as Patient's — see Color.kt's container-ladder note. Staff's ladder is
+    // darker and flatter, so cards read as calmer than Patient/Lead's.
+    surfaceContainerLowest = BrandStaffContainerLowestDark,
+    surfaceContainerLow = BrandStaffContainerLowDark,
+    surfaceContainer = BrandStaffContainerDark,
+    surfaceContainerHigh = BrandStaffContainerHighDark,
+    surfaceContainerHighest = BrandStaffContainerHighestDark,
+    surfaceVariant = BrandStaffSecondaryDark,
+    onSurfaceVariant = BrandStaffOnVariantDark,
+    outline = BrandStaffOutlineDark,
+    outlineVariant = BrandStaffSecondaryDark,
+    primaryContainer = BrandGreenDarkest,
+    onPrimaryContainer = BrandGreenLightest,
+    secondaryContainer = BrandStaffSecondaryDark,
+    onSecondaryContainer = BrandOffWhiteMuted,
+    tertiaryContainer = BrandOliveDarkest,
+    onTertiaryContainer = BrandOliveLightest,
+    errorContainer = BrandBerryContainerDark,
+    onErrorContainer = BrandBerryOnContainerDark,
+    inverseSurface = BrandOffWhiteMuted,
+    inverseOnSurface = BrandNavyDarkest,
+    inversePrimary = BrandGreenDarkest,
 )
 
 // Patient/Lead: generously rounded, matching the CI guide's soft, clean, minimal visual language.
@@ -133,7 +188,7 @@ fun ColorScheme.badgeEarnedBackground(index: Int): Color = if (index % 2 == 0) {
  */
 @Composable
 fun PoshanPatientTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = LocalDarkTheme.current ?: isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
     CompositionLocalProvider(LocalHeadingUppercase provides true) {
@@ -149,7 +204,7 @@ fun PoshanPatientTheme(
 /** Gamified Lead theme — same base palette as Patient; reach for [streakChipBackground]/[badgeEarnedBackground] on this screen's ColorScheme. */
 @Composable
 fun PoshanLeadTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = LocalDarkTheme.current ?: isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
     CompositionLocalProvider(LocalHeadingUppercase provides true) {
@@ -168,7 +223,7 @@ fun PoshanLeadTheme(
  */
 @Composable
 fun PoshanStaffTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = LocalDarkTheme.current ?: isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
     // Explicitly false, not just relying on the default — Staff headings must
