@@ -24,6 +24,18 @@ struct PractitionerTabView: View {
                     role: .practitioner,
                     repository: container.appointmentsRepository
                 )
+                // Composes with AppointmentsListView's own `.toolbar` (the
+                // patient-only book button) rather than replacing it — that
+                // block contributes nothing for `.practitioner`, so there's
+                // nothing here to collide with.
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        NotificationBellButton(
+                            repository: container.notificationsRepository,
+                            deepLinkRouter: container.deepLinkRouter
+                        )
+                    }
+                }
             }
             .tabItem { Label("Schedule", systemImage: "calendar") }
 

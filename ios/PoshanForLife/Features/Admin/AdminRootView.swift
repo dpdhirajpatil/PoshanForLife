@@ -9,6 +9,7 @@ import SwiftUI
 /// would fight the platform, and seven tabs would not fit a tab bar anyway.
 struct AdminRootView: View {
     @Environment(\.appTheme) private var theme
+    @EnvironmentObject private var container: AppContainer
 
     private static let items: [MenuRowItem] = [
         MenuRowItem(title: "Dashboard", systemImage: "square.grid.2x2.fill"),
@@ -31,6 +32,14 @@ struct AdminRootView: View {
             .scrollContentBackground(.hidden)
             .background(theme.background.ignoresSafeArea())
             .navigationTitle("Admin")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NotificationBellButton(
+                        repository: container.notificationsRepository,
+                        deepLinkRouter: container.deepLinkRouter
+                    )
+                }
+            }
             .navigationDestination(for: MenuRowItem.self) { item in
                 PlaceholderScreen(title: item.title, showsSignOut: item.title == "Settings")
             }

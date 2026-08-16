@@ -36,6 +36,14 @@ struct DashboardView: View {
             .padding(.bottom, 24)
         }
         .background(theme.background.ignoresSafeArea())
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                NotificationBellButton(
+                    repository: container.notificationsRepository,
+                    deepLinkRouter: container.deepLinkRouter
+                )
+            }
+        }
         .refreshable { await viewModel.load() }
         .task {
             await viewModel.load()

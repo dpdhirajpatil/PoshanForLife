@@ -6,6 +6,10 @@ import SwiftUI
 struct RootView: View {
 
     @StateObject private var authViewModel: AuthViewModel
+    @EnvironmentObject private var container: AppContainer
+    @EnvironmentObject private var deepLinkRouter: DeepLinkRouter
+
+    @State private var showingNotificationRationale = false
 
     init(authRepository: AuthRepository, sessionExpired: AnyPublisher<Void, Never>) {
         _authViewModel = StateObject(
@@ -21,6 +25,28 @@ struct RootView: View {
             .environmentObject(authViewModel)
             .task {
                 await authViewModel.restoreSession()
+            }
+            // Keyed on the user id so this fires exactly once per fresh sign-in
+            // (including a restored session on cold launch) and not on every
+            // unrelated re-render of RootView.
+            .task(id: authViewModel.state.user?.id) {
+                guard let userId = authViewModel.state.user?.id else { return }
+                container.registerPushToken(for: userId)
+                showingNotificationRationale = await NotificationPermissionGate.shouldShowRationale()
+            }
+            .sheet(isPresented: $showingNotificationRationale) {
+                NotificationPermissionRationaleView(onDecide: {})
+                    .appTheme(StaffTheme.self)
+            }
+            .onChange(of: deepLinkRouter.pending) { target in
+                guard target != nil else { return }
+                // Nothing to navigate to yet — every `relatedEntityType` this
+                // backend sends targets a screen that doesn't exist on iOS
+                // today (see DeepLinkRouter's doc comment for the full
+                // inventory). Consuming it here means a tapped notification
+                // at least doesn't leave stale state sitting around for a
+                // later, unrelated screen to misinterpret.
+                deepLinkRouter.pending = nil
             }
     }
 

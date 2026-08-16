@@ -23,6 +23,11 @@
 	<key>UILaunchScreen</key>
 	<dict/>
 
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
+
 	<!-- Intentionally no NSAppTransportSecurity key: ATS applies in full, and
 	     the app talks only to https://api.poshanforlife.com. If you ever find
 	     yourself adding an exception here, fix the server's TLS instead. -->

@@ -23,6 +23,15 @@
 	<key>UILaunchScreen</key>
 	<dict/>
 
+	<!-- Lets a data-only (silent) push wake the app briefly to process it before
+	     the user ever taps a banner — without this, `didReceiveRemoteNotification`
+	     never fires while the app is backgrounded/suspended. Both Debug and
+	     Release need it; it's not part of the Debug/Release ATS-style split. -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
+
 	<!-- Debug only. Fed by DEV_LAN_HOST in Debug.xcconfig; read by BaseURL.swift
 	     when running on a physical device. Absent from Info-Release.plist. -->
 	<key>DevLANHost</key>

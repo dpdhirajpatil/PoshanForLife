@@ -8,3 +8,9 @@ VALIDATE_PRODUCT = YES
 // point this at Info-Debug.plist "just to test something" — shipping with ATS
 // relaxed is an App Store review flag and a real production weakness.
 INFOPLIST_FILE = PoshanForLife/Info-Release.plist
+
+// A TestFlight/App Store build's APNs pushes come from the *production* APNs
+// environment — the debug-signed sandbox certificate/token pair a Simulator
+// or ad hoc build uses would silently fail delivery here. See
+// Debug.xcconfig's APS_ENVIRONMENT for the value this must never carry.
+APS_ENVIRONMENT = production

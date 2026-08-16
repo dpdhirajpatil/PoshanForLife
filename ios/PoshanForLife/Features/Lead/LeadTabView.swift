@@ -6,10 +6,23 @@ import SwiftUI
 /// pre-conversion account with minimal permissions.
 struct LeadTabView: View {
     @Environment(\.appTheme) private var theme
+    @EnvironmentObject private var container: AppContainer
 
     var body: some View {
         TabView {
-            tab("Home", systemImage: "house.fill")
+            NavigationStack {
+                PlaceholderScreen(title: "Home")
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            NotificationBellButton(
+                                repository: container.notificationsRepository,
+                                deepLinkRouter: container.deepLinkRouter
+                            )
+                        }
+                    }
+            }
+            .tabItem { Label("Home", systemImage: "house.fill") }
+
             tab("Track", systemImage: "chart.xyaxis.line")
             tab("Goals", systemImage: "target")
             tab("Profile", systemImage: "person.crop.circle.fill", showsSignOut: true)

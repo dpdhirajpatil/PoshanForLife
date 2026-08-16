@@ -18,3 +18,8 @@ INFOPLIST_FILE = PoshanForLife/Info-Debug.plist
 // The Mac's LAN IP, for running on a physical device. The Simulator ignores
 // this and uses localhost. Override in Local.xcconfig rather than editing here.
 DEV_LAN_HOST = 192.168.1.42
+
+// A debug-signed build only ever receives sandbox APNs pushes — "development"
+// is not a placeholder, it's the value a TestFlight/App Store build must NOT
+// carry. See Release.xcconfig for the other half of this split.
+APS_ENVIRONMENT = development

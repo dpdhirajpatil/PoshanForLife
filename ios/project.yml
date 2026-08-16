@@ -19,6 +19,17 @@ configs:
   Debug: debug
   Release: release
 
+# The one deliberate exception to "zero third-party dependencies" (see
+# README) — IOS-08 needs push, and there is no first-party path to APNs
+# registration + token management that doesn't reinvent what FirebaseMessaging
+# already does, on a backend that already speaks FCM for Android. Pinned to a
+# major version rather than `from: 10.0.0` floor-only, so a new major release
+# can't silently change behavior on the next `xcodegen generate`.
+packages:
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk
+    exactVersion: 10.29.0
+
 targets:
   PoshanForLife:
     type: application
@@ -37,6 +48,19 @@ targets:
     configFiles:
       Debug: Config/Debug.xcconfig
       Release: Config/Release.xcconfig
+    # XcodeGen generates and OWNS this file from `properties` below on every
+    # `xcodegen generate` — hand-editing PoshanForLife.entitlements directly
+    # gets silently overwritten (learned by trying it: a hand-authored
+    # aps-environment key was stomped back to an empty <dict/> the moment
+    # `generate` ran again), same reason Info.plist's GENERATE_INFOPLIST_FILE
+    # sibling pattern exists elsewhere in this project.
+    entitlements:
+      path: PoshanForLife/PoshanForLife.entitlements
+      properties:
+        aps-environment: $(APS_ENVIRONMENT)
+    dependencies:
+      - package: Firebase
+        product: FirebaseMessaging
 
   # Drives the real app on a Simulator. The only way to script taps and typing
   # from the command line — simctl has no touch injection, and AppleScript

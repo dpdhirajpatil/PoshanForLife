@@ -26,6 +26,14 @@ final class AppContainer: ObservableObject {
     let reportsRepository: ReportsRepository
     let programmesRepository: ProgrammesRepository
     let appointmentsRepository: AppointmentsRepository
+    let notificationsRepository: NotificationsRepository
+    let userRepository: UserRepository
+
+    /// The one thing this container reaches outside its own constructor
+    /// graph for — see `PushCoordinator`'s doc comment for why `AppDelegate`
+    /// can't be handed a dependency the normal way.
+    let pushCoordinator = PushCoordinator.shared
+    var deepLinkRouter: DeepLinkRouter { pushCoordinator.deepLinkRouter }
 
     /// These three are `ObservableObject`s held for the app's lifetime rather
     /// than per-screen: the dashboard reads reminders that the Track tab
@@ -43,6 +51,8 @@ final class AppContainer: ObservableObject {
         self.reportsRepository = ReportsRepositoryImpl(client: client)
         self.programmesRepository = ProgrammesRepositoryImpl(client: client)
         self.appointmentsRepository = AppointmentsRepositoryImpl(client: client)
+        self.notificationsRepository = NotificationsRepositoryImpl(client: client)
+        self.userRepository = UserRepositoryImpl(client: client)
         self.healthTracking = HealthTrackingRepository(client: client)
         self.goalsStore = GoalsStore()
         self.reminderScheduler = ReminderScheduler()
@@ -52,6 +62,19 @@ final class AppContainer: ObservableObject {
     /// drops to the login screen.
     var sessionExpired: AnyPublisher<Void, Never> {
         apiClient.sessionExpired.eraseToAnyPublisher()
+    }
+
+    /// Sends the current FCM token (if Firebase has minted one yet) to the
+    /// backend for `userId`, and keeps sending it if a rotation happens later
+    /// while this session is signed in. Safe to call every time a session
+    /// becomes active — `PushCoordinator.onTokenChange` fires immediately
+    /// with the cached token if there is one, so a login *after* the token
+    /// arrived and a login *before* it arrived both end up registered.
+    func registerPushToken(for userId: String) {
+        let userRepository = self.userRepository
+        pushCoordinator.onTokenChange { token in
+            Task { _ = await userRepository.updateFcmToken(userId: userId, token: token) }
+        }
     }
 
     /// Everything in memory — for previews and tests.

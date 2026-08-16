@@ -1,7 +1,10 @@
 # Poshan for Life — iOS
 
 Native SwiftUI client. Swift, MVVM, `URLSession` + async/await, iOS 16.0
-minimum. No third-party dependencies.
+minimum. **Firebase Cloud Messaging (via Swift Package Manager) is the one
+deliberate third-party dependency**, added for IOS-08's push notifications —
+see that section below for why it can't be avoided and what's still blocked
+on a manual step.
 
 ## Status
 
@@ -11,7 +14,8 @@ role-based navigation, theme selection, token refresh), **IOS-03** (patient
 dashboard), **IOS-04** (health tracking, reminders, goals), **IOS-05** (InBody
 report list, detail, Swift Charts trends), **IOS-06** (programmes, sessions and
 challenges with check-in), **IOS-07** (appointments — patient booking and
-practitioner schedule).
+practitioner schedule), **IOS-08** (push notifications — code complete;
+blocked on one manual Firebase console step, see below).
 
 **The app builds and runs on the Simulator.** Xcode 26.6 (iOS 26.5 SDK).
 
@@ -341,7 +345,118 @@ ceiling; the fifth is ours.
 
 Practitioner reaches the same view through its existing Schedule tab.
 
+## Push notifications (IOS-08)
+
+### Blocked on one manual step — Firebase console app registration
+
+The prompt's SETUP section asks to "Add the iOS app to the SAME Firebase
+project already created for Android" via the console, then download
+`GoogleService-Info.plist`. **That step is not done.** It needs an interactive
+browser session against `poshan-for-life-1` (the real project — see
+`android/app/google-services.json`), which isn't available here, and the
+backend's `firebase-service-account.json` is an Admin SDK key scoped for
+server-side sending, not the Firebase Management API that registers new apps —
+using it for that would be reaching outside what that credential was
+provisioned for.
+
+**To finish this**: Firebase console → `poshan-for-life-1` → Add app → iOS →
+bundle ID `com.poshanforlife.ios` → download the resulting
+`GoogleService-Info.plist` → drop it into `ios/PoshanForLife/` (picked up
+automatically by the existing `sources:` glob in `project.yml`, no project.yml
+change needed) → also add an APNs auth key or certificate in the same console,
+under the app's Cloud Messaging settings.
+
+**Everything else works today, verified live, without that file.** The app
+never crashes on its absence — see `FirebaseBootstrap.swift`'s doc comment for
+why that guard is load-bearing, not optional: `FirebaseApp.configure()`
+terminates the process outright on a missing/malformed plist, so shipping this
+feature unguarded would have broken every existing screen's tests the moment
+it landed. Confirmed by literally uninstalling the app, launching cold with no
+plist present, and running the full existing UI test suite against it — zero
+regressions.
+
+### What's real and independently verified
+
+- **In-app notification list + bell**, pure REST, no Firebase involved:
+  `GET /notifications` returns `{notifications, unreadCount}` (an envelope,
+  not a bare array — same convention as reports/programmes), `PATCH
+  /notifications` marks everything read (there is **no per-notification**
+  mark-read — the backend's own doc comment says so). Verified against the
+  live backend, 12/12 checks, including that `PATCH /users/me` **is not a
+  route** (400 — `id` fails UUID binding) despite the prompt's exact spec;
+  the real route is `PATCH /users/{id}` with the caller's own id.
+- **The full permission chain**, on-device: the rationale sheet → the real
+  system `UNUserNotificationCenter` prompt (handled via
+  `addUIInterruptionMonitor` in `PushNotificationsUITests`, tapping the
+  actual OS "Allow" button, not a stand-in) → granted → back to a fully
+  functional app. Screenshotted at each step.
+- **Foreground push delivery**, via `xcrun simctl push` — this delivers
+  through the real OS notification pipeline into
+  `UNUserNotificationCenterDelegate` without touching Firebase/APNs at all,
+  since that delegate doesn't care where a notification originated. A
+  simulated "New appointment booked" push while the app sat foregrounded on
+  a placeholder screen produced a real banner, proving
+  `willPresent` correctly opts back into `.banner/.sound/.badge` (iOS
+  suppresses foreground banners unless a delegate explicitly asks for them).
+
+### What's NOT independently verified
+
+Registering with FCM and receiving a real token — `didRegisterForRemoteNotificationsWithDeviceToken`
+→ `Messaging.apnsToken` → `MessagingDelegate.didReceiveRegistrationToken` — needs
+a configured `FirebaseApp`, which needs the plist above. This is the one part
+of the feature that can only be exercised once that step is done.
+
+### Deep links exist as plumbing, not as working navigation — on purpose
+
+Every `relatedEntityType` the backend actually sends (`patient`, `lead`,
+`report`, `badge` — grep-verified against all ten `notificationService.create`
+call sites) targets an iOS screen that **does not exist yet**: Practitioner's
+Patients/Leads tabs are still placeholders, there's no report-detail screen
+for a doctor recipient, and there's no Badges screen at all. `DeepLinkRouter`
+correctly captures the target from both a tapped push and a tapped in-app row
+— that part is real and testable — but nothing consumes it into an actual
+navigation today, and building fake destinations to paper over that gap would
+be worse than being honest about it. Wiring a real case in is a one-line
+addition the day any of those screens lands; see `DeepLinkRouter.swift`.
+
+### The one `.shared` singleton in this codebase
+
+`PushCoordinator.shared` bridges `MessagingDelegate` and
+`UNUserNotificationCenterDelegate` — both `@objc` protocols `AppDelegate` sets
+itself as the target for — into the rest of the app. Everything else here is
+constructor-injected through `AppContainer`, but `AppDelegate` is instantiated
+by `@UIApplicationDelegateAdaptor` with no DI entry point SwiftUI exposes, so
+there's no normal way to hand it a dependency built from `AppContainer`. See
+`PushCoordinator.swift`'s doc comment.
+
+### XcodeGen gotcha: hand-editing the entitlements file doesn't stick
+
+`PoshanForLife.entitlements` is generated by `xcodegen generate` from
+`project.yml`'s `entitlements.properties` on every run — a hand-authored
+`aps-environment` key gets silently stomped back to an empty `<dict/>` the
+next time anyone regenerates. It's gitignored for the same reason `.xcodeproj`
+is; the source of truth is `project.yml`, which sets `aps-environment` to
+`$(APS_ENVIRONMENT)`, resolved per build configuration in
+`Config/Debug.xcconfig` (`development`) / `Config/Release.xcconfig`
+(`production`).
+
 ## Running the UI tests
+
+`PushNotificationsUITests.testRationaleSheetThenSystemPrompt` needs a
+genuinely fresh app container — the "have we shown the rationale sheet" flag
+lives in UserDefaults, which `simctl uninstall` wipes. Run it on its own,
+right after a fresh install, not as part of the full suite (where an earlier
+test's sign-in/out dance has already set the flag):
+
+```sh
+xcrun simctl uninstall <device> com.poshanforlife.ios
+xcodebuild test -project PoshanForLife.xcodeproj -scheme PoshanForLife \
+  -destination 'platform=iOS Simulator,id=<device>' \
+  -only-testing:PoshanForLifeUITests/PushNotificationsUITests/testRationaleSheetThenSystemPrompt
+```
+
+The other two `PushNotificationsUITests` methods have no such requirement and
+run fine as part of the full suite.
 
 `testProgrammesListAndDetail` checks in to the challenge, so re-running it needs
 the progress reset first:
@@ -349,5 +464,5 @@ the progress reset first:
 ```sql
 delete from challenge_progress cp using patient_programmes pp
  where cp.patient_programme_id = pp.id
-   and pp.patient_id = (select id from users where email = 'ios6.patient@example.com');
+   and pp.patient_id = (select id from users where email = 'testpatient1@example.com');
 ```

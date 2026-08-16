@@ -44,6 +44,14 @@ final class DashboardUITests: XCTestCase {
 
         app.buttons["Sign in"].tap()
 
+        // IOS-08's rationale sheet appears on the first sign-in after a
+        // fresh install and would otherwise block the bell-icon toolbar item
+        // this test doesn't touch but that still sits in the same nav bar.
+        let skipNotifications = app.buttons["skip-notifications"]
+        if skipNotifications.waitForExistence(timeout: 5) {
+            skipNotifications.tap()
+        }
+
         // --- Dashboard ---
         // The greeting is uppercased by the Patient theme, so match on the
         // uppercased name: seeing it proves login, role routing AND the

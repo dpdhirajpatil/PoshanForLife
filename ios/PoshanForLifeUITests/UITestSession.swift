@@ -16,6 +16,12 @@ extension XCTestCase {
     /// network before any tab bar exists, and a tight timeout here surfaces
     /// later as a baffling "login screen never appeared".
     func signOutIfSignedIn(_ app: XCUIApplication) {
+        // A cold launch with a surviving Keychain session (uninstall wipes
+        // the app container but not the Keychain — see the iOS memory notes)
+        // restores straight into a signed-in state, which fires IOS-08's
+        // rationale sheet before this function ever gets to tap "More".
+        dismissNotificationRationaleIfPresent(app)
+
         let more = app.tabBars.buttons["More"]
         let deadline = Date().addingTimeInterval(25)
 
@@ -63,9 +69,27 @@ extension XCTestCase {
         secure.typeText(password)
         app.buttons["Sign in"].tap()
 
+        dismissNotificationRationaleIfPresent(app)
+
         XCTAssertTrue(
             app.tabBars.buttons[tab].waitForExistence(timeout: 30),
             "signed in as \(email) but the \(tab) tab never appeared"
         )
+    }
+
+    /// IOS-08's "why we want to notify you" sheet appears on the first
+    /// sign-in after a fresh install (a per-device UserDefaults flag, not a
+    /// per-account one) and is a modal `.sheet` — left up, it blocks every
+    /// tab-bar tap every other test performs right after signing in. "Not
+    /// now" rather than granting the real permission: accepting would pop
+    /// the system alert too, which needs `addUIInterruptionMonitor`
+    /// registered in advance to dismiss reliably, and no other test cares
+    /// about the granted/denied state, only that nothing is left blocking
+    /// the screen.
+    private func dismissNotificationRationaleIfPresent(_ app: XCUIApplication) {
+        let skip = app.buttons["skip-notifications"]
+        if skip.waitForExistence(timeout: 5) {
+            skip.tap()
+        }
     }
 }
