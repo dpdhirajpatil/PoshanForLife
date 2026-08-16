@@ -23,31 +23,11 @@ final class DashboardUITests: XCTestCase {
         add(attachment)
     }
 
-    private func signOutIfSignedIn() {
-        // Generous waits: a cold launch restores the session over the network
-        // before the tab bar exists, and an under-tight timeout here surfaces
-        // later as a baffling "login screen never appeared".
-        let profileTab = app.tabBars.buttons["Profile"]
-        guard profileTab.waitForExistence(timeout: 20) else { return }  // already signed out
-        profileTab.tap()
-
-        let signOut = app.buttons["Sign out"]
-        XCTAssertTrue(signOut.waitForExistence(timeout: 10), "Profile tab has no Sign out button")
-        signOut.tap()
-
-        // Assert the outcome rather than assuming it: if signing out stops
-        // working, this should say so directly.
-        XCTAssertTrue(
-            app.textFields.firstMatch.waitForExistence(timeout: 20),
-            "tapped Sign out but never returned to the login screen"
-        )
-    }
-
     func testSignInThenPatientDashboard() throws {
         // Tokens live in the Keychain and survive app reinstalls on a Simulator,
         // so a previous run can leave this already signed in. Sign out first
         // rather than assuming a cold start.
-        signOutIfSignedIn()
+        signOutIfSignedIn(app)
 
         // --- Login screen ---
         let email = app.textFields.firstMatch
@@ -55,11 +35,11 @@ final class DashboardUITests: XCTestCase {
         snapshot("01-login")
 
         email.tap()
-        email.typeText("ios6.patient@example.com")
+        email.typeText("testpatient1@example.com")
 
         let password = app.secureTextFields.firstMatch
         password.tap()
-        password.typeText("Ios6Test@123")
+        password.typeText("Admin@123")
         snapshot("02-login-filled")
 
         app.buttons["Sign in"].tap()
@@ -69,7 +49,7 @@ final class DashboardUITests: XCTestCase {
         // uppercased name: seeing it proves login, role routing AND the
         // Patient theme's heading rule all worked.
         let greeting = app.staticTexts.containing(
-            NSPredicate(format: "label CONTAINS[c] %@", "IOS6")
+            NSPredicate(format: "label CONTAINS[c] %@", "TEST")
         ).firstMatch
         XCTAssertTrue(greeting.waitForExistence(timeout: 25), "dashboard greeting never appeared")
 
@@ -167,7 +147,7 @@ final class DashboardUITests: XCTestCase {
         }
 
         // --- Remaining tabs ---
-        for tab in ["Programmes", "Profile"] {
+        for tab in ["Programmes", "More"] {
             let button = app.tabBars.buttons[tab]
             if button.exists {
                 button.tap()

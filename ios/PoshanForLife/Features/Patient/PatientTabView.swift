@@ -1,9 +1,16 @@
 import SwiftUI
 
-/// Patient bottom navigation — five tabs, matching the Android app's
-/// `PatientNavGraph` exactly: Home · Track · Programmes · Reports · Profile.
-/// Everything else (Appointments, Badges, Products) lives behind a More screen
-/// there; when those arrive here they go the same way, not into a sixth tab.
+/// Patient bottom navigation — Home · Track · Programmes · Reports · More.
+///
+/// Android's patient nav carries more items than this in its bottom bar;
+/// SwiftUI's `TabView` cannot. Past five items it silently collapses the
+/// overflow into a **system-generated** "More" list that ignores the app theme
+/// — adding Appointments as a sixth tab did exactly that, swallowing Profile
+/// and the real More screen into an unthemed system list two levels deep.
+///
+/// So five is a hard ceiling, and the fifth is ours: Profile moves inside it,
+/// alongside Appointments. Same shape `PractitionerTabView` already uses, and
+/// where Badges and Products go when they arrive — never a sixth tab.
 struct PatientTabView: View {
     @Environment(\.appTheme) private var theme
     @EnvironmentObject private var container: AppContainer
@@ -43,7 +50,10 @@ struct PatientTabView: View {
             }
             .tabItem { Label("Reports", systemImage: "doc.text.fill") }
 
-            tab("Profile", systemImage: "person.crop.circle.fill", showsSignOut: true)
+            NavigationStack {
+                PatientMoreScreen()
+            }
+            .tabItem { Label("More", systemImage: "ellipsis.circle") }
         }
         .tint(theme.onBackground)
     }
@@ -53,5 +63,36 @@ struct PatientTabView: View {
             PlaceholderScreen(title: title, showsSignOut: showsSignOut)
         }
         .tabItem { Label(title, systemImage: systemImage) }
+    }
+}
+
+/// The patient's overflow destinations, built explicitly so they stay on-theme
+/// — see this file's header for why SwiftUI's automatic version isn't usable.
+/// Badges and Products join this list when they arrive.
+struct PatientMoreScreen: View {
+    @Environment(\.appTheme) private var theme
+    @EnvironmentObject private var container: AppContainer
+
+    var body: some View {
+        List {
+            NavigationLink {
+                AppointmentsListView(
+                    role: .patient,
+                    repository: container.appointmentsRepository
+                )
+            } label: {
+                MenuRow(item: MenuRowItem(title: "Appointments", systemImage: "calendar"))
+            }
+
+            NavigationLink {
+                PlaceholderScreen(title: "Profile", showsSignOut: true)
+            } label: {
+                MenuRow(item: MenuRowItem(title: "Profile", systemImage: "person.crop.circle.fill"))
+            }
+        }
+        .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .background(theme.background.ignoresSafeArea())
+        .navigationTitle("More")
     }
 }

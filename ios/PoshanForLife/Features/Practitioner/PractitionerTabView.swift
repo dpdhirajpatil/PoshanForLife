@@ -11,13 +11,21 @@ import SwiftUI
 /// Every label here says "Practitioner"; the wire role stays `DOCTOR`.
 struct PractitionerTabView: View {
     @Environment(\.appTheme) private var theme
+    @EnvironmentObject private var container: AppContainer
 
     var body: some View {
         TabView {
             tab("Patients", systemImage: "person.2.fill")
             tab("Leads", systemImage: "person.badge.plus")
             tab("Upload", systemImage: "arrow.up.doc.fill")
-            tab("Schedule", systemImage: "calendar")
+
+            NavigationStack {
+                AppointmentsListView(
+                    role: .practitioner,
+                    repository: container.appointmentsRepository
+                )
+            }
+            .tabItem { Label("Schedule", systemImage: "calendar") }
 
             NavigationStack {
                 PractitionerMoreScreen()

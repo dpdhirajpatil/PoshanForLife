@@ -2,10 +2,15 @@ import XCTest
 
 /// IOS-06 — the Programmes tab.
 ///
-/// Needs the backend on localhost:8080 and the `ios6.patient@example.com`
-/// fixture (one programme, two sessions past and future, one challenge), so
-/// like `DashboardUITests` this is an integration smoke test rather than a CI
-/// candidate.
+/// Needs the backend on localhost:8080 and two accounts:
+///
+/// - `testpatient1@example.com` / `Admin@123` — carries one programme, two
+///   sessions (one past, one future) and one challenge.
+/// - `empty.patient@example.com` / `Empty@1234` — no assignments at all, for
+///   the empty state. Created via `POST /users` as admin; recreate it if the
+///   dev database is reseeded.
+///
+/// So this is an integration smoke test, not a CI candidate.
 final class ProgrammesUITests: XCTestCase {
 
     private var app: XCUIApplication!
@@ -23,40 +28,11 @@ final class ProgrammesUITests: XCTestCase {
         add(attachment)
     }
 
-    /// Drops any restored session so a specific account can be signed in.
-    private func signOutIfSignedIn() {
-        let profileTab = app.tabBars.buttons["Profile"]
-        guard profileTab.waitForExistence(timeout: 20) else { return }
-        profileTab.tap()
-        let signOut = app.buttons["Sign out"]
-        XCTAssertTrue(signOut.waitForExistence(timeout: 10), "Profile tab has no Sign out button")
-        signOut.tap()
-        XCTAssertTrue(
-            app.textFields.firstMatch.waitForExistence(timeout: 20),
-            "tapped Sign out but never returned to the login screen"
-        )
-    }
-
-    private func signIn(email: String) {
-        let field = app.textFields.firstMatch
-        XCTAssertTrue(field.waitForExistence(timeout: 10), "login screen never appeared")
-        field.tap()
-        field.typeText(email)
-        let password = app.secureTextFields.firstMatch
-        password.tap()
-        password.typeText("Ios6Test@123")
-        app.buttons["Sign in"].tap()
-        XCTAssertTrue(
-            app.tabBars.buttons["Programmes"].waitForExistence(timeout: 25),
-            "signed in as \(email) but the patient tab bar never appeared"
-        )
-    }
-
     /// A patient with zero assignments must get the empty state, not a blank
     /// screen — the one case that can't be reached from the seeded fixture.
     func testEmptyState() throws {
-        signOutIfSignedIn()
-        signIn(email: "ios6.empty@example.com")
+        signOutIfSignedIn(app)
+        signIn(app, email: "empty.patient@example.com", password: "Empty@1234", expecting: "Programmes")
 
         app.tabBars.buttons["Programmes"].tap()
         XCTAssertTrue(
@@ -76,8 +52,8 @@ final class ProgrammesUITests: XCTestCase {
         snapshot("06-empty-state")
 
         // Leave the simulator on the fixture account for the other test.
-        signOutIfSignedIn()
-        signIn(email: "ios6.patient@example.com")
+        signOutIfSignedIn(app)
+        signIn(app, email: "testpatient1@example.com", password: "Admin@123", expecting: "Programmes")
     }
 
     private func signInIfNeeded() {
@@ -89,11 +65,11 @@ final class ProgrammesUITests: XCTestCase {
         let email = app.textFields.firstMatch
         XCTAssertTrue(email.waitForExistence(timeout: 10), "neither a tab bar nor a login screen appeared")
         email.tap()
-        email.typeText("ios6.patient@example.com")
+        email.typeText("testpatient1@example.com")
 
         let password = app.secureTextFields.firstMatch
         password.tap()
-        password.typeText("Ios6Test@123")
+        password.typeText("Admin@123")
         app.buttons["Sign in"].tap()
 
         XCTAssertTrue(
@@ -118,12 +94,12 @@ final class ProgrammesUITests: XCTestCase {
         // All three service types should be present for this fixture, each with
         // its own progress treatment.
         let programme = app.staticTexts.containing(
-            NSPredicate(format: "label CONTAINS[c] %@", "360 Degree")
+            NSPredicate(format: "label CONTAINS[c] %@", "12-Week")
         ).firstMatch
         XCTAssertTrue(programme.waitForExistence(timeout: 10), "the programme row is missing")
 
         let challenge = app.staticTexts.containing(
-            NSPredicate(format: "label CONTAINS[c] %@", "Water Daily")
+            NSPredicate(format: "label CONTAINS[c] %@", "Hydration")
         ).firstMatch
         XCTAssertTrue(challenge.exists, "the challenge row is missing")
 

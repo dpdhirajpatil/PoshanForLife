@@ -10,7 +10,8 @@ prompt** (built early because IOS-02 depends on it), **IOS-02** (auth,
 role-based navigation, theme selection, token refresh), **IOS-03** (patient
 dashboard), **IOS-04** (health tracking, reminders, goals), **IOS-05** (InBody
 report list, detail, Swift Charts trends), **IOS-06** (programmes, sessions and
-challenges with check-in).
+challenges with check-in), **IOS-07** (appointments — patient booking and
+practitioner schedule).
 
 **The app builds and runs on the Simulator.** Xcode 26.6 (iOS 26.5 SDK).
 
@@ -49,7 +50,7 @@ Verification status:
 
 | Role (wire) | Structure | Theme | Destinations |
 | --- | --- | --- | --- |
-| PATIENT | TabView, 5 tabs | Patient | Home · Track · Programmes · Reports · Profile |
+| PATIENT | TabView, 4 + More | Patient | Home · Track · Programmes · Reports · More (Appointments, Profile) |
 | LEAD | TabView, 4 tabs | Lead | Home · Track · Goals · Profile |
 | DOCTOR | TabView, 4 + More | Staff | Patients · Leads · Upload · Schedule · More (Orders, Products, Settings) |
 | ADMIN | NavigationStack + List | Staff | Dashboard · Patients · Leads · Orders · Transactions · Products · Settings |
@@ -280,15 +281,67 @@ of surfacing as "Reports tab never appeared".
 
 `ProgrammesUITests` needs two accounts that the seed data doesn't provide:
 
-| Account | Purpose |
-| --- | --- |
-| `ios6.patient@example.com` | one programme, two sessions (one past, one future), one challenge |
-| `ios6.empty@example.com` | no assignments at all — the empty state |
+| Account | Password | Purpose |
+| --- | --- | --- |
+| `testpatient1@example.com` | `Admin@123` | one programme, two sessions (one past, one future), one challenge; also the Dashboard and Appointments tests |
+| `empty.patient@example.com` | `Empty@1234` | no assignments at all — the empty state |
+| `testdoc1@example.com` | `Admin@123` | the practitioner side; already linked to testpatient1 in `doctor_patients` |
 
-Both use `Ios6Test@123` and were created via `POST /users` as admin. Note that
-route does **not** create a `patient_profiles` row, so weight logged by these
-accounts stays local and never reaches `health_records` — an artifact of the
+The dev database is reseeded from outside this repo from time to time, which
+deletes any account created with `POST /users`. If the empty-state test starts
+failing on login, recreate `empty.patient@example.com` as admin. Note that route
+does **not** create a `patient_profiles` row, so weight logged by such an
+account stays local and never reaches `health_records` — an artifact of the
 fixture, not a sync bug.
+
+`AppointmentsUITests` seeds and deletes its own appointment through the API, so
+it leaves the database as it found it.
+
+## Appointments (IOS-07)
+
+### The bookable window is in UTC, and that leaks
+
+`AppointmentService` hardcodes working hours as 09:00–17:00 and builds every
+slot with `ZoneOffset.UTC`, so a slot returned as `"09:00:00"` means 09:00
+**UTC**. In IST that is 2:30 PM, and the bookable day reads 2:30 PM–10:00 PM —
+an odd-looking clinic day, but a faithful rendering of what the backend
+actually offers. Fixing the window properly is a backend change (per-clinic or
+per-practitioner hours); there is no per-practitioner schedule config today.
+
+Everything user-facing renders in the **device's** time zone, including the
+slot buttons. That consistency is the point: the Android client prints the raw
+UTC `LocalTime` in `BookAppointmentScreen` while `AppointmentsListScreen`
+converts with `ZoneId.systemDefault()`, so on Android you pick "09:00" and the
+booking then appears as 2:30 PM. `AppointmentTime` exists to prevent exactly
+that, and the UI test asserts the slot label and the list row agree.
+
+### Other contract details, all verified live
+
+- `AppointmentStatus` has **four** values — `no_show` as well as
+  scheduled/completed/cancelled.
+- Slot times serialise as `"HH:mm:ss"`, not the `"HH:mm"` the DTO comment says.
+- `GET /appointments/practitioners` is the only way a patient can discover who
+  they may book with; booking with anyone not in `doctor_patients` is refused.
+- A patient may only touch `scheduledAt` and `status=cancelled`. Notes and any
+  other status are `INSUFFICIENT_ROLE`.
+- **Rescheduling a cancelled appointment silently revives it** to `scheduled`.
+  That is why Reschedule and Cancel are offered only on scheduled, not-yet-past
+  rows — a swipe action on a cancelled row would quietly un-cancel it.
+- Touching someone else's appointment is a **403**, not the 404 that reports
+  and programmes return for the same mistake.
+
+### Where it lives in the nav
+
+Patient tabs are Home · Track · Programmes · Reports · **More**, with
+Appointments and Profile inside More. SwiftUI's `TabView` silently collapses
+anything past five tabs into a *system-generated* overflow list that ignores
+the app theme — adding Appointments as a sixth tab did exactly that, burying
+Profile and the real More screen in an unthemed system list. Five is a hard
+ceiling; the fifth is ours.
+
+Practitioner reaches the same view through its existing Schedule tab.
+
+## Running the UI tests
 
 `testProgrammesListAndDetail` checks in to the challenge, so re-running it needs
 the progress reset first:
