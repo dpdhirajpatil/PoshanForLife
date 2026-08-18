@@ -1,0 +1,8 @@
+target/
+.env
+firebase-service-account.json
+.idea/
+*.iml
+.vscode/
+.git/
+.DS_Store
