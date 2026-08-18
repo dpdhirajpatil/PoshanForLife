@@ -25,6 +25,7 @@ final class AppContainer: ObservableObject {
     let dashboardRepository: DashboardRepository
     let reportsRepository: ReportsRepository
     let programmesRepository: ProgrammesRepository
+    let patientsRepository: PatientsRepository
     let appointmentsRepository: AppointmentsRepository
     let notificationsRepository: NotificationsRepository
     let userRepository: UserRepository
@@ -50,6 +51,7 @@ final class AppContainer: ObservableObject {
         self.dashboardRepository = DashboardRepositoryImpl(client: client)
         self.reportsRepository = ReportsRepositoryImpl(client: client)
         self.programmesRepository = ProgrammesRepositoryImpl(client: client)
+        self.patientsRepository = PatientsRepositoryImpl(client: client)
         self.appointmentsRepository = AppointmentsRepositoryImpl(client: client)
         self.notificationsRepository = NotificationsRepositoryImpl(client: client)
         self.userRepository = UserRepositoryImpl(client: client)

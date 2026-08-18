@@ -15,7 +15,15 @@ struct PractitionerTabView: View {
 
     var body: some View {
         TabView {
-            tab("Patients", systemImage: "person.2.fill")
+            NavigationStack {
+                PatientListView(
+                    patientsRepository: container.patientsRepository,
+                    reportsRepository: container.reportsRepository,
+                    programmesRepository: container.programmesRepository
+                )
+            }
+            .tabItem { Label("Patients", systemImage: "person.2.fill") }
+
             tab("Leads", systemImage: "person.badge.plus")
             tab("Upload", systemImage: "arrow.up.doc.fill")
 

@@ -17,6 +17,10 @@ struct ProgrammeDetailView: View {
     let repository: ProgrammesRepository
     let initialProgress: ChallengeProgress?
     let onProgressChange: (ChallengeProgress) -> Void
+    /// The check-in PATCH is `@PatientOnly` server-side (verified live) — a
+    /// practitioner viewing a patient's challenge would get a 403 tapping it.
+    /// Progress itself stays visible either way; only the button hides.
+    var allowsCheckIn: Bool = true
 
     @Environment(\.appTheme) private var theme
 
@@ -133,7 +137,9 @@ struct ProgrammeDetailView: View {
                 }
                 .padding(.top, 4)
 
-                checkInButton(progress: progress)
+                if allowsCheckIn {
+                    checkInButton(progress: progress)
+                }
             } else {
                 Text("Loading progress…")
                     .font(.bodyFont(size: 14))
