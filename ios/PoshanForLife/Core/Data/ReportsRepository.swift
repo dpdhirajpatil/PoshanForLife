@@ -4,6 +4,8 @@ protocol ReportsRepository: AnyObject {
     func inbodyReports(patientId: String) async -> Result<[ReportListItem], APIError>
     func report(id: String) async -> Result<ReportDetail, APIError>
     func trendRecords(patientId: String) async -> Result<[HealthRecord], APIError>
+    func uploadReport(patientId: String, pdfData: Data) async -> Result<ReportUploadResponse, APIError>
+    func updateReport(id: String, title: String, notes: String?, parsedData: InBodyData) async -> Result<ReportDetail, APIError>
 }
 
 final class ReportsRepositoryImpl: ReportsRepository {
@@ -55,5 +57,34 @@ final class ReportsRepositoryImpl: ReportsRepository {
                 ]
             )
         )
+    }
+
+    /// The backend strictly requires `application/pdf` — see `ImageToPDF`
+    /// for why the caller has already wrapped the captured photo before
+    /// this ever gets called.
+    func uploadReport(patientId: String, pdfData: Data) async -> Result<ReportUploadResponse, APIError> {
+        await client.send(
+            Endpoint.multipart(
+                path: "reports/upload",
+                fields: ["patientId": patientId],
+                fileField: "file",
+                fileName: "inbody-report.pdf",
+                fileData: pdfData,
+                fileContentType: "application/pdf"
+            )
+        )
+    }
+
+    func updateReport(id: String, title: String, notes: String?, parsedData: InBodyData) async -> Result<ReportDetail, APIError> {
+        do {
+            let endpoint = try Endpoint.json(
+                path: "reports/\(id)",
+                method: .patch,
+                body: UpdateReportRequest(title: title, notes: notes, parsedData: parsedData)
+            )
+            return await client.send(endpoint)
+        } catch {
+            return .failure(.decoding)
+        }
     }
 }

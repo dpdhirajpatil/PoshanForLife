@@ -15,6 +15,7 @@ struct PatientDetailView: View {
     @Environment(\.appTheme) private var theme
     @FocusState private var notesFocused: Bool
     @State private var selectedTab: Section = .overview
+    @State private var showCapture = false
 
     private enum Section: String, CaseIterable, Identifiable {
         case overview = "Overview", reports = "Reports", programmes = "Programmes", notes = "Notes"
@@ -71,6 +72,15 @@ struct PatientDetailView: View {
                     .disabled(viewModel.notesSaveState == .saving)
                 }
             }
+            if selectedTab == .reports {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showCapture = true
+                    } label: {
+                        Image(systemName: "camera.fill")
+                    }
+                }
+            }
         }
         .navigationDestination(for: String.self) { reportId in
             ReportDetailView(reportId: reportId, repository: reportsRepository)
@@ -84,6 +94,12 @@ struct PatientDetailView: View {
                 onProgressChange: { _ in },
                 allowsCheckIn: false
             )
+        }
+        .fullScreenCover(isPresented: $showCapture) {
+            CaptureView(patientId: patientId, repository: reportsRepository) {
+                showCapture = false
+                Task { await viewModel.refreshReports() }
+            }
         }
     }
 

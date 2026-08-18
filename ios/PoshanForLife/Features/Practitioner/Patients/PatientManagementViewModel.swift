@@ -92,6 +92,13 @@ final class PatientManagementViewModel: ObservableObject {
         programmesState = (await programmesResult).cardState
     }
 
+    /// Called after IOS-10's capture flow confirms a new report, so the
+    /// Reports tab reflects it without re-fetching the whole detail screen.
+    func refreshReports() async {
+        guard let patientId else { return }
+        reportsState = (await reportsRepository.inbodyReports(patientId: patientId)).cardState
+    }
+
     func onNotesChange(_ text: String) {
         notesText = text
         // Editing after a save/error invalidates that indicator — back to

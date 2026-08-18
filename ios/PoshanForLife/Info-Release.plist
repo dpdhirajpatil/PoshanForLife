@@ -23,6 +23,11 @@
 	<key>UILaunchScreen</key>
 	<dict/>
 
+	<!-- Required by App Store review for any camera-access request (IOS-10's
+	     InBody report capture). -->
+	<key>NSCameraUsageDescription</key>
+	<string>Poshan for Life uses your camera to capture InBody report photos for upload.</string>
+
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>

@@ -23,6 +23,14 @@
 	<key>UILaunchScreen</key>
 	<dict/>
 
+	<!-- Required by App Store review for any camera-access request (IOS-10's
+	     InBody report capture). Same string in both configs, so it lives in
+	     each plist directly rather than as an INFOPLIST_KEY_* xcconfig
+	     setting — this target ships hand-written plists, not a generated
+	     one, so INFOPLIST_KEY_* build settings never get merged in. -->
+	<key>NSCameraUsageDescription</key>
+	<string>Poshan for Life uses your camera to capture InBody report photos for upload.</string>
+
 	<!-- Lets a data-only (silent) push wake the app briefly to process it before
 	     the user ever taps a banner — without this, `didReceiveRemoteNotification`
 	     never fires while the app is backgrounded/suspended. Both Debug and

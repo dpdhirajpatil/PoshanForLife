@@ -43,27 +43,27 @@ struct ReportListItem: Decodable, Identifiable, Equatable {
 ///
 /// Note there is **no segmental (arm/trunk/leg) data** — the backend doesn't
 /// model it, so the detail screen can't show a Segmental Lean Analysis section.
-struct InBodyData: Decodable, Equatable {
-    let weightKg: Double?
-    let bodyFatPercent: Double?
-    let skeletalMuscleMassKg: Double?
-    let bmi: Double?
-    let visceralFatLevel: Double?
-    let bodyWaterL: Double?
-    let proteinKg: Double?
-    let mineralKg: Double?
-    let basalMetabolicRate: Double?
-    let bodyFatMassKg: Double?
-    let fatFreeMassKg: Double?
-    let waistHipRatio: Double?
-    let targetWeightKg: Double?
-    let weightControlKg: Double?
-    let fatControlKg: Double?
-    let muscleControlKg: Double?
-    let obesityDegreePercent: Double?
-    let intracellularWaterL: Double?
-    let extracellularWaterL: Double?
-    let inbodyScore: Int?
+struct InBodyData: Codable, Equatable {
+    var weightKg: Double? = nil
+    var bodyFatPercent: Double? = nil
+    var skeletalMuscleMassKg: Double? = nil
+    var bmi: Double? = nil
+    var visceralFatLevel: Double? = nil
+    var bodyWaterL: Double? = nil
+    var proteinKg: Double? = nil
+    var mineralKg: Double? = nil
+    var basalMetabolicRate: Double? = nil
+    var bodyFatMassKg: Double? = nil
+    var fatFreeMassKg: Double? = nil
+    var waistHipRatio: Double? = nil
+    var targetWeightKg: Double? = nil
+    var weightControlKg: Double? = nil
+    var fatControlKg: Double? = nil
+    var muscleControlKg: Double? = nil
+    var obesityDegreePercent: Double? = nil
+    var intracellularWaterL: Double? = nil
+    var extracellularWaterL: Double? = nil
+    var inbodyScore: Int? = nil
 
     /// Counted from the data actually present, NOT taken from the response's
     /// `extractedFieldCount`. That stored value can disagree with `parsedData`
@@ -111,4 +111,26 @@ struct ReportDetail: Decodable, Identifiable, Equatable {
 /// `GET /reports` wraps its page in an object rather than returning a bare array.
 struct ReportListResponse: Decodable {
     let reports: [ReportListItem]
+}
+
+/// `POST /reports/upload`'s response. Only the fields the capture flow
+/// actually reads — the backend also sends `healthRecordId`, `fileUrl`,
+/// `confidence`, `extractionMethod`, and `warnings`, but the confidence tier
+/// is recomputed client-side from `extractedFieldCount` (see
+/// `confidenceTierFor`), matching Android rather than trusting the server's
+/// own tier string.
+struct ReportUploadResponse: Decodable {
+    let reportId: String
+    let parsedData: InBodyData?
+    let extractedFieldCount: Int
+}
+
+/// `PATCH /reports/{id}` body. There is no `confirmedData` field on the
+/// backend — corrections to a low-confidence AI extraction go through the
+/// same `parsedData` key the upload response first populated.
+struct UpdateReportRequest: Encodable {
+    let title: String
+    let notes: String?
+    let status: String? = nil
+    let parsedData: InBodyData
 }

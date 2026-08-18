@@ -18,6 +18,10 @@ struct Endpoint {
     var body: Data?
     /// `false` only for the handful of public routes (login, signup, OTP).
     var requiresAuth: Bool = true
+    /// Overrides the default `application/json` header — set by
+    /// ``multipart(path:fields:fileField:fileName:fileData:fileContentType:requiresAuth:)``
+    /// to the multipart boundary content type instead.
+    var contentType: String?
 
     /// Every backend route sits under this prefix; callers pass the part after it.
     private static let apiPrefix = "api/v1"
@@ -40,7 +44,9 @@ struct Endpoint {
         var request = URLRequest(url: url)
         request.httpMethod = method.rawValue
         request.httpBody = body
-        if body != nil {
+        if let contentType {
+            request.setValue(contentType, forHTTPHeaderField: "Content-Type")
+        } else if body != nil {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
         request.setValue("application/json", forHTTPHeaderField: "Accept")
@@ -65,6 +71,45 @@ extension Endpoint {
             method: method,
             body: try encoder.encode(body),
             requiresAuth: requiresAuth
+        )
+    }
+
+    /// Builds a `multipart/form-data` POST — the report-upload endpoint is the
+    /// only caller today, so this doesn't try to generalise beyond one file
+    /// plus a handful of plain-text fields.
+    static func multipart(
+        path: String,
+        fields: [String: String],
+        fileField: String,
+        fileName: String,
+        fileData: Data,
+        fileContentType: String,
+        requiresAuth: Bool = true
+    ) -> Endpoint {
+        let boundary = "Boundary-\(UUID().uuidString)"
+        var body = Data()
+
+        for (key, value) in fields {
+            body.append("--\(boundary)\r\n".data(using: .utf8)!)
+            body.append("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n".data(using: .utf8)!)
+            body.append("\(value)\r\n".data(using: .utf8)!)
+        }
+
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append(
+            "Content-Disposition: form-data; name=\"\(fileField)\"; filename=\"\(fileName)\"\r\n"
+                .data(using: .utf8)!
+        )
+        body.append("Content-Type: \(fileContentType)\r\n\r\n".data(using: .utf8)!)
+        body.append(fileData)
+        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+
+        return Endpoint(
+            path: path,
+            method: .post,
+            body: body,
+            requiresAuth: requiresAuth,
+            contentType: "multipart/form-data; boundary=\(boundary)"
         )
     }
 }
