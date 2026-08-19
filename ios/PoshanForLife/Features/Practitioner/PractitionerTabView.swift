@@ -66,6 +66,7 @@ struct PractitionerTabView: View {
 /// The overflow destinations: Orders, Products, Settings.
 struct PractitionerMoreScreen: View {
     @Environment(\.appTheme) private var theme
+    @EnvironmentObject private var container: AppContainer
 
     private static let items: [MenuRowItem] = [
         MenuRowItem(title: "Orders", systemImage: "shippingbox.fill"),
@@ -84,7 +85,11 @@ struct PractitionerMoreScreen: View {
         .background(theme.background.ignoresSafeArea())
         .navigationTitle("More")
         .navigationDestination(for: MenuRowItem.self) { item in
-            PlaceholderScreen(title: item.title, showsSignOut: item.title == "Settings")
+            if item.title == "Settings" {
+                SettingsView(themePreferenceStore: container.themePreferenceStore)
+            } else {
+                PlaceholderScreen(title: item.title)
+            }
         }
     }
 }

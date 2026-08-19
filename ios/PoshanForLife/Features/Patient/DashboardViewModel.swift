@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 /// Per-card state, so one card's failure or slowness never masks another's
 /// content. Deliberately not a single screen-wide enum.
@@ -41,7 +42,7 @@ final class DashboardViewModel: ObservableObject {
     /// skeletons reads as data loss. The first load starts at `.loading` anyway.
     func load() async {
         let profileResult = await repository.currentUser()
-        profile = profileResult.cardState
+        withAnimation(.easeInOut(duration: 0.25)) { profile = profileResult.cardState }
 
         guard case .success(let user) = profileResult else {
             // Every other call is keyed by the patient id, so without the
@@ -49,9 +50,11 @@ final class DashboardViewModel: ObservableObject {
             // than leaving three spinners running forever.
             var message = "Couldn't load your profile"
             if case .failure(let error) = profileResult { message = error.message }
-            healthRecord = .failure(message)
-            programme = .failure(message)
-            invoices = .failure(message)
+            withAnimation(.easeInOut(duration: 0.25)) {
+                healthRecord = .failure(message)
+                programme = .failure(message)
+                invoices = .failure(message)
+            }
             return
         }
 
@@ -63,16 +66,27 @@ final class DashboardViewModel: ObservableObject {
         }
     }
 
+    // Each card animates its own transition rather than the caller batching
+    // them into one `withAnimation` — these three land at independently
+    // unpredictable times (three separate network calls), and a card that
+    // collapses to nothing (no active programme, no outstanding balance)
+    // needs to resize smoothly wherever it happens to land in that order.
+    // Without this, each collapse/grow snaps instantly, and three of them
+    // arriving in quick succession reads as the whole screen jumping around.
+
     private func loadHealthRecord(_ patientId: String) async {
-        healthRecord = (await repository.latestHealthRecord(patientId: patientId)).cardState
+        let result = (await repository.latestHealthRecord(patientId: patientId)).cardState
+        withAnimation(.easeInOut(duration: 0.25)) { healthRecord = result }
     }
 
     private func loadProgramme(_ patientId: String) async {
-        programme = (await repository.activeProgramme(patientId: patientId)).cardState
+        let result = (await repository.activeProgramme(patientId: patientId)).cardState
+        withAnimation(.easeInOut(duration: 0.25)) { programme = result }
     }
 
     private func loadInvoices(_ patientId: String) async {
-        invoices = (await repository.unpaidInvoices(patientId: patientId)).cardState
+        let result = (await repository.unpaidInvoices(patientId: patientId)).cardState
+        withAnimation(.easeInOut(duration: 0.25)) { invoices = result }
     }
 
 }

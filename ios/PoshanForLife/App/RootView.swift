@@ -8,6 +8,7 @@ struct RootView: View {
     @StateObject private var authViewModel: AuthViewModel
     @EnvironmentObject private var container: AppContainer
     @EnvironmentObject private var deepLinkRouter: DeepLinkRouter
+    @EnvironmentObject private var themePreferenceStore: ThemePreferenceStore
 
     @State private var showingNotificationRationale = false
 
@@ -23,6 +24,10 @@ struct RootView: View {
     var body: some View {
         content
             .environmentObject(authViewModel)
+            // Applies before sign-in too (the login screen) and to every
+            // role's theme after — this is a device-level preference, not
+            // account data. `nil` for `.system` restores the device setting.
+            .preferredColorScheme(themePreferenceStore.mode.colorScheme)
             .task {
                 await authViewModel.restoreSession()
             }

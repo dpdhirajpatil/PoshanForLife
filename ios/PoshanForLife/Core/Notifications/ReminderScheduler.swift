@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 import UserNotifications
 
 /// Owns the reminder list and its `UNUserNotificationCenter` registrations,
@@ -24,7 +25,11 @@ final class ReminderScheduler: ObservableObject {
     }
 
     func load() async {
-        reminders = await store.load()
+        let loaded = await store.load()
+        // Animated: the Dashboard's Upcoming Reminders card and Track's own
+        // reminders list both resize when this lands, and an unanimated jump
+        // there reads as the whole screen twitching.
+        withAnimation(.easeInOut(duration: 0.25)) { reminders = loaded }
         authorizationStatus = await center.notificationSettings().authorizationStatus
     }
 

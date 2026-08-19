@@ -23,6 +23,9 @@ struct PoshanForLifeApp: App {
             // a view needs the concrete `DeepLinkRouter` in its environment to
             // actually observe `pending` changing.
             .environmentObject(container.deepLinkRouter)
+            // Same reasoning — `RootView` needs to react to `mode` changing,
+            // not just read it once off `container`.
+            .environmentObject(container.themePreferenceStore)
         }
     }
 }

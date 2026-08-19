@@ -86,7 +86,7 @@ struct PatientMoreScreen: View {
             }
 
             NavigationLink {
-                ProfileView(healthKit: container.healthKitManager)
+                ProfileView(healthKit: container.healthKitManager, themePreferenceStore: container.themePreferenceStore)
             } label: {
                 MenuRow(item: MenuRowItem(title: "Profile", systemImage: "person.crop.circle.fill"))
             }

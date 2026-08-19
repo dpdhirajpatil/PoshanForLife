@@ -44,6 +44,9 @@ final class AppContainer: ObservableObject {
     let healthTracking: HealthTrackingRepository
     let goalsStore: GoalsStore
     let reminderScheduler: ReminderScheduler
+    /// App-wide, not role-scoped — read by `RootView` before any role's
+    /// theme is even chosen, and written from the Profile screen(s).
+    let themePreferenceStore = ThemePreferenceStore()
 
     init(tokenStore: TokenStore = KeychainTokenStore()) {
         self.tokenStore = tokenStore

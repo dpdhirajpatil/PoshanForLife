@@ -5,11 +5,20 @@ import SwiftUI
 struct ProfileView: View {
 
     @ObservedObject var healthKit: HealthKitManager
+    @ObservedObject var themePreferenceStore: ThemePreferenceStore
     @Environment(\.appTheme) private var theme
     @State private var isConnecting = false
 
     var body: some View {
         List {
+            Section {
+                AppearancePicker(store: themePreferenceStore)
+            } header: {
+                Text("Appearance")
+            } footer: {
+                Text("Choose how Poshan for Life looks on this device.")
+            }
+
             if HealthKitManager.isAvailable {
                 Section {
                     healthRow
