@@ -34,7 +34,13 @@ final class HealthTrackingRepository: ObservableObject {
     }
 
     /// Replaces today's HealthKit value for a metric rather than appending, so
-    /// repeated syncs of a running daily total don't stack up. For IOS-11.
+    /// repeated syncs of a running daily total don't stack up.
+    ///
+    /// Only `.weight` is ever queued for the backend — `syncState` defaults to
+    /// `.pending` there and `.localOnly` for everything else, same rule as a
+    /// manual `log()`. Re-syncing an existing HealthKit weight entry re-queues
+    /// it too, since a new reading is worth re-pushing even if the last one
+    /// already made it to the backend.
     func upsertFromHealthKit(_ type: HealthMetricType, value: Double, unit: String) async {
         let startOfToday = Calendar.current.startOfDay(for: Date())
         let index = entries.firstIndex {
@@ -44,12 +50,12 @@ final class HealthTrackingRepository: ObservableObject {
             entries[index].value = value
             entries[index].unit = unit
             entries[index].loggedAt = Date()
+            if type.isSyncable { entries[index].syncState = .pending }
         } else {
-            entries.append(
-                HealthEntry(type: type, value: value, unit: unit, source: .healthKit, syncState: .localOnly)
-            )
+            entries.append(HealthEntry(type: type, value: value, unit: unit, source: .healthKit))
         }
         await persist()
+        await syncPending()
     }
 
     // MARK: - Reads
@@ -89,7 +95,7 @@ final class HealthTrackingRepository: ObservableObject {
                 // outright for a PATIENT/LEAD caller, who may only write their
                 // own record. Sending it is a 422, not a convenience.
                 recordDate: Self.dayFormatter.string(from: entry.loggedAt),
-                source: "patient_manual",
+                source: entry.source == .healthKit ? "wearable_sync" : "patient_manual",
                 weightKg: entry.value
             )
             // Skip rather than fall back to a body-less POST — that would be an

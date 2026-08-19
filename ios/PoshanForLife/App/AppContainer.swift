@@ -30,11 +30,13 @@ final class AppContainer: ObservableObject {
     let notificationsRepository: NotificationsRepository
     let userRepository: UserRepository
 
-    /// The one thing this container reaches outside its own constructor
+    /// The two things this container reaches outside its own constructor
     /// graph for — see `PushCoordinator`'s doc comment for why `AppDelegate`
-    /// can't be handed a dependency the normal way.
+    /// can't be handed a dependency the normal way. `HealthKitManager` needs
+    /// the same shape for its background refresh task.
     let pushCoordinator = PushCoordinator.shared
     var deepLinkRouter: DeepLinkRouter { pushCoordinator.deepLinkRouter }
+    let healthKitManager = HealthKitManager.shared
 
     /// These three are `ObservableObject`s held for the app's lifetime rather
     /// than per-screen: the dashboard reads reminders that the Track tab
@@ -58,6 +60,24 @@ final class AppContainer: ObservableObject {
         self.healthTracking = HealthTrackingRepository(client: client)
         self.goalsStore = GoalsStore()
         self.reminderScheduler = ReminderScheduler()
+
+        // Bridges every sync's result into the local cache, same shape as
+        // `registerPushToken` bridging an FCM token into `UserRepository`.
+        let healthTracking = self.healthTracking
+        healthKitManager.onSync { snapshot in
+            if let steps = snapshot.steps {
+                await healthTracking.upsertFromHealthKit(.steps, value: steps, unit: "steps")
+            }
+            if let heartRate = snapshot.heartRateAvgBpm {
+                await healthTracking.upsertFromHealthKit(.heartRate, value: heartRate, unit: "bpm")
+            }
+            if let weight = snapshot.weightKg {
+                await healthTracking.upsertFromHealthKit(.weight, value: weight, unit: "kg")
+            }
+            if let sleepHours = snapshot.sleepHours {
+                await healthTracking.upsertFromHealthKit(.sleep, value: sleepHours, unit: "hours")
+            }
+        }
     }
 
     /// Refresh failed and the session is gone — `AuthViewModel` listens and

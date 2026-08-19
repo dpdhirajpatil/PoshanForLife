@@ -7,6 +7,7 @@ final class TrackViewModel: ObservableObject {
     let repository: HealthTrackingRepository
     let goalsStore: GoalsStore
     let reminders: ReminderScheduler
+    let healthKit: HealthKitManager
 
     // Form state for the cards that take input.
     @Published var calorieText: String = ""
@@ -16,10 +17,11 @@ final class TrackViewModel: ObservableObject {
 
     private var cancellables = Set<AnyCancellable>()
 
-    init(repository: HealthTrackingRepository, goalsStore: GoalsStore, reminders: ReminderScheduler) {
+    init(repository: HealthTrackingRepository, goalsStore: GoalsStore, reminders: ReminderScheduler, healthKit: HealthKitManager) {
         self.repository = repository
         self.goalsStore = goalsStore
         self.reminders = reminders
+        self.healthKit = healthKit
 
         // These are separate ObservableObjects, so their changes don't reach a
         // view observing only this one. Re-publish them.
@@ -29,11 +31,25 @@ final class TrackViewModel: ObservableObject {
         goalsStore.objectWillChange
             .sink { [weak self] _ in self?.objectWillChange.send() }
             .store(in: &cancellables)
+        healthKit.objectWillChange
+            .sink { [weak self] _ in self?.objectWillChange.send() }
+            .store(in: &cancellables)
     }
 
     func load() async {
         await repository.loadFromDisk()
         await reminders.load()
+    }
+
+    // MARK: - HealthKit
+
+    func connectHealthKit() async {
+        guard await healthKit.requestAuthorization() else { return }
+        await healthKit.syncNow()
+    }
+
+    func syncHealthKit() async {
+        await healthKit.syncNow()
     }
 
     // MARK: - Derived state
@@ -57,14 +73,18 @@ final class TrackViewModel: ObservableObject {
 
     var latestWeightKg: Double? { repository.latest(.weight)?.value }
 
-    /// Nil until HealthKit is wired up in IOS-11 — there is no manual entry for
-    /// steps, so nil means "not connected" rather than "zero steps".
+    /// Nil until a HealthKit sync has landed one — there is no manual entry
+    /// for steps, so nil means "no sync yet today" rather than "zero steps".
     var stepsToday: Int? { repository.latestToday(.steps).map { Int($0.value) } }
 
     var stepsProgress: Double {
         guard let steps = stepsToday, goals.stepsPerDay > 0 else { return 0 }
         return min(Double(steps) / Double(goals.stepsPerDay), 1)
     }
+
+    /// Same "nil means no sync yet" rule as `stepsToday` — there's no manual
+    /// entry for heart rate either.
+    var heartRateToday: Int? { repository.latestToday(.heartRate).map { Int($0.value) } }
 
     // MARK: - Logging
 

@@ -31,13 +31,34 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Poshan for Life uses your camera to capture InBody report photos for upload.</string>
 
+	<!-- IOS-11: read-only HealthKit sync (steps, sleep, heart rate, weight).
+	     NSHealthUpdateUsageDescription is included even though this app only
+	     requests read access today — the write-back path (manual Track logs
+	     also writing into Apple Health) is an explicitly optional nice-to-have
+	     noted in the prompt, and adding the string now avoids a resubmission
+	     just to enable it later. -->
+	<key>NSHealthShareUsageDescription</key>
+	<string>Poshan for Life reads your steps, sleep, heart rate, and weight from Apple Health to keep your tracking up to date automatically.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Poshan for Life may write logs you enter manually back to Apple Health so your other health apps can see them.</string>
+
 	<!-- Lets a data-only (silent) push wake the app briefly to process it before
 	     the user ever taps a banner — without this, `didReceiveRemoteNotification`
-	     never fires while the app is backgrounded/suspended. Both Debug and
-	     Release need it; it's not part of the Debug/Release ATS-style split. -->
+	     never fires while the app is backgrounded/suspended. `fetch` is IOS-11's
+	     BGAppRefreshTask HealthKit sync. Both Debug and Release need this array;
+	     it's not part of the Debug/Release ATS-style split. -->
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
+		<string>fetch</string>
+	</array>
+
+	<!-- IOS-11: lets HealthKitBackgroundSync register/submit its BGAppRefreshTask.
+	     Every identifier BGTaskScheduler is asked to register or submit must be
+	     listed here, or both calls fail silently. -->
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.poshanforlife.ios.healthkit-sync</string>
 	</array>
 
 	<!-- Debug only. Fed by DEV_LAN_HOST in Debug.xcconfig; read by BaseURL.swift

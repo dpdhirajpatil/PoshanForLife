@@ -29,7 +29,8 @@ struct PatientTabView: View {
                 TrackView(
                     repository: container.healthTracking,
                     goalsStore: container.goalsStore,
-                    reminders: container.reminderScheduler
+                    reminders: container.reminderScheduler,
+                    healthKit: container.healthKitManager
                 )
             }
             .tabItem { Label("Track", systemImage: "chart.xyaxis.line") }
@@ -85,7 +86,7 @@ struct PatientMoreScreen: View {
             }
 
             NavigationLink {
-                PlaceholderScreen(title: "Profile", showsSignOut: true)
+                ProfileView(healthKit: container.healthKitManager)
             } label: {
                 MenuRow(item: MenuRowItem(title: "Profile", systemImage: "person.crop.circle.fill"))
             }

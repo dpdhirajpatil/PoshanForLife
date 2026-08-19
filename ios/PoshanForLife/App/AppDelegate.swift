@@ -1,3 +1,4 @@
+import BackgroundTasks
 import FirebaseMessaging
 import UIKit
 import UserNotifications
@@ -26,7 +27,16 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         // just has nowhere to go until Firebase is configured (see below).
         application.registerForRemoteNotifications()
 
+        // Must happen before this method returns — BGTaskScheduler requires
+        // every launch handler registered by then, so it can't wait for
+        // AppContainer to exist. See HealthKitBackgroundSync's doc comment.
+        HealthKitBackgroundSync.register()
+
         return true
+    }
+
+    func applicationDidEnterBackground(_ application: UIApplication) {
+        HealthKitBackgroundSync.scheduleNext()
     }
 
     func application(

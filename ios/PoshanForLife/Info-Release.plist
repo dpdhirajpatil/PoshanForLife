@@ -28,9 +28,21 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Poshan for Life uses your camera to capture InBody report photos for upload.</string>
 
+	<!-- IOS-11: read-only HealthKit sync (steps, sleep, heart rate, weight). -->
+	<key>NSHealthShareUsageDescription</key>
+	<string>Poshan for Life reads your steps, sleep, heart rate, and weight from Apple Health to keep your tracking up to date automatically.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Poshan for Life may write logs you enter manually back to Apple Health so your other health apps can see them.</string>
+
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
+		<string>fetch</string>
+	</array>
+
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.poshanforlife.ios.healthkit-sync</string>
 	</array>
 
 	<!-- Intentionally no NSAppTransportSecurity key: ATS applies in full, and

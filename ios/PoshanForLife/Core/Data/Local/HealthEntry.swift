@@ -10,14 +10,16 @@ enum HealthMetricType: String, Codable, CaseIterable {
     case nutrition
     case sleep
     case weight
-    /// Read-only, written by HealthKit sync in IOS-11 — never entered by hand.
+    /// Read-only, written by HealthKit sync (IOS-11) — never entered by hand.
     case steps
+    /// Read-only, written by HealthKit sync (IOS-11) — same shape as `.steps`.
+    case heartRate
 
     /// Whether the backend has somewhere to put this.
     var isSyncable: Bool {
         switch self {
         case .weight: return true
-        case .water, .nutrition, .sleep, .steps: return false
+        case .water, .nutrition, .sleep, .steps, .heartRate: return false
         }
     }
 }

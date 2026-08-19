@@ -9,12 +9,13 @@ struct TrackView: View {
     @Environment(\.appTheme) private var theme
     @FocusState private var focusedField: Field?
 
-    init(repository: HealthTrackingRepository, goalsStore: GoalsStore, reminders: ReminderScheduler) {
+    init(repository: HealthTrackingRepository, goalsStore: GoalsStore, reminders: ReminderScheduler, healthKit: HealthKitManager) {
         _viewModel = StateObject(
             wrappedValue: TrackViewModel(
                 repository: repository,
                 goalsStore: goalsStore,
-                reminders: reminders
+                reminders: reminders,
+                healthKit: healthKit
             )
         )
     }
@@ -26,7 +27,9 @@ struct TrackView: View {
                 NutritionCard(viewModel: viewModel, focusedField: $focusedField)
                 SleepCard(viewModel: viewModel)
                 WeightCard(viewModel: viewModel, focusedField: $focusedField)
-                StepsCard(viewModel: viewModel)
+                if HealthKitManager.isAvailable {
+                    AppleHealthCard(viewModel: viewModel)
+                }
                 RemindersCard(scheduler: viewModel.reminders)
             }
             .padding(16)
@@ -286,44 +289,110 @@ private struct WeightCard: View {
     }
 }
 
-// MARK: - Steps
+// MARK: - Apple Health (steps, heart rate)
 
-private struct StepsCard: View {
+/// Steps and heart rate are both read-only — HealthKit is their only source,
+/// so unlike Water/Nutrition/Weight there's no manual-entry half to this
+/// card, just a connect step and whatever the last sync brought in.
+private struct AppleHealthCard: View {
     @ObservedObject var viewModel: TrackViewModel
     @Environment(\.appTheme) private var theme
 
     var body: some View {
-        TrackCard(title: "Steps") {
-            if let steps = viewModel.stepsToday {
-                HStack(spacing: 16) {
-                    CircularProgressRing(progress: viewModel.stepsProgress) {
-                        Text("\(steps)")
-                            .font(.displayFont(.heavy, size: 18))
-                            .foregroundStyle(theme.onSurface)
+        TrackCard(title: "Apple Health") {
+            switch viewModel.healthKit.connectionStatus {
+            case .unavailable:
+                EmptyView()
+            case .notConnected:
+                notConnected
+            case .connected:
+                connected
+            }
+        }
+    }
+
+    private var notConnected: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Connect Apple Health to bring in steps and heart rate automatically.")
+                .font(.bodyFont(size: 14))
+                .foregroundStyle(theme.onSurface.opacity(0.7))
+            Button {
+                Task { await viewModel.connectHealthKit() }
+            } label: {
+                Text("Connect Apple Health")
+                    .font(.displayFont(.semibold, size: 14))
+                    .foregroundStyle(theme.onPrimary)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(theme.primary, in: Capsule())
+            }
+            .buttonStyle(.plain)
+            if let error = viewModel.healthKit.lastSyncError {
+                Text(error)
+                    .font(.bodyFont(size: 12))
+                    .foregroundStyle(theme.error)
+            }
+        }
+    }
+
+    private var connected: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 24) {
+                if let steps = viewModel.stepsToday {
+                    HStack(spacing: 12) {
+                        CircularProgressRing(progress: viewModel.stepsProgress) {
+                            Text("\(steps)")
+                                .font(.displayFont(.heavy, size: 16))
+                                .foregroundStyle(theme.onSurface)
+                        }
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Steps")
+                                .font(.bodyFont(size: 12))
+                                .foregroundStyle(theme.onSurface.opacity(0.6))
+                            Text("Goal \(viewModel.goals.stepsPerDay)")
+                                .font(.bodyFont(size: 11))
+                                .foregroundStyle(theme.onSurface.opacity(0.5))
+                        }
                     }
-                    Text("Goal \(viewModel.goals.stepsPerDay) steps")
-                        .font(.bodyFont(size: 13))
-                        .foregroundStyle(theme.onSurface.opacity(0.7))
                 }
-            } else {
-                // Read-only metric: there's no manual entry to offer, so the
-                // empty state has to explain itself rather than look broken.
-                Text("Steps come from Apple Health. Connect it to see them here.")
-                    .font(.bodyFont(size: 14))
-                    .foregroundStyle(theme.onSurface.opacity(0.7))
-                Button {} label: {
-                    Text("Connect Health")
-                        .font(.displayFont(.semibold, size: 14))
+                if let heartRate = viewModel.heartRateToday {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("\(heartRate) bpm")
+                            .font(.displayFont(.heavy, size: 16))
+                            .foregroundStyle(theme.onSurface)
+                        Text("Avg heart rate")
+                            .font(.bodyFont(size: 12))
+                            .foregroundStyle(theme.onSurface.opacity(0.6))
+                    }
+                }
+            }
+
+            if viewModel.stepsToday == nil && viewModel.heartRateToday == nil {
+                Text("Connected — no data yet today.")
+                    .font(.bodyFont(size: 13))
+                    .foregroundStyle(theme.onSurface.opacity(0.6))
+            }
+
+            HStack {
+                if let lastSyncedAt = viewModel.healthKit.lastSyncedAt {
+                    (Text("Last synced ") + Text(lastSyncedAt, style: .relative) + Text(" ago"))
+                        .font(.bodyFont(size: 12))
                         .foregroundStyle(theme.onSurface.opacity(0.5))
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 10)
-                        .overlay(Capsule().stroke(theme.onSurface.opacity(0.25), lineWidth: 1))
+                }
+                Spacer()
+                Button {
+                    Task { await viewModel.syncHealthKit() }
+                } label: {
+                    if viewModel.healthKit.isSyncing {
+                        ProgressView()
+                    } else {
+                        Text("Sync now")
+                            .font(.displayFont(.semibold, size: 13))
+                            .foregroundStyle(theme.primary)
+                    }
                 }
                 .buttonStyle(.plain)
-                .disabled(true)
-                Text("Arrives in IOS-11.")
-                    .font(.bodyFont(size: 12))
-                    .foregroundStyle(theme.onSurface.opacity(0.5))
+                .disabled(viewModel.healthKit.isSyncing)
             }
         }
     }

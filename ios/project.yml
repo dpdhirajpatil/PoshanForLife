@@ -58,6 +58,10 @@ targets:
       path: PoshanForLife/PoshanForLife.entitlements
       properties:
         aps-environment: $(APS_ENVIRONMENT)
+        # IOS-11: read-only HealthKit sync. Xcode's "HealthKit" capability
+        # toggle in Signing & Capabilities is UI sugar for exactly this key —
+        # setting it here is equivalent and survives `xcodegen generate`.
+        com.apple.developer.healthkit: true
     dependencies:
       - package: Firebase
         product: FirebaseMessaging
