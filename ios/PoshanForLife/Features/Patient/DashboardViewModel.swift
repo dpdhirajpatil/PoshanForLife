@@ -58,35 +58,24 @@ final class DashboardViewModel: ObservableObject {
             return
         }
 
+        // The three requests still run concurrently (`async let`, same as a
+        // task group), but the results are applied in ONE `withAnimation`
+        // block once all three land. Animating each card the moment its own
+        // request finished (the previous approach) produced three separate,
+        // independently-timed resizes — cards collapsing/growing one after
+        // another reads as the whole screen jumping up and down repeatedly.
+        // Applying them together turns that into a single, one-time settle.
         let patientId = user.id
-        await withTaskGroup(of: Void.self) { group in
-            group.addTask { [weak self] in await self?.loadHealthRecord(patientId) }
-            group.addTask { [weak self] in await self?.loadProgramme(patientId) }
-            group.addTask { [weak self] in await self?.loadInvoices(patientId) }
+        async let healthRecordResult = repository.latestHealthRecord(patientId: patientId)
+        async let programmeResult = repository.activeProgramme(patientId: patientId)
+        async let invoicesResult = repository.unpaidInvoices(patientId: patientId)
+
+        let (health, prog, inv) = await (healthRecordResult, programmeResult, invoicesResult)
+        withAnimation(.easeInOut(duration: 0.25)) {
+            healthRecord = health.cardState
+            programme = prog.cardState
+            invoices = inv.cardState
         }
-    }
-
-    // Each card animates its own transition rather than the caller batching
-    // them into one `withAnimation` — these three land at independently
-    // unpredictable times (three separate network calls), and a card that
-    // collapses to nothing (no active programme, no outstanding balance)
-    // needs to resize smoothly wherever it happens to land in that order.
-    // Without this, each collapse/grow snaps instantly, and three of them
-    // arriving in quick succession reads as the whole screen jumping around.
-
-    private func loadHealthRecord(_ patientId: String) async {
-        let result = (await repository.latestHealthRecord(patientId: patientId)).cardState
-        withAnimation(.easeInOut(duration: 0.25)) { healthRecord = result }
-    }
-
-    private func loadProgramme(_ patientId: String) async {
-        let result = (await repository.activeProgramme(patientId: patientId)).cardState
-        withAnimation(.easeInOut(duration: 0.25)) { programme = result }
-    }
-
-    private func loadInvoices(_ patientId: String) async {
-        let result = (await repository.unpaidInvoices(patientId: patientId)).cardState
-        withAnimation(.easeInOut(duration: 0.25)) { invoices = result }
     }
 
 }

@@ -46,10 +46,16 @@ struct DashboardView: View {
         }
         .refreshable { await viewModel.load() }
         .task {
-            await viewModel.load()
+            // Concurrent, not sequential: awaiting these one after another
+            // meant the reminders card settled visibly later than the other
+            // three, adding a fourth, separately-timed layout jump on top of
+            // the cards' own. Loading them together lets both settle in the
+            // same pass.
+            async let cards: Void = viewModel.load()
             // Reminders live on disk, not the network — the dashboard needs
             // them loaded even if the user hasn't opened Track yet.
-            await reminders.load()
+            async let upcoming: Void = reminders.load()
+            _ = await (cards, upcoming)
         }
         .navigationDestination(for: DashboardRoute.self) { route in
             switch route {
