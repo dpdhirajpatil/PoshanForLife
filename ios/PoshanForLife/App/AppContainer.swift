@@ -29,6 +29,7 @@ final class AppContainer: ObservableObject {
     let appointmentsRepository: AppointmentsRepository
     let notificationsRepository: NotificationsRepository
     let userRepository: UserRepository
+    let badgesRepository: BadgesRepository
 
     /// The two things this container reaches outside its own constructor
     /// graph for — see `PushCoordinator`'s doc comment for why `AppDelegate`
@@ -60,6 +61,7 @@ final class AppContainer: ObservableObject {
         self.appointmentsRepository = AppointmentsRepositoryImpl(client: client)
         self.notificationsRepository = NotificationsRepositoryImpl(client: client)
         self.userRepository = UserRepositoryImpl(client: client)
+        self.badgesRepository = BadgesRepositoryImpl(client: client)
         self.healthTracking = HealthTrackingRepository(client: client)
         self.goalsStore = GoalsStore()
         self.reminderScheduler = ReminderScheduler()

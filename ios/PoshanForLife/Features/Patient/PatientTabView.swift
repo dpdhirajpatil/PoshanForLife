@@ -9,8 +9,8 @@ import SwiftUI
 /// and the real More screen into an unthemed system list two levels deep.
 ///
 /// So five is a hard ceiling, and the fifth is ours: Profile moves inside it,
-/// alongside Appointments. Same shape `PractitionerTabView` already uses, and
-/// where Badges and Products go when they arrive — never a sixth tab.
+/// alongside Appointments and Badges. Same shape `PractitionerTabView`
+/// already uses, and where Products goes when it arrives — never a sixth tab.
 struct PatientTabView: View {
     @Environment(\.appTheme) private var theme
     @EnvironmentObject private var container: AppContainer
@@ -69,7 +69,7 @@ struct PatientTabView: View {
 
 /// The patient's overflow destinations, built explicitly so they stay on-theme
 /// — see this file's header for why SwiftUI's automatic version isn't usable.
-/// Badges and Products join this list when they arrive.
+/// Products joins this list when it arrives.
 struct PatientMoreScreen: View {
     @Environment(\.appTheme) private var theme
     @EnvironmentObject private var container: AppContainer
@@ -83,6 +83,12 @@ struct PatientMoreScreen: View {
                 )
             } label: {
                 MenuRow(item: MenuRowItem(title: "Appointments", systemImage: "calendar"))
+            }
+
+            NavigationLink {
+                BadgesView(repository: container.badgesRepository, profile: container.dashboardRepository)
+            } label: {
+                MenuRow(item: MenuRowItem(title: "Badges", systemImage: "trophy.fill"))
             }
 
             NavigationLink {
