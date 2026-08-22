@@ -17,6 +17,7 @@ struct AppointmentsListView: View {
     @State private var pendingCancel: Appointment?
     @State private var reschedulingFrom: Appointment?
     @State private var isBooking = false
+    @State private var joiningCall: Appointment?
 
     init(role: AppointmentsRole, repository: AppointmentsRepository) {
         self.repository = repository
@@ -61,6 +62,12 @@ struct AppointmentsListView: View {
                         Task { await viewModel.reschedule(appointment, to: newDate) }
                     }
                 }
+            }
+            .fullScreenCover(item: $joiningCall) { appointment in
+                LiveSessionFlow(
+                    otherPartyName: counterpartName(for: appointment),
+                    onDismiss: { joiningCall = nil }
+                )
             }
             // Confirmed before it happens: cancelling frees the slot for
             // someone else, so an accidental swipe shouldn't do it silently.
@@ -144,10 +151,18 @@ struct AppointmentsListView: View {
         Group {
             if viewModel.role == .practitioner {
                 NavigationLink(value: appointment) {
-                    AppointmentRow(appointment: appointment, role: viewModel.role)
+                    AppointmentRow(
+                        appointment: appointment,
+                        role: viewModel.role,
+                        onJoinCall: { joiningCall = appointment }
+                    )
                 }
             } else {
-                AppointmentRow(appointment: appointment, role: viewModel.role)
+                AppointmentRow(
+                    appointment: appointment,
+                    role: viewModel.role,
+                    onJoinCall: { joiningCall = appointment }
+                )
             }
         }
         .listRowBackground(theme.surface)
@@ -168,6 +183,13 @@ struct AppointmentsListView: View {
             }
         }
     }
+
+    private func counterpartName(for appointment: Appointment) -> String {
+        switch viewModel.role {
+        case .patient: return appointment.practitioner?.name ?? "your practitioner"
+        case .practitioner: return appointment.patient?.name ?? "the patient"
+        }
+    }
 }
 
 // MARK: - Row
@@ -175,40 +197,63 @@ struct AppointmentsListView: View {
 private struct AppointmentRow: View {
     let appointment: Appointment
     let role: AppointmentsRole
+    /// Non-nil so both roles can join — `.buttonStyle(.borderless)` below is
+    /// what lets this coexist with the practitioner row's enclosing
+    /// `NavigationLink` without the two fighting over the tap.
+    let onJoinCall: () -> Void
 
     @Environment(\.appTheme) private var theme
 
     var body: some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 3) {
-                HStack(spacing: 6) {
-                    if let date = appointment.scheduledAt {
-                        Text(AppointmentTime.time(date))
-                            .font(.displayFont(.semibold, size: 16))
-                            .foregroundStyle(theme.onSurface)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 6) {
+                        if let date = appointment.scheduledAt {
+                            Text(AppointmentTime.time(date))
+                                .font(.displayFont(.semibold, size: 16))
+                                .foregroundStyle(theme.onSurface)
+                        }
+                        if appointment.isVideo {
+                            Image(systemName: "video.fill")
+                                .font(.system(size: 11))
+                                .foregroundStyle(theme.onSurface.opacity(0.6))
+                                .accessibilityLabel("Video call")
+                        }
                     }
-                    if appointment.isVideo {
-                        Image(systemName: "video.fill")
-                            .font(.system(size: 11))
-                            .foregroundStyle(theme.onSurface.opacity(0.6))
-                            .accessibilityLabel("Video call")
-                    }
+
+                    // Each side cares about the other party's name.
+                    Text(counterpartName)
+                        .font(.bodyFont(size: 13))
+                        .foregroundStyle(theme.onSurface.opacity(0.7))
+
+                    Text("\(appointment.durationMinutes) min")
+                        .font(.bodyFont(size: 12))
+                        .foregroundStyle(theme.onSurface.opacity(0.55))
                 }
 
-                // Each side cares about the other party's name.
-                Text(counterpartName)
-                    .font(.bodyFont(size: 13))
-                    .foregroundStyle(theme.onSurface.opacity(0.7))
+                Spacer(minLength: 8)
 
-                Text("\(appointment.durationMinutes) min")
-                    .font(.bodyFont(size: 12))
-                    .foregroundStyle(theme.onSurface.opacity(0.55))
+                if let status = appointment.parsedStatus, status != .scheduled {
+                    AppointmentStatusBadge(status: status)
+                }
             }
 
-            Spacer(minLength: 8)
-
-            if let status = appointment.parsedStatus, status != .scheduled {
-                AppointmentStatusBadge(status: status)
+            if appointment.isVideo, appointment.parsedStatus == .scheduled {
+                Button(action: onJoinCall) {
+                    Label("Join call", systemImage: "video.fill")
+                        .font(.displayFont(.semibold, size: 13))
+                        .foregroundStyle(appointment.canJoinVideoCall() ? theme.onPrimary : theme.onSurface.opacity(0.4))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            appointment.canJoinVideoCall() ? theme.primary : theme.onSurface.opacity(0.08),
+                            in: Capsule()
+                        )
+                }
+                .buttonStyle(.borderless)
+                .disabled(!appointment.canJoinVideoCall())
+                .accessibilityIdentifier("join-call")
             }
         }
         .padding(.vertical, 4)

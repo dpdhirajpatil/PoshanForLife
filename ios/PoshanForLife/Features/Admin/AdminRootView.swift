@@ -41,7 +41,11 @@ struct AdminRootView: View {
                 }
             }
             .navigationDestination(for: MenuRowItem.self) { item in
-                PlaceholderScreen(title: item.title, showsSignOut: item.title == "Settings")
+                if item.title == "Leads" {
+                    LeadListView(repository: container.leadsRepository)
+                } else {
+                    PlaceholderScreen(title: item.title, showsSignOut: item.title == "Settings")
+                }
             }
         }
         .tint(theme.onBackground)

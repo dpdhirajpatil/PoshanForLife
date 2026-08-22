@@ -24,9 +24,13 @@
 	<dict/>
 
 	<!-- Required by App Store review for any camera-access request (IOS-10's
-	     InBody report capture). -->
+	     InBody report capture, IOS-13's pre-call self-preview). -->
 	<key>NSCameraUsageDescription</key>
-	<string>Poshan for Life uses your camera to capture InBody report photos for upload.</string>
+	<string>Poshan for Life uses your camera to capture InBody report photos and for video consultations.</string>
+
+	<!-- IOS-13: microphone access for the pre-call screen. -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Poshan for Life uses your microphone during video consultations.</string>
 
 	<!-- IOS-11: read-only HealthKit sync (steps, sleep, heart rate, weight). -->
 	<key>NSHealthShareUsageDescription</key>

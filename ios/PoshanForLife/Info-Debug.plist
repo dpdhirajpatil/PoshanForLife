@@ -24,12 +24,19 @@
 	<dict/>
 
 	<!-- Required by App Store review for any camera-access request (IOS-10's
-	     InBody report capture). Same string in both configs, so it lives in
-	     each plist directly rather than as an INFOPLIST_KEY_* xcconfig
-	     setting — this target ships hand-written plists, not a generated
-	     one, so INFOPLIST_KEY_* build settings never get merged in. -->
+	     InBody report capture, IOS-13's pre-call self-preview). Same string
+	     in both configs, so it lives in each plist directly rather than as
+	     an INFOPLIST_KEY_* xcconfig setting — this target ships hand-written
+	     plists, not a generated one, so INFOPLIST_KEY_* build settings never
+	     get merged in. -->
 	<key>NSCameraUsageDescription</key>
-	<string>Poshan for Life uses your camera to capture InBody report photos for upload.</string>
+	<string>Poshan for Life uses your camera to capture InBody report photos and for video consultations.</string>
+
+	<!-- IOS-13: microphone access for the pre-call screen — the scaffold
+	     around a video call, not a working one yet, but the permission ask
+	     is real. -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Poshan for Life uses your microphone during video consultations.</string>
 
 	<!-- IOS-11: read-only HealthKit sync (steps, sleep, heart rate, weight).
 	     NSHealthUpdateUsageDescription is included even though this app only

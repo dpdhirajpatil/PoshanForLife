@@ -48,6 +48,20 @@ struct Appointment: Decodable, Identifiable, Equatable, Hashable {
     /// scheduled (verified against the backend), so offering "Reschedule" on a
     /// cancelled row would quietly un-cancel it.
     var isPatientEditable: Bool { parsedStatus == .scheduled && !isPast }
+
+    /// IOS-13's join window: a video appointment's "Join call" is live from 5
+    /// minutes before its scheduled time until 30 minutes after. Kept in one
+    /// place so the patient's row and the practitioner's agree exactly — a
+    /// call one side can join and the other can't is the obvious failure mode
+    /// here. Mirrors Android's `canJoinVideoCall`.
+    private static let joinOpensBefore: TimeInterval = 5 * 60
+    private static let joinClosesAfter: TimeInterval = 30 * 60
+
+    func canJoinVideoCall(now: Date = Date()) -> Bool {
+        guard isVideo, parsedStatus == .scheduled, let startsAt = scheduledAt else { return false }
+        return now >= startsAt.addingTimeInterval(-Self.joinOpensBefore)
+            && now <= startsAt.addingTimeInterval(Self.joinClosesAfter)
+    }
 }
 
 /// One bookable slot. `time` is a wall-clock time **in UTC**, serialised as
