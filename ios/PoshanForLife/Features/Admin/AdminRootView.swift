@@ -43,6 +43,8 @@ struct AdminRootView: View {
             .navigationDestination(for: MenuRowItem.self) { item in
                 if item.title == "Leads" {
                     LeadListView(repository: container.leadsRepository)
+                } else if item.title == "Products" {
+                    CatalogueView(repository: container.catalogueRepository, isAdmin: true)
                 } else {
                     PlaceholderScreen(title: item.title, showsSignOut: item.title == "Settings")
                 }

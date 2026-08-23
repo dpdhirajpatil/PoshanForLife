@@ -91,6 +91,8 @@ struct PractitionerMoreScreen: View {
         .navigationDestination(for: MenuRowItem.self) { item in
             if item.title == "Settings" {
                 SettingsView(themePreferenceStore: container.themePreferenceStore)
+            } else if item.title == "Products" {
+                CatalogueView(repository: container.catalogueRepository, isAdmin: false)
             } else {
                 PlaceholderScreen(title: item.title)
             }

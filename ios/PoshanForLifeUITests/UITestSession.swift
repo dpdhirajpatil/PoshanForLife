@@ -23,17 +23,23 @@ extension XCTestCase {
         dismissNotificationRationaleIfPresent(app)
 
         let more = app.tabBars.buttons["More"]
+        // Admin has no tab bar at all — `AdminRootView` is a plain
+        // `NavigationStack` over a settings-style list, so "Settings" (with
+        // sign-out) sits directly on the root screen instead of behind More.
+        let adminRoot = app.navigationBars["Admin"]
         let deadline = Date().addingTimeInterval(25)
 
         while Date() < deadline {
-            if app.textFields.firstMatch.exists && !more.exists { return }  // already at login
-            if more.exists { break }
+            if app.textFields.firstMatch.exists && !more.exists && !adminRoot.exists { return }  // already at login
+            if more.exists || adminRoot.exists { break }
             usleep(300_000)
         }
-        guard more.exists else { return }
-        more.tap()
+        guard more.exists || adminRoot.exists else { return }
+        if more.exists {
+            more.tap()
+        }
 
-        // Patient keeps sign-out on Profile; practitioner on Settings.
+        // Patient keeps sign-out on Profile; practitioner and admin on Settings.
         for label in ["Profile", "Settings"] {
             let row = app.staticTexts[label]
             if row.waitForExistence(timeout: 3) {

@@ -22,6 +22,18 @@ enum ServiceType: String, Decodable, CaseIterable {
         case .challenge: return "flame.fill"
         }
     }
+
+    /// The plural URL segment (`CatalogueItemType.pathSegment` on the
+    /// backend) — distinct from `rawValue`, which is the singular wire label
+    /// used everywhere a service is *referenced* (e.g. `serviceType` on an
+    /// assignment or lead-conversion request).
+    var pathSegment: String {
+        switch self {
+        case .programme: return "programmes"
+        case .session: return "sessions"
+        case .challenge: return "challenges"
+        }
+    }
 }
 
 /// Assignment lifecycle — `PatientProgrammeStatus` on the wire, lowercase.

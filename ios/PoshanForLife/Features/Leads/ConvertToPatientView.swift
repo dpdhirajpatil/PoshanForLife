@@ -30,9 +30,7 @@ struct ConvertToPatientView: View {
     @State private var assignService = false
     @State private var serviceType: ServiceType = .programme
     @State private var selectedItem: CatalogueItem?
-    @State private var catalogueSearch = ""
-    @State private var catalogueResults: [CatalogueItem] = []
-    @State private var loadingCatalogue = false
+    @State private var showCataloguePicker = false
     @State private var price: String = ""
     @State private var startDate = Date()
 
@@ -98,20 +96,23 @@ struct ConvertToPatientView: View {
                     .accessibilityIdentifier("confirm-convert")
                 }
             }
-            .task(id: serviceType) {
-                if assignService { await searchCatalogue() }
-            }
-            .onChange(of: assignService) { isOn in
-                if isOn { Task { await searchCatalogue() } }
-            }
-            .onChange(of: catalogueSearch) { _ in
-                Task { if assignService { await searchCatalogue() } }
+            .sheet(isPresented: $showCataloguePicker) {
+                NavigationStack {
+                    CatalogueView(repository: container.catalogueRepository, initialType: serviceType) { item in
+                        selectedItem = item
+                        price = item.priceInr.map { String(format: "%.0f", $0) } ?? ""
+                    }
+                }
             }
         }
     }
 
     // MARK: - Service assignment
 
+    /// Picking a service delegates entirely to IOS-15's `CatalogueView` in
+    /// selection mode rather than this screen rolling its own search/list —
+    /// the "price"/"start date" fields below stay local since they're
+    /// assignment-specific, not catalogue-item fields.
     @ViewBuilder
     private var assignmentSection: some View {
         Section("Service") {
@@ -121,6 +122,7 @@ struct ConvertToPatientView: View {
                 }
             }
             .pickerStyle(.segmented)
+            .onChange(of: serviceType) { _ in selectedItem = nil }
 
             if let selectedItem {
                 HStack {
@@ -135,57 +137,23 @@ struct ConvertToPatientView: View {
                         }
                     }
                     Spacer()
-                    Button("Change") {
-                        self.selectedItem = nil
-                        Task { await searchCatalogue() }
-                    }
-                    .font(.bodyFont(size: 13))
-                    .foregroundStyle(theme.primary)
+                    Button("Change") { showCataloguePicker = true }
+                        .font(.bodyFont(size: 13))
+                        .foregroundStyle(theme.primary)
                 }
 
                 TextField("Price (₹)", text: $price)
                     .keyboardType(.decimalPad)
                 DatePicker("Start date", selection: $startDate, displayedComponents: .date)
             } else {
-                TextField("Search \(serviceType.label.lowercased())s", text: $catalogueSearch)
-
-                if loadingCatalogue {
-                    ProgressView().frame(maxWidth: .infinity)
-                } else if catalogueResults.isEmpty {
-                    Text("No published \(serviceType.label.lowercased())s found")
-                        .font(.bodyFont(size: 13))
-                        .foregroundStyle(theme.onSurface.opacity(0.6))
-                } else {
-                    ForEach(catalogueResults) { item in
-                        Button {
-                            selectedItem = item
-                            price = item.priceInr.map { String(format: "%.0f", $0) } ?? ""
-                        } label: {
-                            HStack {
-                                Text(item.name)
-                                    .foregroundStyle(theme.onSurface)
-                                Spacer()
-                                if let priceInr = item.priceInr {
-                                    Text(CurrencyFormatter.inr(priceInr))
-                                        .font(.bodyFont(size: 13))
-                                        .foregroundStyle(theme.onSurface.opacity(0.6))
-                                }
-                            }
-                        }
-                    }
+                Button {
+                    showCataloguePicker = true
+                } label: {
+                    Label("Choose a \(serviceType.label.lowercased())", systemImage: "magnifyingglass")
                 }
+                .accessibilityIdentifier("choose-catalogue-item")
             }
         }
-    }
-
-    private func searchCatalogue() async {
-        loadingCatalogue = true
-        let query = catalogueSearch.trimmingCharacters(in: .whitespaces)
-        let result = await container.catalogueRepository.list(type: serviceType, search: query.isEmpty ? nil : query)
-        if case .success(let items) = result {
-            catalogueResults = items
-        }
-        loadingCatalogue = false
     }
 
     // MARK: - Submit
