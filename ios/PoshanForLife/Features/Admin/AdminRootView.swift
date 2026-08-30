@@ -18,6 +18,7 @@ struct AdminRootView: View {
         MenuRowItem(title: "Orders", systemImage: "shippingbox.fill"),
         MenuRowItem(title: "Transactions", systemImage: "creditcard.fill"),
         MenuRowItem(title: "Products", systemImage: "bag.fill"),
+        MenuRowItem(title: "Invoices", systemImage: "doc.text.fill"),
         MenuRowItem(title: "Settings", systemImage: "gearshape.fill"),
     ]
 
@@ -45,6 +46,12 @@ struct AdminRootView: View {
                     LeadListView(repository: container.leadsRepository)
                 } else if item.title == "Products" {
                     CatalogueView(repository: container.catalogueRepository, isAdmin: true)
+                } else if item.title == "Invoices" {
+                    DocumentsListView(
+                        repository: container.documentsRepository,
+                        patientsRepository: container.patientsRepository,
+                        leadsRepository: container.leadsRepository
+                    )
                 } else {
                     PlaceholderScreen(title: item.title, showsSignOut: item.title == "Settings")
                 }

@@ -75,6 +75,7 @@ struct PractitionerMoreScreen: View {
     private static let items: [MenuRowItem] = [
         MenuRowItem(title: "Orders", systemImage: "shippingbox.fill"),
         MenuRowItem(title: "Products", systemImage: "bag.fill"),
+        MenuRowItem(title: "Invoices", systemImage: "doc.text.fill"),
         MenuRowItem(title: "Settings", systemImage: "gearshape.fill"),
     ]
 
@@ -93,6 +94,12 @@ struct PractitionerMoreScreen: View {
                 SettingsView(themePreferenceStore: container.themePreferenceStore)
             } else if item.title == "Products" {
                 CatalogueView(repository: container.catalogueRepository, isAdmin: false)
+            } else if item.title == "Invoices" {
+                DocumentsListView(
+                    repository: container.documentsRepository,
+                    patientsRepository: container.patientsRepository,
+                    leadsRepository: container.leadsRepository
+                )
             } else {
                 PlaceholderScreen(title: item.title)
             }

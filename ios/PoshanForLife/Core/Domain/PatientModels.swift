@@ -190,23 +190,24 @@ struct PatientProgramme: Decodable, Equatable, Identifiable, Hashable {
     var displayName: String { catalogueItem?.name ?? "Service" }
 }
 
-struct DocumentPartyRef: Decodable, Equatable {
+struct DocumentPartyRef: Decodable, Equatable, Hashable {
     let id: String
     let name: String
 }
 
 /// `status` is the lowercase wire enum: "draft" / "sent" / "paid".
-struct DocumentListItem: Decodable, Equatable, Identifiable {
+struct DocumentListItem: Decodable, Equatable, Identifiable, Hashable {
     let id: String
     let documentType: String
     let documentNumber: String
     let status: String
+    let lead: DocumentPartyRef?
     let patient: DocumentPartyRef?
     let total: Double
     let createdAt: String?
 
     private enum CodingKeys: String, CodingKey {
-        case id, documentType, documentNumber, status, patient, total, createdAt
+        case id, documentType, documentNumber, status, lead, patient, total, createdAt
     }
 
     init(from decoder: Decoder) throws {
@@ -215,6 +216,7 @@ struct DocumentListItem: Decodable, Equatable, Identifiable {
         documentType = try c.decodeIfPresent(String.self, forKey: .documentType) ?? "invoice"
         documentNumber = try c.decode(String.self, forKey: .documentNumber)
         status = try c.decode(String.self, forKey: .status)
+        lead = try c.decodeIfPresent(DocumentPartyRef.self, forKey: .lead)
         patient = try c.decodeIfPresent(DocumentPartyRef.self, forKey: .patient)
         total = try c.decode(Double.self, forKey: .total)
         createdAt = try c.decodeIfPresent(String.self, forKey: .createdAt)
@@ -224,4 +226,9 @@ struct DocumentListItem: Decodable, Equatable, Identifiable {
     /// "pending" status on the backend — the enum is draft/sent/paid, and an
     /// unpaid issued invoice is `sent`.
     static let unpaidStatus = "sent"
+
+    var parsedStatus: DocumentStatus? { DocumentStatus(rawValue: status) }
+
+    /// A document points at exactly one of `lead`/`patient` — whichever it is.
+    var partyName: String { patient?.name ?? lead?.name ?? "—" }
 }

@@ -547,7 +547,17 @@
       "Bash(docker network *)",
       "Bash(dig +short aws-1-ap-south-1.pooler.supabase.com A)",
       "Bash(dig +short aws-1-ap-south-1.pooler.supabase.com AAAA)",
-      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" -X POST http://localhost:8080/api/v1/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"admin@poshanforlife.com\",\"password\":\"Admin@123\"}')"
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" -X POST http://localhost:8080/api/v1/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"admin@poshanforlife.com\",\"password\":\"Admin@123\"}')",
+      "Bash(xcodebuild -project PoshanForLife.xcodeproj -scheme PoshanForLife -destination 'platform=iOS Simulator,name=iPhone 16' -configuration Debug build)",
+      "Bash(xcodebuild -project PoshanForLife.xcodeproj -scheme PoshanForLife -destination 'id=00DBFC94-232C-41AB-8F78-A427558A3F7C' -configuration Debug build)",
+      "Bash(curl -s -o /dev/null -w \"backend HTTP %{http_code}\\\\n\" http://localhost:8080/api/v1/auth/login -X POST -H \"Content-Type: application/json\" -d '{\"email\":\"admin@poshanforlife.com\",\"password\":\"Admin@123\"}')",
+      "Bash(xcodebuild -project PoshanForLife.xcodeproj -scheme PoshanForLife -destination 'id=00DBFC94-232C-41AB-8F78-A427558A3F7C' -only-testing:PoshanForLifeUITests/DocumentsUITests test)",
+      "Bash(xcodebuild -project /Users/dhiraj/Documents/Applications/Poshan/PoshanForLife/ios/PoshanForLife.xcodeproj -scheme PoshanForLife -destination 'id=00DBFC94-232C-41AB-8F78-A427558A3F7C' -only-testing:PoshanForLifeUITests/DocumentsUITests/testAdminCreateEstimateAndManageStatus test)",
+      "Bash(xcodebuild -project PoshanForLife.xcodeproj -scheme PoshanForLife -destination 'id=00DBFC94-232C-41AB-8F78-A427558A3F7C' -only-testing:PoshanForLifeUITests/DocumentsUITests/testAdminCreateEstimateAndManageStatus test)",
+      "Bash(xcodebuild -project /Users/dhiraj/Documents/Applications/Poshan/PoshanForLife/ios/PoshanForLife.xcodeproj -scheme PoshanForLife -destination 'id=00DBFC94-232C-41AB-8F78-A427558A3F7C' -only-testing:PoshanForLifeUITests/DocumentsUITests test)",
+      "Bash(xcodebuild -project /Users/dhiraj/Documents/Applications/Poshan/PoshanForLife/ios/PoshanForLife.xcodeproj -scheme PoshanForLife -destination 'id=00DBFC94-232C-41AB-8F78-A427558A3F7C' -only-testing:PoshanForLifeUITests/CatalogueUITests -only-testing:PoshanForLifeUITests/DashboardUITests test)",
+      "Bash(xcodebuild -project /Users/dhiraj/Documents/Applications/Poshan/PoshanForLife/ios/PoshanForLife.xcodeproj -scheme PoshanForLife -destination 'id=00DBFC94-232C-41AB-8F78-A427558A3F7C' -only-testing:PoshanForLifeUITests/CatalogueUITests/testConvertToPatientUsesCataloguePicker test)",
+      "Bash(xcodebuild -project /Users/dhiraj/Documents/Applications/Poshan/PoshanForLife/ios/PoshanForLife.xcodeproj -scheme PoshanForLife -destination 'id=00DBFC94-232C-41AB-8F78-A427558A3F7C' -only-testing:PoshanForLifeUITests/LeadManagementUITests test)"
     ],
     "additionalDirectories": [
       "/private/tmp",

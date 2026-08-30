@@ -66,7 +66,7 @@ struct DashboardView: View {
                     profile: container.dashboardRepository
                 )
             case .invoice(let id):
-                PlaceholderScreen(title: "Invoice", detail: "Invoice \(id) opens in IOS-16.")
+                DocumentDetailView(documentId: id, repository: container.documentsRepository, canManage: false)
             }
         }
     }
