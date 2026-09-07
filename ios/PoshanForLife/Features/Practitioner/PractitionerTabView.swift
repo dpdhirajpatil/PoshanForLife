@@ -67,13 +67,14 @@ struct PractitionerTabView: View {
     }
 }
 
-/// The overflow destinations: Orders, Products, Settings.
+/// The overflow destinations: Orders, Transactions, Products, Invoices, Settings.
 struct PractitionerMoreScreen: View {
     @Environment(\.appTheme) private var theme
     @EnvironmentObject private var container: AppContainer
 
     private static let items: [MenuRowItem] = [
         MenuRowItem(title: "Orders", systemImage: "shippingbox.fill"),
+        MenuRowItem(title: "Transactions", systemImage: "creditcard.fill"),
         MenuRowItem(title: "Products", systemImage: "bag.fill"),
         MenuRowItem(title: "Invoices", systemImage: "doc.text.fill"),
         MenuRowItem(title: "Settings", systemImage: "gearshape.fill"),
@@ -94,6 +95,14 @@ struct PractitionerMoreScreen: View {
                 SettingsView(themePreferenceStore: container.themePreferenceStore)
             } else if item.title == "Products" {
                 CatalogueView(repository: container.catalogueRepository, isAdmin: false)
+            } else if item.title == "Orders" {
+                OrdersView(repository: container.ordersRepository)
+            } else if item.title == "Transactions" {
+                TransactionsView(
+                    repository: container.transactionsRepository,
+                    userRepository: container.userRepository,
+                    isAdmin: false
+                )
             } else if item.title == "Invoices" {
                 DocumentsListView(
                     repository: container.documentsRepository,

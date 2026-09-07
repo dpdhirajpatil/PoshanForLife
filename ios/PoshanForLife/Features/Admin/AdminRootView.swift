@@ -46,6 +46,14 @@ struct AdminRootView: View {
                     LeadListView(repository: container.leadsRepository)
                 } else if item.title == "Products" {
                     CatalogueView(repository: container.catalogueRepository, isAdmin: true)
+                } else if item.title == "Orders" {
+                    OrdersView(repository: container.ordersRepository)
+                } else if item.title == "Transactions" {
+                    TransactionsView(
+                        repository: container.transactionsRepository,
+                        userRepository: container.userRepository,
+                        isAdmin: true
+                    )
                 } else if item.title == "Invoices" {
                     DocumentsListView(
                         repository: container.documentsRepository,

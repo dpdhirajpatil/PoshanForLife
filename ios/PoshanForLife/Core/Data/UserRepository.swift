@@ -2,6 +2,9 @@ import Foundation
 
 protocol UserRepository: AnyObject {
     func updateFcmToken(userId: String, token: String) async -> Result<Void, APIError>
+    /// `GET /users?role=DOCTOR` — `@AdminOnly` server-side, so only
+    /// `TransactionsView`'s admin practitioner filter calls this.
+    func listDoctors() async -> Result<[UserDetail], APIError>
 }
 
 /// Just the one call this app needs from `/users/{id}` beyond auth/profile,
@@ -31,5 +34,16 @@ final class UserRepositoryImpl: UserRepository {
             Endpoint(path: "users/\(userId)", method: .patch, body: body)
         )
         return result.map { _ in () }
+    }
+
+    func listDoctors() async -> Result<[UserDetail], APIError> {
+        await client.send(Endpoint(
+            path: "users",
+            method: .get,
+            queryItems: [
+                URLQueryItem(name: "role", value: UserRole.doctor.rawValue),
+                URLQueryItem(name: "limit", value: "100"),
+            ]
+        ))
     }
 }
