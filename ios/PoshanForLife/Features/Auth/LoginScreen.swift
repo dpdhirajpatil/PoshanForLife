@@ -13,84 +13,102 @@ struct LoginScreen: View {
     private enum Field { case email, password }
 
     var body: some View {
-        ZStack {
-            theme.background.ignoresSafeArea()
+        // Needed so "Create an account" below has somewhere to push
+        // `SignupView` to — this screen had no navigation container until
+        // IOS-18 gave it a second destination.
+        NavigationStack {
+            ZStack {
+                theme.background.ignoresSafeArea()
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    Text("Sign in")
-                        .themedHeading(size: 32)
-                        .padding(.bottom, 4)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        Text("Sign in")
+                            .themedHeading(size: 32)
+                            .padding(.bottom, 4)
 
-                    Text("Poshan for Life")
-                        .font(.bodyFont(size: 15))
-                        .foregroundStyle(theme.onBackground.opacity(0.7))
+                        Text("Poshan for Life")
+                            .font(.bodyFont(size: 15))
+                            .foregroundStyle(theme.onBackground.opacity(0.7))
 
-                    VStack(spacing: 0) {
-                        TextField("Email", text: $viewModel.email)
-                            .textContentType(.emailAddress)
-                            .keyboardType(.emailAddress)
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled()
-                            .focused($focusedField, equals: .email)
-                            .submitLabel(.next)
-                            .onSubmit { focusedField = .password }
-                            .padding(.bottom, 12)
+                        VStack(spacing: 0) {
+                            TextField("Email", text: $viewModel.email)
+                                .textContentType(.emailAddress)
+                                .keyboardType(.emailAddress)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                                .focused($focusedField, equals: .email)
+                                .submitLabel(.next)
+                                .onSubmit { focusedField = .password }
+                                .padding(.bottom, 12)
 
-                        // Without a rule between them the two fields read as one
-                        // control inside a single border — and iOS excludes
-                        // secure text from screenshots, so the lower row can look
-                        // empty with no cue that it's a separate field.
-                        Divider().overlay(theme.onBackground.opacity(0.12))
+                            // Without a rule between them the two fields read as one
+                            // control inside a single border — and iOS excludes
+                            // secure text from screenshots, so the lower row can look
+                            // empty with no cue that it's a separate field.
+                            Divider().overlay(theme.onBackground.opacity(0.12))
 
-                        SecureField("Password", text: $viewModel.password)
-                            .padding(.top, 12)
-                            .textContentType(.password)
-                            .focused($focusedField, equals: .password)
-                            .submitLabel(.go)
-                            .onSubmit { submit() }
-                    }
-                    .font(.bodyFont(size: 16))
-                    .padding(14)
-                    .background(theme.surface, in: RoundedCornerShape())
-                    .overlay(
-                        RoundedCornerShape()
-                            .stroke(theme.onBackground.opacity(0.12), lineWidth: 1)
-                    )
-
-                    Button(action: submit) {
-                        // The spinner replaces the label rather than sitting
-                        // beside it, so the button can't change width mid-tap.
-                        Group {
-                            if viewModel.isSubmitting {
-                                ProgressView().tint(theme.onPrimary)
-                            } else {
-                                Text("Sign in")
-                                    .font(.displayFont(.semibold, size: 16))
-                            }
+                            SecureField("Password", text: $viewModel.password)
+                                .padding(.top, 12)
+                                .textContentType(.password)
+                                .focused($focusedField, equals: .password)
+                                .submitLabel(.go)
+                                .onSubmit { submit() }
                         }
-                        .frame(maxWidth: .infinity, minHeight: 50)
+                        .font(.bodyFont(size: 16))
+                        .padding(14)
+                        .background(theme.surface, in: RoundedCornerShape())
+                        .overlay(
+                            RoundedCornerShape()
+                                .stroke(theme.onBackground.opacity(0.12), lineWidth: 1)
+                        )
+
+                        Button(action: submit) {
+                            // The spinner replaces the label rather than sitting
+                            // beside it, so the button can't change width mid-tap.
+                            Group {
+                                if viewModel.isSubmitting {
+                                    ProgressView().tint(theme.onPrimary)
+                                } else {
+                                    Text("Sign in")
+                                        .font(.displayFont(.semibold, size: 16))
+                                }
+                            }
+                            .frame(maxWidth: .infinity, minHeight: 50)
+                        }
+                        .background(
+                            (viewModel.canSubmit ? theme.primary : theme.primary.opacity(0.4)),
+                            in: RoundedCornerShape()
+                        )
+                        .foregroundStyle(theme.onPrimary)
+                        .disabled(!viewModel.canSubmit)
+
+                        HStack(spacing: 4) {
+                            Text("New here?")
+                                .font(.bodyFont(size: 14))
+                                .foregroundStyle(theme.onBackground.opacity(0.7))
+                            NavigationLink("Create an account") {
+                                SignupView(viewModel: viewModel)
+                            }
+                            .font(.displayFont(.semibold, size: 14))
+                            .foregroundStyle(theme.primary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 4)
                     }
-                    .background(
-                        (viewModel.canSubmit ? theme.primary : theme.primary.opacity(0.4)),
-                        in: RoundedCornerShape()
-                    )
-                    .foregroundStyle(theme.onPrimary)
-                    .disabled(!viewModel.canSubmit)
+                    .padding(24)
                 }
-                .padding(24)
+                .scrollDismissesKeyboard(.interactively)
             }
-            .scrollDismissesKeyboard(.interactively)
+            .alert(
+                "Couldn't sign in",
+                isPresented: Binding(
+                    get: { viewModel.errorMessage != nil },
+                    set: { if !$0 { viewModel.errorMessage = nil } }
+                ),
+                actions: { Button("OK", role: .cancel) { viewModel.errorMessage = nil } },
+                message: { Text(viewModel.errorMessage ?? "") }
+            )
         }
-        .alert(
-            "Couldn't sign in",
-            isPresented: Binding(
-                get: { viewModel.errorMessage != nil },
-                set: { if !$0 { viewModel.errorMessage = nil } }
-            ),
-            actions: { Button("OK", role: .cancel) { viewModel.errorMessage = nil } },
-            message: { Text(viewModel.errorMessage ?? "") }
-        )
     }
 
     private func submit() {
@@ -100,8 +118,9 @@ struct LoginScreen: View {
 }
 
 /// Patient/Lead use generous rounding; Staff is slightly tighter. Matching
-/// Android's PoshanRoundedShapes / PoshanStaffShapes split.
-private struct RoundedCornerShape: Shape {
+/// Android's PoshanRoundedShapes / PoshanStaffShapes split. Internal, not
+/// private, since `SignupView` shares this exact chrome.
+struct RoundedCornerShape: Shape {
     func path(in rect: CGRect) -> Path {
         RoundedRectangle(cornerRadius: 12, style: .continuous).path(in: rect)
     }

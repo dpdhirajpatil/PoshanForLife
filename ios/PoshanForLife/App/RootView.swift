@@ -9,6 +9,7 @@ struct RootView: View {
     @EnvironmentObject private var container: AppContainer
     @EnvironmentObject private var deepLinkRouter: DeepLinkRouter
     @EnvironmentObject private var themePreferenceStore: ThemePreferenceStore
+    @Environment(\.scenePhase) private var scenePhase
 
     @State private var showingNotificationRationale = false
 
@@ -42,6 +43,16 @@ struct RootView: View {
             .sheet(isPresented: $showingNotificationRationale) {
                 NotificationPermissionRationaleView(onDecide: {})
                     .appTheme(StaffTheme.self)
+            }
+            // IOS-18: a Lead converted to a Patient server-side while this
+            // session's access token still carries the old role claim — the
+            // only way to notice is asking `users/me` again, and "the app
+            // came back to the foreground" is the natural moment to ask.
+            // `refreshUserOnResume()` no-ops while `.loading`/`.loggedOut`
+            // and never signs anyone out on failure — see its doc comment.
+            .onChange(of: scenePhase) { newPhase in
+                guard newPhase == .active else { return }
+                Task { await authViewModel.refreshUserOnResume() }
             }
             .onChange(of: deepLinkRouter.pending) { target in
                 guard target != nil else { return }

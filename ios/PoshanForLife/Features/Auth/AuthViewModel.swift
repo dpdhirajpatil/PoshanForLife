@@ -26,10 +26,36 @@ final class AuthViewModel: ObservableObject {
     /// Non-nil drives the error alert. Cleared on the next edit or attempt.
     @Published var errorMessage: String?
 
+    // Signup form — deliberately separate fields from the login form above
+    // rather than reusing `email`/`password`, so switching between the two
+    // screens never carries half-typed values from one into the other.
+    @Published var signupName = ""
+    @Published var signupEmail = ""
+    @Published var signupPassword = ""
+    @Published var signupPhone = ""
+    @Published var signupCity = ""
+    @Published var signupHealthGoal = ""
+    @Published private(set) var isSigningUp = false
+    @Published var signupErrorMessage: String?
+
     var canSubmit: Bool {
         !email.trimmingCharacters(in: .whitespaces).isEmpty
             && !password.isEmpty
             && !isSubmitting
+    }
+
+    /// Mirrors the backend's own `SignupRequest` password pattern
+    /// (`^(?=.*\d).{8,}$`) client-side, so a bad password shows its complaint
+    /// immediately rather than after a round trip that says the same thing.
+    var canSubmitSignup: Bool {
+        !signupName.trimmingCharacters(in: .whitespaces).isEmpty
+            && !signupEmail.trimmingCharacters(in: .whitespaces).isEmpty
+            && Self.isValidSignupPassword(signupPassword)
+            && !isSigningUp
+    }
+
+    static func isValidSignupPassword(_ password: String) -> Bool {
+        password.count >= 8 && password.contains { $0.isNumber }
     }
 
     private let authRepository: AuthRepository
@@ -84,11 +110,89 @@ final class AuthViewModel: ObservableObject {
         }
     }
 
+    func signup() async {
+        guard canSubmitSignup else { return }
+        isSigningUp = true
+        signupErrorMessage = nil
+
+        let request = SignupRequest(
+            name: signupName.trimmingCharacters(in: .whitespaces),
+            email: signupEmail.trimmingCharacters(in: .whitespaces),
+            password: signupPassword,
+            phone: Self.nilIfEmpty(signupPhone),
+            city: Self.nilIfEmpty(signupCity),
+            healthGoal: Self.nilIfEmpty(signupHealthGoal)
+        )
+
+        let result = await authRepository.signup(request)
+        isSigningUp = false
+
+        switch result {
+        case .success(let auth):
+            signupPassword = ""
+            // Straight off the signup response's own embedded user, same as
+            // `login()` — no follow-up `users/me` call needed.
+            state = .loggedIn(auth.user)
+        case .failure(let error):
+            signupErrorMessage = Self.signupErrorMessage(for: error)
+        }
+    }
+
     func signOut() {
         authRepository.logout()
         email = ""
         password = ""
         state = .loggedOut
+    }
+
+    /// Re-checks the signed-in user's role whenever the app returns to the
+    /// foreground — the one way this app learns a practitioner converted a
+    /// Lead to a Patient server-side, since a *stored* access token keeps
+    /// carrying its original role claim until refreshed (see
+    /// `PatientService.promoteExistingUser`'s doc comment on the backend: the
+    /// same `User` row's `role` column flips in place, but that's invisible
+    /// to a token minted before the flip). A role change flows into `state`
+    /// here, and `RootView`'s switch over `user.role` re-navigates on its own
+    /// the moment `state` changes — no separate signal needed.
+    ///
+    /// Unlike `restoreSession()`, a failure here does **not** sign the user
+    /// out: this fires on every foreground, and a transient network blip
+    /// while merely resuming the app shouldn't punt someone who very likely
+    /// still has a perfectly good session to the login screen.
+    func refreshUserOnResume() async {
+        guard case .loggedIn = state else { return }
+        if case .success(let user) = await authRepository.loadCurrentUser() {
+            state = .loggedIn(user)
+        }
+    }
+
+    private static func nilIfEmpty(_ value: String) -> String? {
+        let trimmed = value.trimmingCharacters(in: .whitespaces)
+        return trimmed.isEmpty ? nil : trimmed
+    }
+
+    /// Unlike `loginErrorMessage`, there's no account-enumeration concern to
+    /// protect here — signup's whole job is telling you whether that email is
+    /// taken, so `EMAIL_CONFLICT` gets a specific, actionable message instead
+    /// of falling into a generic default.
+    private static func signupErrorMessage(for error: APIError) -> String {
+        switch error.code {
+        case "EMAIL_CONFLICT", "HTTP_409":
+            return "An account with this email already exists. Try signing in instead."
+        case "VALIDATION_ERROR", "HTTP_422":
+            let fields = (error.details ?? [:])
+                .sorted { $0.key < $1.key }
+                .map(\.value)
+            return fields.isEmpty ? "Please check your details and try again." : fields.joined(separator: "\n")
+        case "RATE_LIMIT_EXCEEDED", "HTTP_429":
+            return "Too many attempts. Try again in a few minutes."
+        case "NETWORK_ERROR":
+            return "Can't reach the server. Check your connection."
+        case "KEYCHAIN_ERROR":
+            return error.message
+        default:
+            return "Something went wrong. Please try again."
+        }
     }
 
     /// Never reveals which field was wrong — that turns the login form into an

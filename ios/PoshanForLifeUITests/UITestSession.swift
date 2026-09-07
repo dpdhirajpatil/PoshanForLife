@@ -4,10 +4,11 @@ import XCTest
 /// carry their own copy — they did, and every change to where "Sign out" lives
 /// meant fixing it in three places.
 ///
-/// Both roles now reach sign-out the same way: **More → Profile** for a
-/// patient, **More → Settings** for a practitioner. Neither has a Profile tab;
-/// SwiftUI's five-tab ceiling pushed both behind an explicit More screen (see
-/// `PatientTabView`'s header).
+/// Three roles now reach sign-out this way: **More → Profile** for a patient,
+/// **More → Settings** for a practitioner, and (IOS-18) a **direct Profile
+/// tab** for a Lead — `LeadTabView`'s four-tab design puts Profile in the bar
+/// itself rather than behind More, since a Lead has nowhere near five tabs'
+/// worth of destinations to begin with.
 extension XCTestCase {
 
     /// Drops any restored session. Safe to call when already signed out.
@@ -27,24 +28,42 @@ extension XCTestCase {
         // `NavigationStack` over a settings-style list, so "Settings" (with
         // sign-out) sits directly on the root screen instead of behind More.
         let adminRoot = app.navigationBars["Admin"]
+        // Lead only: a tab bar button, not a row behind More — see this
+        // extension's doc comment.
+        let profileTab = app.tabBars.buttons["Profile"]
         let deadline = Date().addingTimeInterval(25)
 
         while Date() < deadline {
-            if app.textFields.firstMatch.exists && !more.exists && !adminRoot.exists { return }  // already at login
-            if more.exists || adminRoot.exists { break }
+            if app.textFields.firstMatch.exists && !more.exists && !adminRoot.exists && !profileTab.exists { return }  // already at login
+            if more.exists || adminRoot.exists || profileTab.exists { break }
             usleep(300_000)
         }
-        guard more.exists || adminRoot.exists else { return }
-        if more.exists {
+        // Captured once: `profileTab` (a live query) would still report
+        // "exists" after tapping into the More tab too on some role's bar,
+        // so which branch to take has to be decided before anything is
+        // tapped, not re-derived from these same elements afterward.
+        let hasMore = more.exists
+        let hasAdminRoot = adminRoot.exists
+        let hasDirectProfileTab = !hasMore && profileTab.exists
+        guard hasMore || hasAdminRoot || hasDirectProfileTab else { return }
+
+        if hasMore {
             more.tap()
+        } else if hasDirectProfileTab {
+            profileTab.tap()
         }
 
-        // Patient keeps sign-out on Profile; practitioner and admin on Settings.
-        for label in ["Profile", "Settings"] {
-            let row = app.staticTexts[label]
-            if row.waitForExistence(timeout: 3) {
-                row.tap()
-                break
+        // Lead's Profile tab lands directly on the screen with Sign out
+        // already on it — nothing further to tap into. Patient/practitioner
+        // (behind More) and admin (direct root list) both still need to
+        // find the Profile/Settings row first.
+        if !hasDirectProfileTab {
+            for label in ["Profile", "Settings"] {
+                let row = app.staticTexts[label]
+                if row.waitForExistence(timeout: 3) {
+                    row.tap()
+                    break
+                }
             }
         }
 

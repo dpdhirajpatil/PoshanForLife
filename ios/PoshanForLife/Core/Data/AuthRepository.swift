@@ -14,6 +14,10 @@ protocol AuthRepository: AnyObject {
 
     /// Persists both tokens on success.
     func login(email: String, password: String) async -> Result<AuthResponse, APIError>
+    /// Public self-signup — lands the new account in the LEAD role
+    /// server-side (the client never sends a role). Same token-persisting
+    /// shape as `login`.
+    func signup(_ request: SignupRequest) async -> Result<AuthResponse, APIError>
     /// Re-reads the signed-in user from the backend.
     func loadCurrentUser() async -> Result<User, APIError>
     func logout()
@@ -22,6 +26,18 @@ protocol AuthRepository: AnyObject {
 struct LoginRequest: Encodable {
     let email: String
     let password: String
+}
+
+/// `POST /auth/signup` body. `phone`/`city`/`healthGoal` are optional — the
+/// backend stores them on the `Lead` row it creates alongside the `User`
+/// (see `AuthViewModel`'s doc comments), not on the user record itself.
+struct SignupRequest: Encodable {
+    let name: String
+    let email: String
+    let password: String
+    let phone: String?
+    let city: String?
+    let healthGoal: String?
 }
 
 struct RefreshRequest: Encodable {
@@ -67,6 +83,34 @@ final class AuthRepositoryImpl: AuthRepository {
             // Signing in but being unable to persist would look like a
             // successful login that evaporates on next launch — surface it
             // rather than let the user discover it later.
+            return .failure(.transport(
+                code: "KEYCHAIN_ERROR",
+                message: "Couldn't save your session on this device."
+            ))
+        }
+        userSubject.send(auth.user)
+        return result
+    }
+
+    func signup(_ request: SignupRequest) async -> Result<AuthResponse, APIError> {
+        let endpoint: Endpoint
+        do {
+            endpoint = try Endpoint.json(
+                path: "auth/signup",
+                method: .post,
+                body: request,
+                requiresAuth: false
+            )
+        } catch {
+            return .failure(.transport(code: "ENCODING_ERROR", message: "Could not build the request"))
+        }
+
+        let result: Result<AuthResponse, APIError> = await client.send(endpoint)
+        guard case .success(let auth) = result else { return result }
+
+        do {
+            try tokenStore.saveTokens(access: auth.accessToken, refresh: auth.refreshToken)
+        } catch {
             return .failure(.transport(
                 code: "KEYCHAIN_ERROR",
                 message: "Couldn't save your session on this device."
