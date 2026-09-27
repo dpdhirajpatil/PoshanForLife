@@ -14,6 +14,14 @@
 #
 # Requires shared/github-oidc to be applied in the same AWS account first.
 
+locals {
+  owner_repo = split("/", var.github_repository)
+  # Must match GitHub's sub claim format exactly (see var.github_immutable_ids).
+  subject_repo = var.github_immutable_ids == null ? "repo:${var.github_repository}" : format(
+    "repo:%s@%d/%s@%d", local.owner_repo[0], var.github_immutable_ids.owner_id, local.owner_repo[1], var.github_immutable_ids.repository_id
+  )
+}
+
 data "aws_iam_openid_connect_provider" "github" {
   url = "https://token.actions.githubusercontent.com"
 }
@@ -30,7 +38,7 @@ resource "aws_iam_role" "deploy" {
       Condition = {
         StringEquals = {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
-          "token.actions.githubusercontent.com:sub" = "repo:${var.github_repository}:environment:${var.github_environment}"
+          "token.actions.githubusercontent.com:sub" = "${local.subject_repo}:environment:${var.github_environment}"
         }
       }
     }]
