@@ -118,6 +118,11 @@ module "github_deploy" {
   role_name          = "poshan-backend-dev-github-deploy"
   github_repository  = var.github_repository
   github_environment = "dev"
+  # This repo uses GitHub's immutable OIDC subject format.
+  github_immutable_ids = {
+    owner_id      = 264592782
+    repository_id = 1303041314
+  }
   ecr_repository_arn = module.backend_app.ecr_repository_arn
   ecs_service_arn    = module.backend_app.ecs_service_arn
   pass_role_arns     = [module.backend_app.task_execution_role_arn]
