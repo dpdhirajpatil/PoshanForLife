@@ -1,0 +1,4 @@
+bucket = "poshan-backend-terraform-state"
+key    = "shared/github-oidc/terraform.tfstate"
+region = "ap-south-1"
+# profile = "poshan-dev"   # set when the state bucket lives in a non-default account

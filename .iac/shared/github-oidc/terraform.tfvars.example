@@ -1,0 +1,6 @@
+aws_region = "ap-south-1"
+
+# Multi-account: the account this config must deploy into (Terraform aborts
+# on any other). Set aws_profile when this env lives in a separate account.
+allowed_account_ids = ["046369253799"]
+# aws_profile       = "poshan-dev"

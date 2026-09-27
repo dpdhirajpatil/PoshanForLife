@@ -1,0 +1,8 @@
+aws_region       = "ap-south-1"
+ssh_allowed_cidr = "REPLACE_WITH_YOUR_IP/32" # run: curl ifconfig.me
+key_pair_name    = "REPLACE_WITH_YOUR_KEY_PAIR_NAME"
+
+# Multi-account: the account this config must deploy into (Terraform aborts
+# on any other). Set aws_profile when this env lives in a separate account.
+allowed_account_ids = ["046369253799"]
+# aws_profile       = "poshan-dev"
