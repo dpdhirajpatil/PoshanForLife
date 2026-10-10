@@ -99,9 +99,18 @@ status() {
     health=$("${AWS[@]}" elbv2 describe-target-health --target-group-arn "$tg" --query 'TargetHealthDescriptions[].TargetHealth.State' | tr '\t' ' ')
     echo "ALB targets : ${health:-none}"
   fi
-  local dns
+  # With CloudFront in front (enable_https_cdn), the ALB only accepts traffic
+  # from CloudFront, so print the distribution's HTTPS URL when one exists.
+  local dns cf
   dns=$("${AWS[@]}" elbv2 describe-load-balancers --names "$APP-alb" --query 'LoadBalancers[0].DNSName' 2>/dev/null || true)
-  [ -n "$dns" ] && echo "URL         : http://$dns/api/v1/health"
+  if [ -n "$dns" ] && [ "$dns" != "None" ]; then
+    cf=$("${AWS[@]}" cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[0].DomainName=='$dns'].DomainName | [0]" 2>/dev/null || true)
+    if [ -n "$cf" ] && [ "$cf" != "None" ]; then
+      echo "URL         : https://$cf/api/v1/health"
+    else
+      echo "URL         : http://$dns/api/v1/health"
+    fi
+  fi
   local eip
   eip=$("${AWS[@]}" ec2 describe-addresses --filters "Name=tag:Name,Values=$APP-ecs-eip" --query 'Addresses[0].PublicIp' 2>/dev/null || true)
   [ -n "$eip" ] && [ "$eip" != "None" ] && echo "Static IP   : $eip (whitelist this once in Supabase, not per restart)"

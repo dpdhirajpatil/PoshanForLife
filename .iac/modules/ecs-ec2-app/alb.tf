@@ -18,7 +18,10 @@ data "aws_ec2_managed_prefix_list" "cloudfront" {
 
 resource "aws_security_group" "alb" {
   name        = "${var.app_name}-alb-sg"
-  description = var.enable_https_cdn ? "ALB - HTTP entry restricted to CloudFront's origin-facing ranges" : "ALB - public HTTP entry"
+  # Kept static on purpose: an SG's description is ForceNew, and replacing an
+  # SG the ALB is attached to fails (DependencyViolation). The ingress rule
+  # below is what actually changes with enable_https_cdn.
+  description = "ALB - public HTTP entry"
   vpc_id      = var.vpc_id
 
   ingress {
