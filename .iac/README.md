@@ -3,9 +3,11 @@
 Terraform for AWS infra, built free-tier-first for a first-time AWS account.
 Region: **ap-south-1 (Mumbai)** everywhere.
 
-**Deploying or operating dev?** See [DEPLOYMENT.md](DEPLOYMENT.md) — the
-step-by-step runbook (Supabase DB, secrets, GitHub Actions, start/stop,
-rollback, troubleshooting). This README covers structure, design and cost.
+**New here?** Start with [ARCHITECTURE.md](ARCHITECTURE.md) — how the pieces
+fit together, with flow diagrams. **Deploying or operating dev?** See
+[DEPLOYMENT.md](DEPLOYMENT.md) — the step-by-step runbook (Supabase DB,
+secrets, GitHub Actions, start/stop, rollback, troubleshooting). This README
+covers structure, design and cost.
 
 ## Structure
 

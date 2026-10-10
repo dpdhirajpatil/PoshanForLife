@@ -49,6 +49,16 @@ SPRING_FLYWAY_BASELINE_VERSION=16   # highest migration version already applied 
 Then **unset both** — they're a one-time bootstrap step, not a permanent setting, and leaving
 `baseline-on-migrate` on masks real future migration-mismatch errors.
 
+## Deployment (AWS)
+
+The backend's dev environment runs on AWS (ECS behind an ALB, Supabase Postgres),
+provisioned with Terraform and deployed by GitHub Actions on every push to `develop`
+that touches `backend/**`.
+
+- [.iac/ARCHITECTURE.md](.iac/ARCHITECTURE.md) — how it all fits together, with flow diagrams (start here)
+- [.iac/DEPLOYMENT.md](.iac/DEPLOYMENT.md) — runbook: commands, start/stop, rollback, troubleshooting
+- [.iac/README.md](.iac/README.md) — Terraform layout, cost, multi-account design
+
 ## Conventions (established in prompt 0)
 
 ### API envelope

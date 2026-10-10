@@ -1,7 +1,8 @@
 # Poshan for Life — Backend Deployment Runbook (dev)
 
 How the dev backend was deployed to AWS end to end, how to operate it day to
-day, and what went wrong along the way. It complements [README.md](README.md)
+day, and what went wrong along the way. For the big picture and flow
+diagrams, read [ARCHITECTURE.md](ARCHITECTURE.md) first. It complements [README.md](README.md)
 (Terraform structure, cost table, multi-account design) — read that for the
 *why*; this file is the *how*.
 
