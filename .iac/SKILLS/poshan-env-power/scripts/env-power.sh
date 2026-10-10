@@ -102,6 +102,9 @@ status() {
   local dns
   dns=$("${AWS[@]}" elbv2 describe-load-balancers --names "$APP-alb" --query 'LoadBalancers[0].DNSName' 2>/dev/null || true)
   [ -n "$dns" ] && echo "URL         : http://$dns/api/v1/health"
+  local eip
+  eip=$("${AWS[@]}" ec2 describe-addresses --filters "Name=tag:Name,Values=$APP-ecs-eip" --query 'Addresses[0].PublicIp' 2>/dev/null || true)
+  [ -n "$eip" ] && [ "$eip" != "None" ] && echo "Static IP   : $eip (whitelist this once in Supabase, not per restart)"
 }
 
 stop() {

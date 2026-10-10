@@ -139,6 +139,11 @@ output "alb_dns_name" {
   value = module.backend_app.alb_dns_name
 }
 
+output "static_ip" {
+  value       = module.backend_app.static_ip
+  description = "Fixed public IP of the dev ECS host. Whitelist this once in Supabase's Network Restrictions."
+}
+
 output "ecr_repository_url" {
   value = module.backend_app.ecr_repository_url
 }

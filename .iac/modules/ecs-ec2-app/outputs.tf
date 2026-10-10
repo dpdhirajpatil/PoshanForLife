@@ -40,6 +40,11 @@ output "task_execution_role_arn" {
   value = aws_iam_role.task_execution.arn
 }
 
+output "static_ip" {
+  value       = one(aws_eip.ecs_instance[*].public_ip)
+  description = "Fixed public IP of the ECS host, stable across stop/start cycles (null if enable_static_ip=false). Whitelist this once in Supabase's Network Restrictions instead of re-adding an IP after every restart."
+}
+
 output "app_secret_arn" {
   value       = one(aws_secretsmanager_secret.app[*].arn)
   description = "null when app_secret_keys is empty."

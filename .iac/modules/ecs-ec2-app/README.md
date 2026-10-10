@@ -20,6 +20,15 @@ that, the deploy workflow registers new task definition revisions and updates th
 service directly — Terraform is told to `ignore_changes` on the task
 definition so it won't fight the deploy workflow on every `apply`.
 
+**Fixed public IP (`enable_static_ip`, default `true`):** the ECS host
+self-associates a dedicated Elastic IP on boot (see the launch template's
+`user_data` in `ecs.tf`), so its public address survives every stop/start
+cycle instead of changing each time the instance is replaced. Useful for
+anything that allowlists this host by IP — e.g. Supabase's Network
+Restrictions — since you whitelist it once (the `static_ip` output) and
+never touch it again. No extra cost: AWS bills any public IPv4, Elastic or
+auto-assigned, at the same $0.005/hr.
+
 **Switching to Fargate later:** change `requires_compatibilities` to
 `["FARGATE"]`, `network_mode` to `"awsvpc"`, add a `network_configuration`
 block to the service, change the target group's `target_type` to `"ip"`,

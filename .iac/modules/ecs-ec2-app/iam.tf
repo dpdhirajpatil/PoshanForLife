@@ -34,6 +34,26 @@ resource "aws_iam_instance_profile" "ecs_instance" {
   role = aws_iam_role.ecs_instance.name
 }
 
+# Lets the instance attach its own fixed Elastic IP on boot (see eip.tf and
+# the launch template's user_data). ec2:AssociateAddress needs both the
+# instance and EIP as resources and doesn't support clean resource-level
+# scoping for the pair, so this is "*" — acceptable for a single-instance
+# dev host where the role itself is already scoped to this one app.
+resource "aws_iam_role_policy" "ecs_instance_eip" {
+  count = var.enable_static_ip ? 1 : 0
+  name  = "${var.app_name}-self-associate-eip"
+  role  = aws_iam_role.ecs_instance.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["ec2:AssociateAddress", "ec2:DescribeAddresses"]
+      Resource = "*"
+    }]
+  })
+}
+
 # --- Task execution role: used by ECS itself (not your app) to pull the
 #     image from ECR and write logs to CloudWatch on the task's behalf.
 resource "aws_iam_role" "task_execution" {

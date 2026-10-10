@@ -1,0 +1,130 @@
+# Build the backend image, push it to the prod ECR repo, and roll the prod
+# ECS service onto it. Same pattern as dev/qa, pointed at `prod`, plus two
+# release steps that only run after a SUCCESSFUL deploy:
+#   1. Create and push an annotated tag marking what's actually live.
+#   2. Open (or reuse) a PR from prod -> master, so master always reflects
+#      what's been released, not just what's been merged to prod.
+#
+# Dormant until environments/prod/backend is actually applied (it's a
+# placeholder today — see .iac/environments/prod/backend/README.md) and its
+# `github_environment_variables` output is copied into GitHub -> Settings ->
+# Environments -> prod -> Variables, same as dev's one-time setup.
+#
+# Recommended (not enforced by this file): add required reviewers to the
+# "prod" GitHub Environment so a deploy pauses for manual approval before
+# `deploy` runs. Configure that in GitHub's UI/API, not here.
+
+name: Backend deploy (prod)
+
+on:
+  push:
+    branches: [prod]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-deploy-prod.yml"
+  workflow_dispatch:
+
+permissions:
+  id-token: write # for the OIDC token exchanged for AWS credentials
+  contents: write # to push the release tag
+  pull-requests: write # to open the post-deploy PR to master
+
+concurrency:
+  group: backend-deploy-prod
+  cancel-in-progress: false # never cut off a deploy mid-rollout
+
+jobs:
+  # github.ref guard: defense-in-depth beyond push.branches and the "prod"
+  # GitHub Environment's branch policy — also blocks a manual
+  # workflow_dispatch run started from any branch other than prod.
+  config:
+    runs-on: ubuntu-latest
+    environment: prod
+    if: github.ref == 'refs/heads/prod'
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - id: check
+        run: |
+          if [ -n "${{ vars.AWS_DEPLOY_ROLE_ARN }}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::prod deploy skipped: AWS_DEPLOY_ROLE_ARN not set on the 'prod' environment yet (see .iac/environments/prod/backend/README.md)."
+          fi
+
+  deploy:
+    needs: config
+    if: needs.config.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    environment: prod
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # need full history to push a tag and diff against master
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push image
+        id: image
+        env:
+          IMAGE: ${{ steps.ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:${{ github.sha }}
+        run: |
+          docker build -t "$IMAGE" backend
+          docker push "$IMAGE"
+          echo "uri=$IMAGE" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch current task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition "${{ vars.ECS_TASK_FAMILY }}" \
+            --query taskDefinition > task-definition.json
+
+      - id: taskdef
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: ${{ vars.CONTAINER_NAME }}
+          image: ${{ steps.image.outputs.uri }}
+
+      - uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.taskdef.outputs.task-definition }}
+          cluster: ${{ vars.ECS_CLUSTER }}
+          service: ${{ vars.ECS_SERVICE }}
+          wait-for-service-stability: true
+          wait-for-minutes: 15
+
+      # --- Everything below only runs because the deploy above succeeded
+      # (a failed step would have stopped the job here already).
+
+      - name: Create and push release tag
+        id: tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          TAG="prod-$(date -u +%Y.%m.%d-%H%M)-${GITHUB_SHA::7}"
+          git tag -a "$TAG" -m "Prod deploy of $GITHUB_SHA"
+          git push origin "$TAG"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Open PR prod -> master (reuse if one is already open)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          EXISTING=$(gh pr list --repo "$GITHUB_REPOSITORY" --base master --head prod --state open --json number --jq 'length')
+          if [ "$EXISTING" = "0" ]; then
+            gh pr create --repo "$GITHUB_REPOSITORY" --base master --head prod \
+              --title "Release ${{ steps.tag.outputs.tag }}" \
+              --body "Automated PR after prod deployment of \`${{ github.sha }}\`. Release tag: \`${{ steps.tag.outputs.tag }}\`."
+          else
+            echo "An open prod -> master PR already exists; not creating another."
+          fi

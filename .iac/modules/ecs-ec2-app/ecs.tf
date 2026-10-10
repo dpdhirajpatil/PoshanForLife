@@ -54,6 +54,16 @@ resource "aws_security_group" "ecs_instance" {
   tags = merge(var.tags, { Name = "${var.app_name}-ecs-instance-sg" })
 }
 
+# Fixed public IP for the single ECS host, so it survives stop/start cycles
+# (each one terminates and relaunches the instance, which would otherwise get
+# a new random public IP). The instance self-associates this on boot, via
+# the launch template's user_data below.
+resource "aws_eip" "ecs_instance" {
+  count  = var.enable_static_ip ? 1 : 0
+  domain = "vpc"
+  tags   = merge(var.tags, { Name = "${var.app_name}-ecs-eip" })
+}
+
 resource "aws_launch_template" "ecs_instance" {
   name_prefix   = "${var.app_name}-ecs-"
   image_id      = data.aws_ssm_parameter.ecs_optimized_ami.value
@@ -74,10 +84,22 @@ resource "aws_launch_template" "ecs_instance" {
     }
   }
 
-  # Tells the ECS agent which cluster to register this instance with.
+  # Tells the ECS agent which cluster to register this instance with, and
+  # (if enabled) self-associates the fixed Elastic IP so this instance's
+  # public address never changes across stop/start cycles.
   user_data = base64encode(<<-EOF
     #!/bin/bash
     echo ECS_CLUSTER=${aws_ecs_cluster.app.name} >> /etc/ecs/ecs.config
+    %{ if var.enable_static_ip ~}
+    if ! command -v aws >/dev/null 2>&1; then
+      curl -s "https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip" -o /tmp/awscliv2.zip
+      (cd /tmp && unzip -q awscliv2.zip && ./aws/install)
+    fi
+    TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+    INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
+    aws ec2 associate-address --region ${data.aws_region.current.name} --instance-id "$INSTANCE_ID" \
+      --allocation-id ${aws_eip.ecs_instance[0].id} --allow-reassociation || echo "WARNING: EIP self-association failed, check /var/log/cloud-init-output.log" >&2
+    %{ endif ~}
   EOF
   )
 

@@ -97,6 +97,12 @@ variable "deployment_maximum_percent" {
   default = 200
 }
 
+variable "enable_static_ip" {
+  type        = bool
+  default     = true
+  description = "Allocate a fixed Elastic IP and have the instance self-associate it on boot, so external allowlists (e.g. Supabase Network Restrictions) never need updating after a stop/start cycle replaces the instance. Costs nothing extra: since Feb 2024 AWS bills every public IPv4 (auto-assigned or Elastic) at the same $0.005/hr, so this just makes the existing charge permanent instead of the IP being random."
+}
+
 variable "placeholder_image" {
   type        = string
   default     = "public.ecr.aws/nginx/nginx:latest"

@@ -1,0 +1,91 @@
+# Build the backend image, push it to the qa ECR repo, and roll the qa ECS
+# service onto it. Mirrors backend-deploy-dev.yml exactly, pointed at `qa`.
+#
+# Dormant until environments/qa/backend is actually applied (it's a
+# placeholder today — see .iac/environments/qa/backend/README.md) and its
+# `github_environment_variables` output is copied into GitHub -> Settings ->
+# Environments -> qa -> Variables, same as dev's one-time setup.
+
+name: Backend deploy (qa)
+
+on:
+  push:
+    branches: [qa]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-deploy-qa.yml"
+  workflow_dispatch:
+
+permissions:
+  id-token: write # for the OIDC token exchanged for AWS credentials
+  contents: read
+
+concurrency:
+  group: backend-deploy-qa
+  cancel-in-progress: false # never cut off a deploy mid-rollout
+
+jobs:
+  # github.ref guard: defense-in-depth beyond push.branches and the "qa"
+  # GitHub Environment's branch policy — also blocks a manual
+  # workflow_dispatch run started from any branch other than qa.
+  config:
+    runs-on: ubuntu-latest
+    environment: qa
+    if: github.ref == 'refs/heads/qa'
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - id: check
+        run: |
+          if [ -n "${{ vars.AWS_DEPLOY_ROLE_ARN }}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::qa deploy skipped: AWS_DEPLOY_ROLE_ARN not set on the 'qa' environment yet (see .iac/environments/qa/backend/README.md)."
+          fi
+
+  deploy:
+    needs: config
+    if: needs.config.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    environment: qa
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push image
+        id: image
+        env:
+          IMAGE: ${{ steps.ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:${{ github.sha }}
+        run: |
+          docker build -t "$IMAGE" backend
+          docker push "$IMAGE"
+          echo "uri=$IMAGE" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch current task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition "${{ vars.ECS_TASK_FAMILY }}" \
+            --query taskDefinition > task-definition.json
+
+      - id: taskdef
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: ${{ vars.CONTAINER_NAME }}
+          image: ${{ steps.image.outputs.uri }}
+
+      - uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.taskdef.outputs.task-definition }}
+          cluster: ${{ vars.ECS_CLUSTER }}
+          service: ${{ vars.ECS_SERVICE }}
+          wait-for-service-stability: true
+          wait-for-minutes: 15

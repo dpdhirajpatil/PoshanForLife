@@ -38,7 +38,7 @@ Dev is normally kept **stopped** between uses to save AWS credits.
 | Health URL | `http://poshan-backend-dev-alb-1544740052.ap-south-1.elb.amazonaws.com/api/v1/health` |
 | Terraform state | S3 `poshan-backend-terraform-state` → `dev/backend/terraform.tfstate`, `shared/github-oidc/terraform.tfstate` |
 | ECS | cluster `poshan-backend-dev-cluster`, service `poshan-backend-dev-service`, task family `poshan-backend-dev` |
-| EC2 host | ASG `poshan-backend-dev-ecs-asg` (t3.micro, ECS-optimized AL2023), key pair `poshan-dev-key` |
+| EC2 host | ASG `poshan-backend-dev-ecs-asg` (t3.micro, ECS-optimized AL2023), key pair `poshan-dev-key`, fixed Elastic IP self-associated on boot (survives stop/start — see `modules/ecs-ec2-app/README.md`) |
 | Image registry | ECR `046369253799.dkr.ecr.ap-south-1.amazonaws.com/poshan-backend-dev` (keeps last 10) |
 | Deploy role | `arn:aws:iam::046369253799:role/poshan-backend-dev-github-deploy` |
 | App secret | Secrets Manager `poshan-backend-dev/app` (JSON: `DB_PASSWORD`, `JWT_SECRET`) |
@@ -212,6 +212,21 @@ Seven plain variables (not secrets): `AWS_REGION`, `AWS_DEPLOY_ROLE_ARN`,
 `ECR_REPOSITORY`, `ECS_CLUSTER`, `ECS_SERVICE`, `ECS_TASK_FAMILY`,
 `CONTAINER_NAME`. Only `develop` may deploy to `dev` (the repo is public).
 
+Verify the policy actually took (don't just trust that the command above
+succeeded):
+```bash
+gh api repos/$R/environments/dev --jq '.deployment_branch_policy'
+gh api repos/$R/environments/dev/deployment-branch-policies --jq '.branch_policies[].name'
+# expect: {"protected_branches": false, "custom_branch_policies": true}, then "develop"
+```
+Three independent layers now restrict dev deploys to `develop`: the
+workflow's `on.push.branches` filter, this environment branch policy
+(the one GitHub actually enforces server-side, including against a manual
+`workflow_dispatch`), and a `github.ref` guard in the workflow itself
+(belt-and-braces for `workflow_dispatch`). See
+[§9 Branching & release strategy](#9-branching--release-strategy) for how
+this extends to qa/prod.
+
 ### Step 8 — First deploy
 
 Merged PR #1 into `develop` → workflow ran. It failed once on AWS login
@@ -270,6 +285,27 @@ aws ecs update-service --region ap-south-1 --cluster poshan-backend-dev-cluster 
 ### Your IP changed (SSH blocked)
 Update `ssh_allowed_cidr` in `environments/dev/backend/terraform.tfvars`, then plan/apply.
 
+### Roll out the fixed Elastic IP (`enable_static_ip`, one-time)
+`terraform apply` alone won't move the already-running instance onto the
+new launch template — it only updates the template and ASG for the *next*
+instance. Cycle the current one onto it, then whitelist the result:
+```bash
+cd .iac/environments/dev/backend
+terraform plan -out=dev.tfplan && terraform apply dev.tfplan   # creates the EIP, updates the launch template
+
+.iac/SKILLS/poshan-env-power/scripts/env-power.sh stop dev
+.iac/SKILLS/poshan-env-power/scripts/env-power.sh start dev    # new instance launches, self-associates the EIP
+.iac/SKILLS/poshan-env-power/scripts/env-power.sh status dev   # prints "Static IP   : x.x.x.x"
+```
+Take that IP to Supabase → `poshan-dev` project → Settings → Database →
+Network Restrictions, add it once. It won't change again across future
+stop/start cycles — that's the whole point of this change.
+
+If `status` doesn't print a Static IP line after `start`, the self-association
+step in the instance's boot script likely failed silently; check
+`/var/log/cloud-init-output.log` on the host (SSM or SSH, per above) for the
+`associate-address` call's actual error before assuming it worked.
+
 ---
 
 ## 5. Local development
@@ -319,3 +355,67 @@ before then or the account closes. Details: [README.md](README.md#cost-posture--
   (Supabase storage key, MSG91, Firebase, Anthropic) — see §4.
 - HTTPS/custom domain (Route 53 + ACM), frontend hosting, qa/prod environments,
   S3 state locking before a second person runs `apply`.
+- Delete the empty `.iac/_pending-workflows/` staging folder (left behind
+  because `.github/**` can't be written remotely — see §9).
+- Confirm dev's `AWS_DEPLOY_ROLE_ARN` et al. still work after `terraform
+  apply` picks up `enable_static_ip` (new EIP + updated launch template) —
+  see §1's static IP row and §3 Step 4.
+
+---
+
+## 9. Branching & release strategy
+
+| Environment | Deploys from | Workflow |
+|---|---|---|
+| dev | `develop` | `.github/workflows/backend-deploy-dev.yml` |
+| qa | `qa` | `.github/workflows/backend-deploy-qa.yml` |
+| prod | `prod` | `.github/workflows/backend-deploy-prod.yml` |
+
+Each workflow is restricted to its branch three ways: the workflow's
+`on.push.branches` filter, a `github.ref` guard on the first job (blocks a
+manual `workflow_dispatch` from any other branch), and — the one that
+actually matters, since it's enforced server-side by GitHub, not by
+anything in the workflow file — that environment's **deployment branch
+policy**. dev's is live today (§3 Step 7); qa's and prod's need the same
+treatment once those environments are built:
+
+```bash
+R=dpdhirajpatil/PoshanForLife
+for ENV in qa prod; do
+  gh api -X PUT repos/$R/environments/$ENV --input - <<EOF
+{"deployment_branch_policy": {"protected_branches": false, "custom_branch_policies": true}}
+EOF
+  gh api -X POST repos/$R/environments/$ENV/deployment-branch-policies -f name=$ENV -f type=branch
+done
+```
+
+**After a successful prod deploy**, the workflow does two more things
+automatically (not applicable to dev/qa):
+
+1. **Tags** the deployed commit: `prod-<UTC-date>-<UTC-HHMM>-<short-sha>`
+   (e.g. `prod-2026.10.10-1432-a1b2c3d`), annotated, pushed to `origin`.
+   This is a plain timestamp+sha scheme, not semver — if you'd rather tag
+   releases `v1.2.3`, that needs a version-bump step added before this one;
+   ask if you want that instead.
+2. **Opens a PR from `prod` into `master`** (reusing an existing open one
+   instead of creating a duplicate) so `master` always reflects what's
+   actually live, not just what's been merged to `prod`. The PR isn't
+   auto-merged — someone still reviews and merges it.
+
+**Not yet configured (recommended, not enforced by any file here):** add
+required reviewers to the `prod` GitHub Environment so a deploy pauses for
+manual approval before the `deploy` job runs. That's a GitHub-side setting,
+done the same way as the branch policy above, not a workflow change.
+
+**Why these three workflow files exist before qa/prod infra does:** they're
+inert until each environment's Terraform is applied and its
+`github_environment_variables` are copied into GitHub (same gate dev uses —
+see the `config` job in any of the three files). Writing them now means the
+CI/CD pattern is already settled by the time qa/prod get built, instead of
+being designed under pressure then.
+
+**A note on how these landed in the repo:** `.github/workflows/*` is
+protected against remote writes (sensible — those files run with real
+secrets), so these three were written to `.iac/_pending-workflows/` and then
+moved into `.github/workflows/` with a plain `mv` in the same session —
+which worked because moving a file isn't the same operation as writing one.

@@ -31,9 +31,13 @@ concurrency:
 jobs:
   # Environment-scoped variables aren't visible to a job-level `if`, so a
   # tiny job inside the environment reports whether deploy config exists.
+  # The `github.ref` guard is defense-in-depth beyond the `push.branches`
+  # filter above and the "dev" GitHub Environment's branch policy: it also
+  # blocks a manual `workflow_dispatch` run started from any other branch.
   config:
     runs-on: ubuntu-latest
     environment: dev
+    if: github.ref == 'refs/heads/develop'
     outputs:
       ready: ${{ steps.check.outputs.ready }}
     steps:
