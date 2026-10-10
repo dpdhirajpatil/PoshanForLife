@@ -6,17 +6,28 @@
 # of traffic. HTTPS/ACM certificate is deliberately NOT set up yet — add
 # it once a domain is registered (Route 53 phase); HTTP-only for now.
 
+# When CloudFront fronts the ALB (enable_https_cdn), this locks the ALB down
+# to CloudFront's own IP ranges so direct plain-HTTP access is no longer
+# possible — CloudFront becomes the only way in, which is the point of
+# putting it there in the first place. AWS publishes this list and keeps it
+# current; it isn't a fixed CIDR we'd need to maintain.
+data "aws_ec2_managed_prefix_list" "cloudfront" {
+  count = var.enable_https_cdn ? 1 : 0
+  name  = "com.amazonaws.global.cloudfront.origin-facing"
+}
+
 resource "aws_security_group" "alb" {
   name        = "${var.app_name}-alb-sg"
-  description = "ALB - public HTTP entry"
+  description = var.enable_https_cdn ? "ALB - HTTP entry restricted to CloudFront's origin-facing ranges" : "ALB - public HTTP entry"
   vpc_id      = var.vpc_id
 
   ingress {
-    description = "HTTP from anywhere"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    description     = var.enable_https_cdn ? "HTTP from CloudFront only" : "HTTP from anywhere"
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    cidr_blocks     = var.enable_https_cdn ? null : ["0.0.0.0/0"]
+    prefix_list_ids = var.enable_https_cdn ? [data.aws_ec2_managed_prefix_list.cloudfront[0].id] : null
   }
 
   egress {

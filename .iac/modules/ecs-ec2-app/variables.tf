@@ -97,6 +97,12 @@ variable "deployment_maximum_percent" {
   default = 200
 }
 
+variable "enable_https_cdn" {
+  type        = bool
+  default     = true
+  description = "Put a CloudFront distribution in front of the ALB for free HTTPS (CloudFront's default *.cloudfront.net certificate, no domain or ACM needed). Caching is disabled — this is a TLS terminator for a dynamic API, not a cache. Use the cloudfront_domain_name output as the API's public HTTPS address instead of the ALB's bare HTTP DNS name."
+}
+
 variable "enable_static_ip" {
   type        = bool
   default     = true

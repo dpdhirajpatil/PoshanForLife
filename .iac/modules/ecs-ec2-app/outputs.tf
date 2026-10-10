@@ -40,6 +40,11 @@ output "task_execution_role_arn" {
   value = aws_iam_role.task_execution.arn
 }
 
+output "cloudfront_domain_name" {
+  value       = one(aws_cloudfront_distribution.api[*].domain_name)
+  description = "HTTPS address for the API (null if enable_https_cdn=false). Use this, not alb_dns_name, as the base URL anything HTTPS-only (a browser, a frontend) should call."
+}
+
 output "static_ip" {
   value       = one(aws_eip.ecs_instance[*].public_ip)
   description = "Fixed public IP of the ECS host, stable across stop/start cycles (null if enable_static_ip=false). Whitelist this once in Supabase's Network Restrictions instead of re-adding an IP after every restart."

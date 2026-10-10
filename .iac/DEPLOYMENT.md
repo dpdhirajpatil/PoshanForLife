@@ -306,6 +306,35 @@ step in the instance's boot script likely failed silently; check
 `/var/log/cloud-init-output.log` on the host (SSM or SSH, per above) for the
 `associate-address` call's actual error before assuming it worked.
 
+### Roll out free HTTPS via CloudFront (`enable_https_cdn`, one-time)
+A CloudFront distribution now sits in front of the ALB, terminating TLS with
+CloudFront's own default `*.cloudfront.net` certificate — no domain or ACM
+cert needed. The ALB stays HTTP-only internally; CloudFront -> ALB is a
+server-side hop, not a browser connection, so there's no mixed-content
+concern. Caching is fully disabled (this fronts a dynamic API, not static
+content).
+
+```bash
+cd .iac/environments/dev/backend
+terraform plan -out=dev.tfplan && terraform apply dev.tfplan   # creates the CloudFront distribution, restricts the ALB SG to CloudFront's IP ranges
+terraform output cloudfront_domain_name                        # e.g. d1234abcd.cloudfront.net
+```
+Use that `cloudfront_domain_name` output, not `alb_dns_name`, as the API's
+public HTTPS address from now on — a browser or a future frontend should
+call `https://<cloudfront_domain_name>/...`. Direct `http://<alb_dns_name>`
+access stops working once this applies, since the ALB's security group is
+locked down to CloudFront's own IP ranges — that's intentional, CloudFront
+is meant to be the only way in.
+
+CloudFront distributions can take 5-15 minutes to fully deploy after
+`apply` finishes; if the new domain 403s/times out right after applying,
+wait and retry before assuming something's wrong.
+
+When a real domain is registered later (Route 53 phase), add it as a
+CloudFront alias with a real ACM certificate (must be requested in
+`us-east-1` regardless of the app's region) — nothing about the ALB or ECS
+service needs to change for that.
+
 ---
 
 ## 5. Local development

@@ -144,6 +144,11 @@ output "static_ip" {
   description = "Fixed public IP of the dev ECS host. Whitelist this once in Supabase's Network Restrictions."
 }
 
+output "cloudfront_domain_name" {
+  value       = module.backend_app.cloudfront_domain_name
+  description = "HTTPS address for the dev API. Use this, not alb_dns_name, for anything HTTPS-only."
+}
+
 output "ecr_repository_url" {
   value = module.backend_app.ecr_repository_url
 }
