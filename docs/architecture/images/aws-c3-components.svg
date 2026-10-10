@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="660" style="color:#1b2330" viewBox="0 0 1160 660" role="img" aria-label="C3: inside the dev backend stack, the ALB security group is attached to the ALB, whose listener forwards to the target group; the ECS service registers tasks in the target group, runs the task definition and places tasks through the capacity provider, which is attached to the cluster and scales the Auto Scaling group; the ASG launches hosts from the launch template, which uses the instance profile and the ECS-optimized AMI; the task definition uses the execution role, which reads the app secret, sends logs to the log group and pulls its image from ECR; the GitHub deploy role can push to ECR, update the service and pass the execution role.">
+<style>
+text { font-family: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif; }
+text { fill: #1b2330; font-family: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif; font-size: 13px; }
+.bt { font-weight: 600; font-size: 13.5px; }
+.sub { fill: #5a6575; font-family: "IBM Plex Mono", Menlo, Consolas, monospace; font-size: 9.6px; }
+.lbl { fill: #5a6575; font-size: 11.5px; paint-order: stroke; stroke: #ffffff; stroke-width: 4px; stroke-linejoin: round; }
+.lbl.acc { fill: #2c5aa0; }
+.lbl.warn { fill: #9a6200; }
+.lbl.bad { fill: #b03a3a; }
+.zl { fill: #5a6575; font-family: "IBM Plex Mono", Menlo, Consolas, monospace; font-size: 10.2px; letter-spacing: 0.04em; }
+.box { fill: #ffffff; stroke: #c6cfdb; stroke-width: 1.3; }
+.box-acc { fill: #e4ecf8; stroke: #2c5aa0; stroke-width: 1.3; }
+.box-ok { fill: #e1f2e7; stroke: #2b7a4b; stroke-width: 1.3; }
+.box-warn { fill: #f8edd8; stroke: #9a6200; stroke-width: 1.3; }
+.box-ghost { fill: none; stroke: #5a6575; stroke-width: 1.2; stroke-dasharray: 5 4; }
+.zone-aws { fill: #edf2f9; stroke: #c6cfdb; }
+.zone-sb { fill: #eef5f0; stroke: #c6cfdb; }
+.frame { fill: none; stroke: #5a6575; stroke-dasharray: 6 4; stroke-width: 1.1; }
+.e { fill: none; stroke: #1b2330; stroke-width: 1.5; }
+.e-acc { fill: none; stroke: #2c5aa0; stroke-width: 1.7; }
+.e-warn { fill: none; stroke: #9a6200; stroke-width: 1.5; stroke-dasharray: 5 3; }
+.e-prov { fill: none; stroke: #5a6575; stroke-width: 1.6; stroke-dasharray: 2 3; }
+.e-bad { fill: none; stroke: #b03a3a; stroke-width: 1.5; stroke-dasharray: 5 3; }
+.ret { stroke-dasharray: 5 4; }
+.life { stroke: #c6cfdb; stroke-width: 1.2; stroke-dasharray: 4 4; }
+.mk { fill: #1b2330; }
+.mk-acc { fill: #2c5aa0; }
+.mk-warn { fill: #9a6200; }
+.mk-prov { fill: #5a6575; }
+.mk-bad { fill: #b03a3a; }
+.axis { stroke: #5a6575; stroke-width: 1.2; }
+.band { fill: #f8edd8; stroke: #9a6200; stroke-width: 1; }
+.dot { fill: #ffffff; stroke: #1b2330; stroke-width: 1.5; }
+.dot-acc { fill: #2c5aa0; stroke: #2c5aa0; }
+.bracket { fill: none; stroke: #2b7a4b; stroke-width: 1.5; }
+.person { fill: #e4ecf8; stroke: #2c5aa0; stroke-width: 1.5; }
+.sys { fill: #e4ecf8; stroke: #2c5aa0; stroke-width: 2.4; }
+.comp { fill: #e4ecf8; stroke: #2c5aa0; stroke-width: 1.3; }
+.ext { fill: #eef5f0; stroke: #5a6575; stroke-width: 1.2; }
+.ext-g { fill: #f3f5f8; stroke: #5a6575; stroke-width: 1.2; }
+.bnd { fill: none; stroke: #2c5aa0; stroke-width: 1.4; stroke-dasharray: 8 5; }
+.node { fill: none; stroke: #5a6575; stroke-width: 1.3; }
+.node-f { fill: #edf2f9; stroke: #5a6575; stroke-width: 1.3; }
+.cls { fill: #ffffff; stroke: #1b2330; stroke-width: 1.2; }
+.cls-e { fill: #eef5f0; stroke: #1b2330; stroke-width: 1.2; }
+.sep { stroke: #c6cfdb; stroke-width: 1.2; }
+.st { fill: #5a6575; font-family: "IBM Plex Mono", Menlo, Consolas, monospace; font-size: 9.6px; }
+.m { font-family: "IBM Plex Mono", Menlo, Consolas, monospace; font-size: 10.2px; fill: #1b2330; }
+.bus { stroke: #5a6575; stroke-width: 1.4; fill: none; }
+</style>
+<rect width="100%" height="100%" fill="#ffffff"/>
+        <defs>
+          <marker id="a3m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker>
+          <marker id="a3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-acc"/></marker>
+          <marker id="a3p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-prov"/></marker>
+          <marker id="a3w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-warn"/></marker>
+        </defs>
+        <rect class="ext" x="290" y="14" width="160" height="52" rx="8"/>
+        <text class="bt" x="370" y="36" text-anchor="middle">Client apps</text>
+        <text class="sub" x="370" y="54" text-anchor="middle">HTTP :80</text>
+
+        <rect class="bnd" x="20" y="90" width="1120" height="550" rx="12"/>
+        <text class="zl" x="470" y="110">DEV BACKEND STACK [environments/dev/backend · 25 RESOURCES]</text>
+
+        <!-- row A -->
+        <rect class="comp" x="40" y="130" width="200" height="74" rx="8"/>
+        <text class="bt" x="140" y="154" text-anchor="middle">ALB security group</text>
+        <text class="sub" x="140" y="172" text-anchor="middle">port 80 from anywhere</text>
+        <text class="sub" x="140" y="188" text-anchor="middle">aws_security_group.alb</text>
+        <rect class="comp" x="270" y="130" width="200" height="74" rx="8"/>
+        <text class="bt" x="370" y="154" text-anchor="middle">Load balancer (ALB)</text>
+        <text class="sub" x="370" y="172" text-anchor="middle">internet-facing · 2 AZs</text>
+        <text class="sub" x="370" y="188" text-anchor="middle">aws_lb.app</text>
+        <rect class="comp" x="500" y="130" width="200" height="74" rx="8"/>
+        <text class="bt" x="600" y="154" text-anchor="middle">Listener :80</text>
+        <text class="sub" x="600" y="172" text-anchor="middle">forward → target group</text>
+        <text class="sub" x="600" y="188" text-anchor="middle">aws_lb_listener.http</text>
+        <rect class="comp" x="730" y="130" width="200" height="74" rx="8"/>
+        <text class="bt" x="830" y="154" text-anchor="middle">Target group</text>
+        <text class="sub" x="830" y="172" text-anchor="middle">instance · dynamic port</text>
+        <text class="sub" x="830" y="188" text-anchor="middle">/api/v1/health · drain 30s</text>
+        <rect class="comp" x="960" y="130" width="170" height="74" rx="8"/>
+        <text class="bt" x="1045" y="154" text-anchor="middle">ECR repository</text>
+        <text class="sub" x="1045" y="172" text-anchor="middle">poshan-backend-dev</text>
+        <text class="sub" x="1045" y="188" text-anchor="middle">lifecycle: last 10</text>
+
+        <!-- row B -->
+        <rect class="comp" x="40" y="270" width="200" height="74" rx="8"/>
+        <text class="bt" x="140" y="294" text-anchor="middle">ECS cluster</text>
+        <text class="sub" x="140" y="312" text-anchor="middle">…-backend-dev-cluster</text>
+        <text class="sub" x="140" y="328" text-anchor="middle">aws_ecs_cluster.app</text>
+        <rect class="comp" x="270" y="270" width="200" height="74" rx="8"/>
+        <text class="bt" x="370" y="294" text-anchor="middle">Capacity provider</text>
+        <text class="sub" x="370" y="312" text-anchor="middle">managed scaling → ASG</text>
+        <text class="sub" x="370" y="328" text-anchor="middle">target capacity 100%</text>
+        <rect class="sys" x="500" y="270" width="200" height="74" rx="8"/>
+        <text class="bt" x="600" y="294" text-anchor="middle">ECS service</text>
+        <text class="sub" x="600" y="312" text-anchor="middle">desired 0/1 · min 0%</text>
+        <text class="sub" x="600" y="328" text-anchor="middle">grace 180 s</text>
+        <rect class="comp" x="730" y="270" width="200" height="74" rx="8"/>
+        <text class="bt" x="830" y="294" text-anchor="middle">Task definition</text>
+        <text class="sub" x="830" y="312" text-anchor="middle">rev 3 · 700 MB · bridge</text>
+        <text class="sub" x="830" y="328" text-anchor="middle">env + secrets + awslogs</text>
+        <rect class="comp" x="960" y="270" width="170" height="74" rx="8"/>
+        <text class="bt" x="1045" y="294" text-anchor="middle">GitHub deploy role</text>
+        <text class="sub" x="1045" y="312" text-anchor="middle">OIDC · env dev only</text>
+        <text class="sub" x="1045" y="328" text-anchor="middle">github-deploy-role</text>
+
+        <!-- row C -->
+        <rect class="comp" x="40" y="410" width="200" height="74" rx="8"/>
+        <text class="bt" x="140" y="434" text-anchor="middle">Launch template</text>
+        <text class="sub" x="140" y="452" text-anchor="middle">t3.micro · 30 GB gp3</text>
+        <text class="sub" x="140" y="468" text-anchor="middle">user_data: ECS_CLUSTER</text>
+        <rect class="comp" x="270" y="410" width="200" height="74" rx="8"/>
+        <text class="bt" x="370" y="434" text-anchor="middle">Auto Scaling group</text>
+        <text class="sub" x="370" y="452" text-anchor="middle">0..1 · subnets 1a, 1b</text>
+        <text class="sub" x="370" y="468" text-anchor="middle">ECS managed draining</text>
+        <rect class="comp" x="500" y="410" width="200" height="74" rx="8"/>
+        <text class="bt" x="600" y="434" text-anchor="middle">Instance SG</text>
+        <text class="sub" x="600" y="452" text-anchor="middle">app ports: ALB SG only</text>
+        <text class="sub" x="600" y="468" text-anchor="middle">SSH: admin IP only</text>
+        <rect class="comp" x="730" y="410" width="200" height="74" rx="8"/>
+        <text class="bt" x="830" y="434" text-anchor="middle">Task execution role</text>
+        <text class="sub" x="830" y="452" text-anchor="middle">pull ECR · write logs</text>
+        <text class="sub" x="830" y="468" text-anchor="middle">read …-dev/* secrets</text>
+        <rect class="comp" x="960" y="410" width="170" height="74" rx="8"/>
+        <text class="bt" x="1045" y="434" text-anchor="middle">Log group</text>
+        <text class="sub" x="1045" y="452" text-anchor="middle">/ecs/…-backend-dev</text>
+        <text class="sub" x="1045" y="468" text-anchor="middle">14-day retention</text>
+
+        <!-- row D -->
+        <rect class="comp" x="40" y="550" width="200" height="74" rx="8"/>
+        <text class="bt" x="140" y="574" text-anchor="middle">Instance role + profile</text>
+        <text class="sub" x="140" y="592" text-anchor="middle">ECS agent · SSM access</text>
+        <text class="sub" x="140" y="608" text-anchor="middle">2 managed policies</text>
+        <rect class="comp" x="270" y="550" width="200" height="74" rx="8"/>
+        <text class="bt" x="370" y="574" text-anchor="middle">ECS-optimized AMI</text>
+        <text class="sub" x="370" y="592" text-anchor="middle">SSM public parameter</text>
+        <text class="sub" x="370" y="608" text-anchor="middle">AL2023 recommended</text>
+        <rect class="ext-g" x="500" y="550" width="200" height="74" rx="8"/>
+        <text class="bt" x="600" y="574" text-anchor="middle">Default VPC</text>
+        <text class="sub" x="600" y="592" text-anchor="middle">2 public subnets</text>
+        <text class="sub" x="600" y="608" text-anchor="middle">looked up, not created</text>
+        <rect class="box-warn" x="730" y="550" width="200" height="74" rx="8"/>
+        <text class="bt" x="830" y="574" text-anchor="middle">App secret</text>
+        <text class="sub" x="830" y="592" text-anchor="middle">poshan-backend-dev/app</text>
+        <text class="sub" x="830" y="608" text-anchor="middle">DB_PASSWORD · JWT_SECRET</text>
+        <rect class="ext-g" x="960" y="550" width="170" height="74" rx="8"/>
+        <text class="bt" x="1045" y="574" text-anchor="middle">EC2 key pair</text>
+        <text class="sub" x="1045" y="592" text-anchor="middle">poshan-dev-key</text>
+        <text class="sub" x="1045" y="608" text-anchor="middle">created by CLI</text>
+
+        <!-- edges -->
+        <line class="e" x1="370" y1="66" x2="370" y2="127" marker-end="url(#a3m)"/>
+        <line class="e" x1="240" y1="167" x2="267" y2="167" marker-end="url(#a3m)"/>
+        <line class="e" x1="470" y1="167" x2="497" y2="167" marker-end="url(#a3m)"/>
+        <line class="e" x1="700" y1="167" x2="727" y2="167" marker-end="url(#a3m)"/>
+        <line class="e" x1="630" y1="270" x2="800" y2="207" marker-end="url(#a3m)"/>
+        <text class="lbl" x="680" y="230">registers tasks</text>
+        <line class="e" x1="700" y1="307" x2="727" y2="307" marker-end="url(#a3m)"/>
+        <line class="e" x1="500" y1="307" x2="473" y2="307" marker-end="url(#a3m)"/>
+        <line class="e" x1="270" y1="307" x2="243" y2="307" marker-end="url(#a3m)"/>
+        <line class="e" x1="370" y1="344" x2="370" y2="407" marker-end="url(#a3m)"/>
+        <text class="lbl" x="378" y="380">scales 0..1</text>
+        <line class="e" x1="270" y1="447" x2="243" y2="447" marker-end="url(#a3m)"/>
+        <line class="e" x1="470" y1="447" x2="497" y2="447" marker-end="url(#a3m)"/>
+        <line class="e" x1="140" y1="484" x2="140" y2="547" marker-end="url(#a3m)"/>
+        <line class="e" x1="200" y1="484" x2="330" y2="547" marker-end="url(#a3m)"/>
+        <line class="e-prov" x1="560" y1="550" x2="430" y2="487" marker-end="url(#a3p)"/>
+        <text class="lbl" x="520" y="516">subnets</text>
+        <line class="e" x1="830" y1="344" x2="830" y2="407" marker-end="url(#a3m)"/>
+        <text class="lbl" x="838" y="380">execution role</text>
+        <line class="e-warn" x1="830" y1="484" x2="830" y2="547" marker-end="url(#a3w)"/>
+        <text class="lbl warn" x="838" y="520">reads</text>
+        <line class="e" x1="930" y1="282" x2="1000" y2="207" marker-end="url(#a3m)"/>
+        <text class="lbl" x="948" y="232">image</text>
+        <line class="e" x1="930" y1="332" x2="1000" y2="407" marker-end="url(#a3m)"/>
+        <text class="lbl" x="976" y="368" text-anchor="end">logs</text>
+        <line class="e-acc" x1="1045" y1="270" x2="1045" y2="207" marker-end="url(#a3a)"/>
+        <text class="lbl acc" x="1053" y="244">push</text>
+        <polyline class="e-acc" points="980,270 980,250 600,250 600,267" marker-end="url(#a3a)"/>
+        <text class="lbl acc" x="890" y="246" text-anchor="middle">update service</text>
+        <line class="e-acc" x1="990" y1="344" x2="925" y2="407" marker-end="url(#a3a)"/>
+        <text class="lbl acc" x="1000" y="384">PassRole</text>
+      </svg>

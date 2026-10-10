@@ -6,6 +6,7 @@ request, and how the dev environment is switched off to save credits.
 
 Read this first if you're new. Then:
 
+- [docs/architecture/AWS-INFRA-C4.md](../docs/architecture/AWS-INFRA-C4.md): the same infrastructure as C1–C4 diagrams, with a catalogue of every AWS component.
 - [DEPLOYMENT.md](DEPLOYMENT.md): the runbook, with exact commands, day-to-day operations and troubleshooting.
 - [README.md](README.md): Terraform folder layout, cost table, multi-account design.
 

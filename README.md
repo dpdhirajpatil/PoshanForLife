@@ -49,6 +49,19 @@ SPRING_FLYWAY_BASELINE_VERSION=16   # highest migration version already applied 
 Then **unset both** — they're a one-time bootstrap step, not a permanent setting, and leaving
 `baseline-on-migrate` on masks real future migration-mismatch errors.
 
+## Architecture
+
+The backend described at every [C4](https://c4model.com/) level:
+
+- [docs/architecture/C4-MODEL.md](docs/architecture/C4-MODEL.md) — C1 system context, C2 containers,
+  C3 components of the Spring Boot API, C4 code (authentication, report processing) and the AWS
+  deployment diagram
+- [docs/architecture/AWS-INFRA-C4.md](docs/architecture/AWS-INFRA-C4.md) — the AWS infrastructure at
+  C1–C4 (platform, building blocks, dev-stack resources, Terraform), the four workflows, and every AWS
+  component with its purpose and cost
+
+![C2 containers: web portal, Android and iOS apps call the Spring Boot API, which owns the database and file storage](docs/architecture/images/c2-containers.svg)
+
 ## Deployment (AWS)
 
 The backend's dev environment runs on AWS (ECS behind an ALB, Supabase Postgres),

@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="625" style="color:#1b2330" viewBox="0 0 1160 625" role="img" aria-label="C3 component diagram of the Spring Boot API container: requests from web and mobile clients pass the security filter chain and rate limiter, then reach five controller groups, which call five service groups; services persist through Spring Data JPA to Postgres and call MSG91, Anthropic, Supabase Storage and Firebase; a global exception handler turns errors into the error envelope; Flyway migrates the schema at startup.">
+<style>
+text { font-family: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif; }
+text { fill: #1b2330; font-family: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif; font-size: 13px; }
+.bt { font-weight: 600; font-size: 13.5px; }
+.sub { fill: #5a6575; font-family: "IBM Plex Mono", Menlo, Consolas, monospace; font-size: 9.6px; }
+.lbl { fill: #5a6575; font-size: 11.5px; paint-order: stroke; stroke: #ffffff; stroke-width: 4px; stroke-linejoin: round; }
+.lbl.acc { fill: #2c5aa0; }
+.lbl.warn { fill: #9a6200; }
+.lbl.bad { fill: #b03a3a; }
+.zl { fill: #5a6575; font-family: "IBM Plex Mono", Menlo, Consolas, monospace; font-size: 10.2px; letter-spacing: 0.04em; }
+.box { fill: #ffffff; stroke: #c6cfdb; stroke-width: 1.3; }
+.box-acc { fill: #e4ecf8; stroke: #2c5aa0; stroke-width: 1.3; }
+.box-ok { fill: #e1f2e7; stroke: #2b7a4b; stroke-width: 1.3; }
+.box-warn { fill: #f8edd8; stroke: #9a6200; stroke-width: 1.3; }
+.box-ghost { fill: none; stroke: #5a6575; stroke-width: 1.2; stroke-dasharray: 5 4; }
+.zone-aws { fill: #edf2f9; stroke: #c6cfdb; }
+.zone-sb { fill: #eef5f0; stroke: #c6cfdb; }
+.frame { fill: none; stroke: #5a6575; stroke-dasharray: 6 4; stroke-width: 1.1; }
+.e { fill: none; stroke: #1b2330; stroke-width: 1.5; }
+.e-acc { fill: none; stroke: #2c5aa0; stroke-width: 1.7; }
+.e-warn { fill: none; stroke: #9a6200; stroke-width: 1.5; stroke-dasharray: 5 3; }
+.e-prov { fill: none; stroke: #5a6575; stroke-width: 1.6; stroke-dasharray: 2 3; }
+.e-bad { fill: none; stroke: #b03a3a; stroke-width: 1.5; stroke-dasharray: 5 3; }
+.ret { stroke-dasharray: 5 4; }
+.life { stroke: #c6cfdb; stroke-width: 1.2; stroke-dasharray: 4 4; }
+.mk { fill: #1b2330; }
+.mk-acc { fill: #2c5aa0; }
+.mk-warn { fill: #9a6200; }
+.mk-prov { fill: #5a6575; }
+.mk-bad { fill: #b03a3a; }
+.axis { stroke: #5a6575; stroke-width: 1.2; }
+.band { fill: #f8edd8; stroke: #9a6200; stroke-width: 1; }
+.dot { fill: #ffffff; stroke: #1b2330; stroke-width: 1.5; }
+.dot-acc { fill: #2c5aa0; stroke: #2c5aa0; }
+.bracket { fill: none; stroke: #2b7a4b; stroke-width: 1.5; }
+.person { fill: #e4ecf8; stroke: #2c5aa0; stroke-width: 1.5; }
+.sys { fill: #e4ecf8; stroke: #2c5aa0; stroke-width: 2.4; }
+.comp { fill: #e4ecf8; stroke: #2c5aa0; stroke-width: 1.3; }
+.ext { fill: #eef5f0; stroke: #5a6575; stroke-width: 1.2; }
+.ext-g { fill: #f3f5f8; stroke: #5a6575; stroke-width: 1.2; }
+.bnd { fill: none; stroke: #2c5aa0; stroke-width: 1.4; stroke-dasharray: 8 5; }
+.node { fill: none; stroke: #5a6575; stroke-width: 1.3; }
+.node-f { fill: #edf2f9; stroke: #5a6575; stroke-width: 1.3; }
+.cls { fill: #ffffff; stroke: #1b2330; stroke-width: 1.2; }
+.cls-e { fill: #eef5f0; stroke: #1b2330; stroke-width: 1.2; }
+.sep { stroke: #c6cfdb; stroke-width: 1.2; }
+.st { fill: #5a6575; font-family: "IBM Plex Mono", Menlo, Consolas, monospace; font-size: 9.6px; }
+.m { font-family: "IBM Plex Mono", Menlo, Consolas, monospace; font-size: 10.2px; fill: #1b2330; }
+.bus { stroke: #5a6575; stroke-width: 1.4; fill: none; }
+</style>
+<rect width="100%" height="100%" fill="#ffffff"/>
+        <defs>
+          <marker id="k1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker>
+          <marker id="k1w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-warn"/></marker>
+        </defs>
+        <!-- client -->
+        <rect class="ext" x="430" y="14" width="300" height="64" rx="8"/>
+        <text class="bt" x="580" y="40" text-anchor="middle">Web &amp; mobile clients</text>
+        <text class="sub" x="580" y="60" text-anchor="middle">[Containers: Angular, Android, iOS]</text>
+        <polyline class="e" points="470,78 470,92 205,92 205,129" marker-end="url(#k1)"/>
+        <text class="lbl" x="338" y="86" text-anchor="middle">JSON/HTTP via ALB · Bearer JWT</text>
+
+        <!-- boundary -->
+        <rect class="bnd" x="20" y="100" width="1120" height="400" rx="12"/>
+        <text class="zl" x="226" y="120">SPRING BOOT API [CONTAINER: JAVA 25 · SPRING BOOT 3.4 · ECS TASK]</text>
+
+        <!-- row A -->
+        <rect class="comp" x="40" y="132" width="330" height="74" rx="8"/>
+        <text class="bt" x="205" y="156" text-anchor="middle">Security filter chain</text>
+        <text class="sub" x="205" y="174" text-anchor="middle">SecurityConfig · JwtAuthenticationFilter</text>
+        <text class="sub" x="205" y="190" text-anchor="middle">stateless · CORS · 401/403 as JSON</text>
+        <rect class="comp" x="390" y="132" width="300" height="74" rx="8"/>
+        <text class="bt" x="540" y="156" text-anchor="middle">Rate limiter</text>
+        <text class="sub" x="540" y="174" text-anchor="middle">RateLimitInterceptor · bucket4j</text>
+        <text class="sub" x="540" y="190" text-anchor="middle">@RateLimit, per IP</text>
+        <rect class="comp" x="710" y="132" width="410" height="74" rx="8"/>
+        <text class="bt" x="915" y="156" text-anchor="middle">GlobalExceptionHandler</text>
+        <text class="sub" x="915" y="174" text-anchor="middle">ApiException, validation, access → error envelope</text>
+        <text class="sub" x="915" y="190" text-anchor="middle">{success: false, error, code}</text>
+        <line class="e" x1="370" y1="169" x2="387" y2="169" marker-end="url(#k1)"/>
+
+        <!-- dispatch bus -->
+        <line class="e" x1="540" y1="206" x2="540" y2="226"/>
+        <line class="bus" x1="347" y1="226" x2="1042" y2="226"/>
+        <line class="e" x1="347" y1="226" x2="347" y2="243" marker-end="url(#k1)"/>
+        <line class="e" x1="527" y1="226" x2="527" y2="243" marker-end="url(#k1)"/>
+        <line class="e" x1="702" y1="226" x2="702" y2="243" marker-end="url(#k1)"/>
+        <line class="e" x1="872" y1="226" x2="872" y2="243" marker-end="url(#k1)"/>
+        <line class="e" x1="1042" y1="226" x2="1042" y2="243" marker-end="url(#k1)"/>
+        <text class="lbl" x="548" y="221">dispatch</text>
+        <line class="e-warn" x1="1100" y1="246" x2="1100" y2="209" marker-end="url(#k1w)"/>
+
+        <!-- left column -->
+        <rect class="comp" x="40" y="246" width="205" height="86" rx="8"/>
+        <text class="bt" x="142" y="272" text-anchor="middle">Flyway</text>
+        <text class="sub" x="142" y="292" text-anchor="middle">V1–V20 at startup</text>
+        <text class="sub" x="142" y="308" text-anchor="middle">Hibernate only validates</text>
+        <rect class="comp" x="40" y="372" width="205" height="96" rx="8"/>
+        <text class="bt" x="142" y="398" text-anchor="middle">Spring Data JPA</text>
+        <text class="sub" x="142" y="418" text-anchor="middle">29 repositories</text>
+        <text class="sub" x="142" y="434" text-anchor="middle">54 entities</text>
+        <text class="sub" x="142" y="450" text-anchor="middle">HikariCP pool</text>
+
+        <!-- row B: controllers -->
+        <rect class="comp" x="265" y="246" width="165" height="86" rx="8"/>
+        <text class="bt" x="347" y="272" text-anchor="middle">Auth &amp; Users API</text>
+        <text class="sub" x="347" y="292" text-anchor="middle">AuthController</text>
+        <text class="sub" x="347" y="308" text-anchor="middle">UserController</text>
+        <rect class="comp" x="445" y="246" width="165" height="86" rx="8"/>
+        <text class="bt" x="527" y="272" text-anchor="middle">Clinical API</text>
+        <text class="sub" x="527" y="292" text-anchor="middle">Patients · Assignments</text>
+        <text class="sub" x="527" y="308" text-anchor="middle">Programmes · Appointmts</text>
+        <rect class="comp" x="625" y="246" width="155" height="86" rx="8"/>
+        <text class="bt" x="702" y="272" text-anchor="middle">Reports API</text>
+        <text class="sub" x="702" y="292" text-anchor="middle">ReportController</text>
+        <text class="sub" x="702" y="308" text-anchor="middle">HealthRecordController</text>
+        <rect class="comp" x="795" y="246" width="155" height="86" rx="8"/>
+        <text class="bt" x="872" y="272" text-anchor="middle">Commerce API</text>
+        <text class="sub" x="872" y="292" text-anchor="middle">Catalogue · Products</text>
+        <text class="sub" x="872" y="308" text-anchor="middle">Orders · Transactions</text>
+        <text class="sub" x="872" y="324" text-anchor="middle">Documents (PDF)</text>
+        <rect class="comp" x="965" y="246" width="155" height="86" rx="8"/>
+        <text class="bt" x="1042" y="272" text-anchor="middle">Engagement API</text>
+        <text class="sub" x="1042" y="292" text-anchor="middle">Notifications · Badges</text>
+        <text class="sub" x="1042" y="308" text-anchor="middle">Leads · Dashboard</text>
+
+        <!-- controllers -> services -->
+        <line class="e" x1="347" y1="332" x2="347" y2="369" marker-end="url(#k1)"/>
+        <line class="e" x1="527" y1="332" x2="527" y2="369" marker-end="url(#k1)"/>
+        <line class="e" x1="702" y1="332" x2="702" y2="369" marker-end="url(#k1)"/>
+        <line class="e" x1="872" y1="332" x2="872" y2="369" marker-end="url(#k1)"/>
+        <line class="e" x1="1042" y1="332" x2="1042" y2="369" marker-end="url(#k1)"/>
+        <text class="lbl" x="355" y="355">calls</text>
+
+        <!-- row C: services -->
+        <rect class="comp" x="265" y="372" width="165" height="96" rx="8"/>
+        <text class="bt" x="347" y="398" text-anchor="middle">Identity &amp; OTP</text>
+        <text class="sub" x="347" y="418" text-anchor="middle">AuthService · UserService</text>
+        <text class="sub" x="347" y="434" text-anchor="middle">PhoneOtpService</text>
+        <text class="sub" x="347" y="450" text-anchor="middle">JwtService · OtpSmsClient</text>
+        <rect class="comp" x="445" y="372" width="165" height="96" rx="8"/>
+        <text class="bt" x="527" y="398" text-anchor="middle">Clinical services</text>
+        <text class="sub" x="527" y="418" text-anchor="middle">PatientService</text>
+        <text class="sub" x="527" y="434" text-anchor="middle">AssignmentService</text>
+        <text class="sub" x="527" y="450" text-anchor="middle">AppointmentService</text>
+        <rect class="comp" x="625" y="372" width="155" height="96" rx="8"/>
+        <text class="bt" x="702" y="398" text-anchor="middle">Report processing</text>
+        <text class="sub" x="702" y="418" text-anchor="middle">ReportService</text>
+        <text class="sub" x="702" y="434" text-anchor="middle">PdfTextExtraction</text>
+        <text class="sub" x="702" y="450" text-anchor="middle">AnthropicExtraction</text>
+        <rect class="comp" x="795" y="372" width="155" height="96" rx="8"/>
+        <text class="bt" x="872" y="398" text-anchor="middle">Commerce services</text>
+        <text class="sub" x="872" y="418" text-anchor="middle">Order · Transaction</text>
+        <text class="sub" x="872" y="434" text-anchor="middle">DocumentService</text>
+        <text class="sub" x="872" y="450" text-anchor="middle">DocumentPdfRenderer</text>
+        <rect class="comp" x="965" y="372" width="155" height="96" rx="8"/>
+        <text class="bt" x="1042" y="398" text-anchor="middle">Notifications</text>
+        <text class="sub" x="1042" y="418" text-anchor="middle">NotificationService</text>
+        <text class="sub" x="1042" y="434" text-anchor="middle">FcmPushService @Async</text>
+        <text class="sub" x="1042" y="450" text-anchor="middle">Badge · Lead · Streak</text>
+
+        <!-- persistence bus -->
+        <line class="bus" x1="255" y1="484" x2="990" y2="484"/>
+        <line class="bus" x1="290" y1="468" x2="290" y2="484"/>
+        <line class="bus" x1="527" y1="468" x2="527" y2="484"/>
+        <line class="bus" x1="700" y1="468" x2="700" y2="484"/>
+        <line class="bus" x1="820" y1="468" x2="820" y2="484"/>
+        <line class="bus" x1="990" y1="468" x2="990" y2="484"/>
+        <polyline class="e" points="255,484 255,420 248,420" marker-end="url(#k1)"/>
+        <text class="lbl" x="465" y="497" text-anchor="middle">reads / writes (JPA)</text>
+
+        <!-- externals -->
+        <rect class="ext" x="40" y="530" width="205" height="72" rx="8"/>
+        <text class="bt" x="142" y="556" text-anchor="middle">Postgres 17</text>
+        <text class="sub" x="142" y="574" text-anchor="middle">Supabase · pooler :5432</text>
+        <text class="sub" x="142" y="590" text-anchor="middle">[Container: database]</text>
+        <rect class="ext" x="265" y="530" width="165" height="72" rx="8"/>
+        <text class="bt" x="347" y="556" text-anchor="middle">MSG91</text>
+        <text class="sub" x="347" y="574" text-anchor="middle">SMS one-time codes</text>
+        <text class="sub" x="347" y="590" text-anchor="middle">[External · HTTPS]</text>
+        <rect class="ext" x="445" y="530" width="165" height="72" rx="8"/>
+        <text class="bt" x="527" y="556" text-anchor="middle">Anthropic API</text>
+        <text class="sub" x="527" y="574" text-anchor="middle">report text → metrics</text>
+        <text class="sub" x="527" y="590" text-anchor="middle">[External · HTTPS]</text>
+        <rect class="ext" x="700" y="530" width="190" height="72" rx="8"/>
+        <text class="bt" x="795" y="556" text-anchor="middle">Supabase Storage</text>
+        <text class="sub" x="795" y="574" text-anchor="middle">images · PDFs · signed URLs</text>
+        <text class="sub" x="795" y="590" text-anchor="middle">[External · REST]</text>
+        <rect class="ext" x="965" y="530" width="155" height="72" rx="8"/>
+        <text class="bt" x="1042" y="556" text-anchor="middle">Firebase FCM</text>
+        <text class="sub" x="1042" y="574" text-anchor="middle">push to phones</text>
+        <text class="sub" x="1042" y="590" text-anchor="middle">[External · Admin SDK]</text>
+
+        <line class="e" x1="142" y1="468" x2="142" y2="527" marker-end="url(#k1)"/>
+        <text class="lbl" x="150" y="512">JDBC · TLS</text>
+        <line class="e" x1="395" y1="468" x2="395" y2="527" marker-end="url(#k1)"/>
+        <line class="e" x1="650" y1="468" x2="560" y2="527" marker-end="url(#k1)"/>
+        <line class="e" x1="750" y1="468" x2="770" y2="527" marker-end="url(#k1)"/>
+        <line class="e" x1="900" y1="468" x2="850" y2="527" marker-end="url(#k1)"/>
+        <line class="e" x1="1060" y1="468" x2="1060" y2="527" marker-end="url(#k1)"/>
+      </svg>
