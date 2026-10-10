@@ -89,6 +89,11 @@ module "backend_app" {
   # Stop-then-start deploys wait for draining, so the 300s default = 5 min extra downtime.
   deregistration_delay_seconds = 30
 
+  # Off until AWS verifies the account for CloudFront (CreateDistribution
+  # returns AccessDenied "account must be verified" — needs an AWS Support
+  # case). While off, the ALB stays open on HTTP; flip to true after.
+  enable_https_cdn = false
+
   container_environment = {
     # JVM defaults to 25% of the container limit for heap (~175 MB); 75% ≈ 525 MB.
     JAVA_TOOL_OPTIONS      = "-XX:MaxRAMPercentage=75"
