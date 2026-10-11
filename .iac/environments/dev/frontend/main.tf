@@ -88,6 +88,9 @@ module "portal" {
   https_listener_arn      = local.platform.https_listener_arn
   listener_rule_priority  = 100
 
+  # dev is normally stopped; env-power.sh start scales this to 1 with the API.
+  initial_desired_count = 0
+
   # HTTPS for dev.portal (DNS at Squarespace, validation CNAME added by hand).
   # Step 1: request. Step 2 (after the CNAME is live AND the backend's
   # enable_https_listener is applied): attach to the :443 listener.

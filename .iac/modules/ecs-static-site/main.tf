@@ -121,7 +121,7 @@ resource "aws_ecs_service" "app" {
   name            = "${var.app_name}-service"
   cluster         = var.ecs_cluster_arn
   task_definition = aws_ecs_task_definition.app.arn
-  desired_count   = 1
+  desired_count   = var.initial_desired_count
 
   # nginx is small enough to run old + new side by side on the host, so
   # deploys start the new task before stopping the old one: no downtime.

@@ -69,6 +69,12 @@ variable "placeholder_image" {
   description = "Image for the first task definition only; GitHub Actions replaces it on the first deploy."
 }
 
+variable "initial_desired_count" {
+  type        = number
+  default     = 1
+  description = "Task count at creation only (later owned by env-power.sh). Use 0 when the environment is stopped: a pending task would make the capacity provider launch the EC2 host."
+}
+
 variable "log_retention_days" {
   type    = number
   default = 14
