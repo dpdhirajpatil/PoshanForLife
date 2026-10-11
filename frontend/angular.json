@@ -108,6 +108,17 @@
                   "with": "src/environments/environment.development.ts"
                 }
               ]
+            },
+            "aws": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.aws.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -120,6 +131,9 @@
             },
             "development": {
               "buildTarget": "frontend:build:development"
+            },
+            "aws": {
+              "buildTarget": "frontend:build:aws"
             }
           },
           "defaultConfiguration": "development"
