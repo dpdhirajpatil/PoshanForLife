@@ -54,3 +54,19 @@ output "app_secret_arn" {
   value       = one(aws_secretsmanager_secret.app[*].arn)
   description = "null when app_secret_keys is empty."
 }
+
+output "acm_validation_records" {
+  value = [
+    for o in try(aws_acm_certificate.api[0].domain_validation_options, []) : {
+      name  = o.resource_record_name
+      type  = o.resource_record_type
+      value = o.resource_record_value
+    }
+  ]
+  description = "DNS record(s) to add at the registrar so ACM can issue the certificate (empty if https_domain_name is unset). Keep them: renewal re-checks them."
+}
+
+output "acm_certificate_status" {
+  value       = try(aws_acm_certificate.api[0].status, null)
+  description = "ACM certificate status as of the last apply/refresh (PENDING_VALIDATION until the DNS record is seen, then ISSUED)."
+}

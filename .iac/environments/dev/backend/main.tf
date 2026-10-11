@@ -94,6 +94,12 @@ module "backend_app" {
   # case). While off, the ALB stays open on HTTP; flip to true after.
   enable_https_cdn = false
 
+  # HTTPS on the ALB itself via ACM (modules/ecs-ec2-app/https.tf). DNS for
+  # poshanforlife.com is at Squarespace, so validation is a manual CNAME.
+  # Step 1: certificate only. Step 2 (after the CNAME is live): listener on.
+  https_domain_name     = "dev.api.poshanforlife.com"
+  enable_https_listener = false
+
   container_environment = {
     # JVM defaults to 25% of the container limit for heap (~175 MB); 75% ≈ 525 MB.
     JAVA_TOOL_OPTIONS      = "-XX:MaxRAMPercentage=75"
@@ -147,6 +153,15 @@ output "alb_dns_name" {
 output "static_ip" {
   value       = module.backend_app.static_ip
   description = "Fixed public IP of the dev ECS host. Whitelist this once in Supabase's Network Restrictions."
+}
+
+output "acm_validation_records" {
+  value       = module.backend_app.acm_validation_records
+  description = "Add these at the DNS host (Squarespace) so ACM can issue the dev.api certificate. Keep them for renewals."
+}
+
+output "acm_certificate_status" {
+  value = module.backend_app.acm_certificate_status
 }
 
 output "cloudfront_domain_name" {

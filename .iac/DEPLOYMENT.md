@@ -335,6 +335,44 @@ CloudFront alias with a real ACM certificate (must be requested in
 `us-east-1` regardless of the app's region) — nothing about the ALB or ECS
 service needs to change for that.
 
+### Roll out HTTPS on the ALB with ACM (`https_domain_name` + `enable_https_listener`, one-time)
+The alternative to CloudFront while that's blocked on AWS account
+verification: a free ACM certificate for `dev.api.poshanforlife.com` on a new
+:443 listener of the existing ALB. DNS for `poshanforlife.com` is at
+Squarespace, so ACM's validation record is added there by hand. Two applies,
+because ACM can't issue until that record exists:
+
+```bash
+cd .iac/environments/dev/backend
+
+# Step 1 — https_domain_name set, enable_https_listener = false
+terraform plan -out=dev.tfplan && terraform apply dev.tfplan   # requests the certificate (PENDING_VALIDATION)
+terraform output acm_validation_records                        # the CNAME to add at Squarespace
+```
+Add at Squarespace (Domains → poshanforlife.com → DNS → Custom records):
+- the validation CNAME from the output (name `_….dev.api`, value
+  `_….acm-validations.aws.`). **Keep it forever**: ACM re-checks it to renew.
+- `dev.api` CNAME → the `alb_dns_name` output.
+
+Leave the root and `www` records alone (they serve the website).
+
+```bash
+# Wait until issued (5–30 min after the CNAME is visible)
+terraform refresh && terraform output acm_certificate_status   # ISSUED
+
+# Step 2 — set enable_https_listener = true in main.tf
+terraform plan -out=dev.tfplan && terraform apply dev.tfplan   # :443 listener, 443 open on the ALB SG, :80 → 301 to https
+curl -s -o /dev/null -w '%{http_code}\n' https://dev.api.poshanforlife.com/api/v1/health   # 200
+curl -s -o /dev/null -w '%{http_code}\n' http://dev.api.poshanforlife.com/api/v1/health    # 301
+```
+If step 2's apply sits on `aws_acm_certificate_validation` for 30 min and
+fails, the CNAME isn't visible yet: check it with
+`dig +short CNAME _<token>.dev.api.poshanforlife.com` and apply again.
+
+Clients then use `https://dev.api.poshanforlife.com/api/v1`. Once AWS clears
+CloudFront, the two can be combined (CloudFront alias with its own us-east-1
+certificate), but this path doesn't need CloudFront at all.
+
 ---
 
 ## 5. Local development

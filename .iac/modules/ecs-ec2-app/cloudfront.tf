@@ -19,8 +19,8 @@ resource "aws_cloudfront_distribution" "api" {
   count   = var.enable_https_cdn ? 1 : 0
   enabled = true
 
-  comment             = "${var.app_name} - HTTPS front door for the ALB"
-  is_ipv6_enabled     = true
+  comment         = "${var.app_name} - HTTPS front door for the ALB"
+  is_ipv6_enabled = true
   price_class     = "PriceClass_100" # cheapest edge location set; raise if non-US/EU latency matters
 
   origin {
@@ -40,7 +40,7 @@ resource "aws_cloudfront_distribution" "api" {
     viewer_protocol_policy = "redirect-to-https"
     allowed_methods        = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
     cached_methods         = ["GET", "HEAD"]
-    compress                = true
+    compress               = true
 
     # No caching: forward everything, let the API decide. min/default/max at
     # 0 means CloudFront treats every response as already-expired.

@@ -103,6 +103,18 @@ variable "enable_https_cdn" {
   description = "Put a CloudFront distribution in front of the ALB for free HTTPS (CloudFront's default *.cloudfront.net certificate, no domain or ACM needed). Caching is disabled — this is a TLS terminator for a dynamic API, not a cache. Use the cloudfront_domain_name output as the API's public HTTPS address instead of the ALB's bare HTTP DNS name."
 }
 
+variable "https_domain_name" {
+  type        = string
+  default     = ""
+  description = "Hostname for an ACM certificate on the ALB (e.g. dev.api.poshanforlife.com). Empty = no certificate. Step 1 of the HTTPS rollout in https.tf: apply, then add the acm_validation_records output to DNS."
+}
+
+variable "enable_https_listener" {
+  type        = bool
+  default     = false
+  description = "Step 2 of https.tf: wait for the ACM certificate to be issued, add the :443 listener, open 443 on the ALB SG, and redirect :80 to https. Needs https_domain_name and its validation CNAME in DNS."
+}
+
 variable "enable_static_ip" {
   type        = bool
   default     = true

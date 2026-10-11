@@ -29,6 +29,14 @@ Restrictions — since you whitelist it once (the `static_ip` output) and
 never touch it again. No extra cost: AWS bills any public IPv4, Elastic or
 auto-assigned, at the same $0.005/hr.
 
+**HTTPS on the ALB (`https_domain_name`, `enable_https_listener`, both off by
+default):** `https.tf` requests a free ACM certificate for a domain you own
+(DNS-validated; the record is added by hand when DNS is outside Route 53,
+see the `acm_validation_records` output), then — in a second apply — adds a
+:443 listener (TLS 1.3/1.2 policy), opens 443 on the ALB security group and
+turns :80 into a 301 redirect to https. The redirect is skipped while
+CloudFront fronts the ALB, because CloudFront's origin hop is plain HTTP.
+
 **Free HTTPS front door (`enable_https_cdn`, default `true`):** a CloudFront
 distribution sits in front of the ALB, terminating TLS with CloudFront's own
 default `*.cloudfront.net` certificate — no domain or ACM certificate
