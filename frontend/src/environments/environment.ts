@@ -1,5 +1,5 @@
-// Production build. Replace with the real deployed API origin.
+// Production build (`ng build`, the default configuration).
 export const environment = {
   production: true,
-  apiBaseUrl: 'https://api.poshanforlife.example.com/api/v1',
+  apiBaseUrl: 'https://api.poshanforlife.com/api/v1',
 };

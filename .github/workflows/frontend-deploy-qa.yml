@@ -1,0 +1,97 @@
+# Build the Angular staff portal for qa, push the image to the qa frontend
+# ECR repo, and roll the qa frontend ECS service onto it. Same pattern as
+# backend-deploy-qa.yml; deploys only from the `qa` branch.
+#
+# AWS auth is OIDC (no stored keys): the job assumes the role created by
+# .iac/environments/qa/frontend (module github_deploy), which trusts only
+# this repo's "qa" GitHub Environment.
+#
+# One-time setup: after applying .iac/environments/qa/frontend, copy its
+# `github_environment_variables` output (the FRONTEND_* variables) into
+# GitHub -> Settings -> Environments -> qa -> Variables.
+# Until FRONTEND_AWS_DEPLOY_ROLE_ARN is set there, the deploy is skipped, not failed.
+
+name: Frontend deploy (qa)
+
+on:
+  push:
+    branches: [qa]
+    paths:
+      - "frontend/**"
+      - ".github/workflows/frontend-deploy-qa.yml"
+  workflow_dispatch:
+
+permissions:
+  id-token: write # for the OIDC token exchanged for AWS credentials
+  contents: read
+
+concurrency:
+  group: frontend-deploy-qa
+  cancel-in-progress: false # never cut off a deploy mid-rollout
+
+jobs:
+  # Environment variables aren't visible to a job-level `if`, so a tiny job
+  # inside the environment reports whether deploy config exists. The
+  # github.ref guard also blocks a manual run started from any other branch
+  # (on top of push.branches and the "qa" Environment's branch policy).
+  config:
+    runs-on: ubuntu-latest
+    environment: qa
+    if: github.ref == 'refs/heads/qa'
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - id: check
+        run: |
+          if [ -n "${{ vars.FRONTEND_AWS_DEPLOY_ROLE_ARN }}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::qa frontend deploy skipped: FRONTEND_AWS_DEPLOY_ROLE_ARN not set on the 'qa' environment yet."
+          fi
+
+  deploy:
+    needs: config
+    if: needs.config.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    environment: qa
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.FRONTEND_AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push image
+        id: image
+        env:
+          IMAGE: ${{ steps.ecr.outputs.registry }}/${{ vars.FRONTEND_ECR_REPOSITORY }}:${{ github.sha }}
+        run: |
+          docker build --build-arg BUILD_CONFIGURATION=qa -t "$IMAGE" frontend
+          docker push "$IMAGE"
+          echo "uri=$IMAGE" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch current task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition "${{ vars.FRONTEND_ECS_TASK_FAMILY }}" \
+            --query taskDefinition > task-definition.json
+
+      - id: taskdef
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: ${{ vars.FRONTEND_CONTAINER_NAME }}
+          image: ${{ steps.image.outputs.uri }}
+
+      - uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.taskdef.outputs.task-definition }}
+          cluster: ${{ vars.FRONTEND_ECS_CLUSTER }}
+          service: ${{ vars.FRONTEND_ECS_SERVICE }}
+          wait-for-service-stability: true
+          wait-for-minutes: 10

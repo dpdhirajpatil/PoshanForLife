@@ -70,3 +70,27 @@ output "acm_certificate_status" {
   value       = try(aws_acm_certificate.api[0].status, null)
   description = "ACM certificate status as of the last apply/refresh (PENDING_VALIDATION until the DNS record is seen, then ISSUED)."
 }
+
+# --- Shared with other services on the same cluster/ALB (e.g. the frontend) ---
+
+output "ecs_cluster_arn" {
+  value = aws_ecs_cluster.app.arn
+}
+
+output "capacity_provider_name" {
+  value = aws_ecs_capacity_provider.app.name
+}
+
+output "public_listener_arn" {
+  value       = var.enable_https_listener ? aws_lb_listener.https[0].arn : aws_lb_listener.http.arn
+  description = "Listener other services attach host-based rules to: :443 once the HTTPS listener is on, else :80. (With HTTPS on, :80 only redirects, so rules belong on :443.)"
+}
+
+output "https_listener_arn" {
+  value = try(aws_lb_listener.https[0].arn, null)
+}
+
+output "alb_dns_name_for_cname" {
+  value       = aws_lb.app.dns_name
+  description = "Same as alb_dns_name; the target for every service hostname's CNAME."
+}

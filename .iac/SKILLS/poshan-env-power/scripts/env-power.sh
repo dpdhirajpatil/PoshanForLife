@@ -55,6 +55,12 @@ SERVICE="$APP-service"
 ASG="$APP-ecs-asg"
 
 svc_field() { "${AWS[@]}" ecs describe-services --cluster "$CLUSTER" --services "$SERVICE" --query "services[0].$1"; }
+
+# The staff portal (environments/<env>/frontend) runs as a second service on
+# the same cluster and host. Optional: skipped wherever it isn't deployed yet.
+FE_SERVICE="poshan-frontend-$ENV-service"
+fe_field() { "${AWS[@]}" ecs describe-services --cluster "$CLUSTER" --services "$FE_SERVICE" --query "services[0].$1" 2>/dev/null; }
+has_frontend() { [ "$(fe_field status)" = "ACTIVE" ]; }
 asg_field() { "${AWS[@]}" autoscaling describe-auto-scaling-groups --auto-scaling-group-names "$ASG" --query "AutoScalingGroups[0].$1"; }
 in_service() { "${AWS[@]}" autoscaling describe-auto-scaling-groups --auto-scaling-group-names "$ASG" --query "length(AutoScalingGroups[0].Instances[?LifecycleState=='InService'])"; }
 # Every instance the ASG still holds, in any state. ECS adds a managed-draining
@@ -91,6 +97,9 @@ status() {
   [ "$svc_status" = "ACTIVE" ] || die "service $SERVICE not found in $CLUSTER — has '$ENV' backend been applied?"
   echo "Environment : $ENV  (account $ACCOUNT, $REGION${PROFILE:+, profile $PROFILE})"
   echo "ECS service : desired=$(svc_field desiredCount) running=$(svc_field runningCount) pending=$(svc_field pendingCount)"
+  if has_frontend; then
+    echo "Frontend    : desired=$(fe_field desiredCount) running=$(fe_field runningCount) pending=$(fe_field pendingCount)"
+  fi
   echo "ASG         : min=$(asg_field MinSize) max=$(asg_field MaxSize) desired=$(asg_field DesiredCapacity) in-service=$(in_service) total-incl-terminating=$(asg_instances)"
   echo "Cluster     : active container instances=$(registered)"
   local tg health
@@ -117,6 +126,12 @@ status() {
 }
 
 stop() {
+  if has_frontend; then
+    log "Scaling ECS service $FE_SERVICE to 0 tasks"
+    "${AWS[@]}" ecs update-service --cluster "$CLUSTER" --service "$FE_SERVICE" --desired-count 0 --query 'service.desiredCount' >/dev/null
+    wait_for "fe_field runningCount" 0 300 || die "frontend tasks did not stop; nothing else changed"
+  fi
+
   log "Scaling ECS service $SERVICE to 0 tasks"
   "${AWS[@]}" ecs update-service --cluster "$CLUSTER" --service "$SERVICE" --desired-count 0 --query 'service.desiredCount' >/dev/null
   wait_for "svc_field runningCount" 0 300 || die "tasks did not stop; nothing else changed"
@@ -139,6 +154,12 @@ start() {
   log "Scaling ECS service $SERVICE to 1 task"
   "${AWS[@]}" ecs update-service --cluster "$CLUSTER" --service "$SERVICE" --desired-count 1 --query 'service.desiredCount' >/dev/null
   wait_for "svc_field runningCount" 1 600 || echo "WARNING: task not running yet — check 'status' and /ecs/$APP logs"
+
+  if has_frontend; then
+    log "Scaling ECS service $FE_SERVICE to 1 task"
+    "${AWS[@]}" ecs update-service --cluster "$CLUSTER" --service "$FE_SERVICE" --desired-count 1 --query 'service.desiredCount' >/dev/null
+    wait_for "fe_field runningCount" 1 300 || echo "WARNING: frontend task not running yet — check /ecs/poshan-frontend-$ENV logs"
+  fi
   log "Started. The ALB health check needs ~1-2 more minutes to turn healthy."
 }
 
