@@ -98,7 +98,7 @@ module "backend_app" {
   # poshanforlife.com is at Squarespace, so validation is a manual CNAME.
   # Step 1: certificate only. Step 2 (after the CNAME is live): listener on.
   https_domain_name     = "dev.api.poshanforlife.com"
-  enable_https_listener = false
+  enable_https_listener = true
 
   container_environment = {
     # JVM defaults to 25% of the container limit for heap (~175 MB); 75% ≈ 525 MB.
