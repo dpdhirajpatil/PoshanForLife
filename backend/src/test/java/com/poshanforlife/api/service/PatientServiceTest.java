@@ -201,7 +201,7 @@ class PatientServiceTest {
         User patient = newUser("P", "p@x.com", Role.PATIENT);
         when(userRepository.findById(patient.getId())).thenReturn(Optional.of(patient));
         when(patientProfileRepository.findByUserId(patient.getId())).thenReturn(Optional.empty());
-        when(healthRecordRepository.findByPatientIdOrderByRecordedAtDesc(patient.getId()))
+        when(healthRecordRepository.findByPatientIdOrderByRecordDateAsc(patient.getId()))
                 .thenReturn(List.of());
 
         var detail = patientService.update(patient.getId(),
