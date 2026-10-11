@@ -89,6 +89,18 @@ resource "aws_launch_template" "ecs_instance" {
   # public address never changes across stop/start cycles.
   user_data = base64encode(<<-EOF
     #!/bin/bash
+    %{if var.swap_size_mb > 0~}
+    # Swap first, before the ECS agent starts containers: a 1 GB t3.micro with
+    # no swap freezes (memory thrash, agents disconnect) instead of slowing down.
+    if [ ! -f /swapfile ]; then
+      dd if=/dev/zero of=/swapfile bs=1M count=${var.swap_size_mb} status=none
+      chmod 600 /swapfile
+      mkswap /swapfile
+      echo '/swapfile none swap sw 0 0' >> /etc/fstab
+    fi
+    swapon /swapfile || true
+    sysctl -w vm.swappiness=10
+    %{endif~}
     echo ECS_CLUSTER=${aws_ecs_cluster.app.name} >> /etc/ecs/ecs.config
     %{if var.enable_static_ip~}
     if ! command -v aws >/dev/null 2>&1; then

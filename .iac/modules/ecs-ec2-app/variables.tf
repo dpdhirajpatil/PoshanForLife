@@ -115,6 +115,12 @@ variable "enable_https_listener" {
   description = "Step 2 of https.tf: wait for the ACM certificate to be issued, add the :443 listener, open 443 on the ALB SG, and redirect :80 to https. Needs https_domain_name and its validation CNAME in DNS."
 }
 
+variable "swap_size_mb" {
+  type        = number
+  default     = 1024
+  description = "Swap file created on each ECS host at boot (0 = none). On a 1 GB t3.micro running the API (700 MB) plus agents and the portal, no swap meant the host froze under memory pressure instead of slowing down. swappiness=10 keeps it a safety net, not a working set. Takes effect on new hosts only (stop/start)."
+}
+
 variable "enable_static_ip" {
   type        = bool
   default     = true
