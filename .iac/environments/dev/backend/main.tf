@@ -106,7 +106,7 @@ module "backend_app" {
     SPRING_PROFILES_ACTIVE = "dev"
     # Browser origins allowed to call the API (comma-separated). The staff
     # portal (environments/dev/frontend) plus local `ng serve`.
-    CORS_ALLOWED_ORIGINS = "https://dev.ui.poshanforlife.com,http://localhost:4200"
+    CORS_ALLOWED_ORIGINS = "https://dev.portal.poshanforlife.com,http://localhost:4200"
     # Supabase project "poshan-dev". Session pooler (IPv4) on 5432, not the
     # IPv6-only direct host and not the 6543 transaction pooler (breaks
     # Hibernate/Flyway prepared statements).

@@ -78,7 +78,7 @@ module "portal" {
   source = "../../../modules/ecs-static-site"
 
   app_name  = "poshan-frontend-dev"
-  host_name = "dev.ui.poshanforlife.com"
+  host_name = "dev.portal.poshanforlife.com"
 
   vpc_id                  = local.platform.vpc_id
   ecs_cluster_arn         = local.platform.ecs_cluster_arn
@@ -88,7 +88,7 @@ module "portal" {
   https_listener_arn      = local.platform.https_listener_arn
   listener_rule_priority  = 100
 
-  # HTTPS for dev.ui (DNS at Squarespace, validation CNAME added by hand).
+  # HTTPS for dev.portal (DNS at Squarespace, validation CNAME added by hand).
   # Step 1: request. Step 2 (after the CNAME is live AND the backend's
   # enable_https_listener is applied): attach to the :443 listener.
   request_certificate = true
@@ -115,13 +115,13 @@ module "github_deploy" {
 }
 
 output "portal_url" {
-  value = "https://dev.ui.poshanforlife.com"
+  value = "https://dev.portal.poshanforlife.com"
 }
 
 output "dns_records_to_add" {
   description = "Add at Squarespace: the portal hostname, plus ACM's validation record(s). Keep the validation records for renewals."
   value = concat(
-    [{ name = "dev.ui", type = "CNAME", value = local.platform.alb_dns_name }],
+    [{ name = "dev.portal", type = "CNAME", value = local.platform.alb_dns_name }],
     module.portal.acm_validation_records,
   )
 }

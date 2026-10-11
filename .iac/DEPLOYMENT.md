@@ -376,7 +376,7 @@ certificate), but this path doesn't need CloudFront at all.
 ### Deploy the frontend (staff portal) to dev, one-time
 The Angular portal runs as a second ECS service on the dev cluster and host
 (nginx, 64 MB next to the 700 MB API), reached at
-`https://dev.ui.poshanforlife.com` through a host-header rule on the shared
+`https://dev.portal.poshanforlife.com` through a host-header rule on the shared
 ALB. Terraform: `environments/dev/frontend` (own state, reads the backend's
 `shared_platform` output) + `modules/ecs-static-site`. Prerequisite: the
 backend env applied from this branch (it publishes `shared_platform` and
@@ -387,12 +387,12 @@ running API with its next deploy).
 cd .iac/environments/dev/frontend
 terraform init -backend-config=backend-config.hcl
 terraform plan -out=dev.tfplan && terraform apply dev.tfplan   # ECR, service, target group, host rule, deploy role, cert request
-terraform output dns_records_to_add                            # dev.ui CNAME + ACM validation CNAME → Squarespace
+terraform output dns_records_to_add                            # dev.portal CNAME + ACM validation CNAME → Squarespace
 terraform output github_environment_variables                  # FRONTEND_* → GitHub Environment "dev" variables
 ```
-Then, once the dev.ui validation CNAME is live **and** the backend's HTTPS
+Then, once the dev.portal validation CNAME is live **and** the backend's HTTPS
 listener is on, set `attach_certificate = true` and apply again (attaches
-the dev.ui certificate to the :443 listener by SNI and moves the host rule
+the dev.portal certificate to the :443 listener by SNI and moves the host rule
 from :80 to :443 via `public_listener_arn`). Deploys then run on every push
 to `develop` touching `frontend/**`. `env-power.sh` starts/stops the portal
 service together with the API.

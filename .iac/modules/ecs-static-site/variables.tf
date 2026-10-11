@@ -5,7 +5,7 @@ variable "app_name" {
 
 variable "host_name" {
   type        = string
-  description = "Hostname the ALB routes to this app (e.g. dev.ui.poshanforlife.com). Its DNS CNAME must point at the ALB."
+  description = "Hostname the ALB routes to this app (e.g. dev.portal.poshanforlife.com). Its DNS CNAME must point at the ALB."
 }
 
 # --- Shared platform (outputs of the backend environment) ---
