@@ -4,6 +4,11 @@
 #   env-power.sh status <dev|qa|prod>
 #   env-power.sh stop   <dev|qa|prod>   # ECS service -> 0 tasks, ASG -> 0 instances
 #   env-power.sh start  <dev|qa|prod>   # ASG -> 1 instance, ECS service -> 1 task
+#   env-power.sh kill   <dev|qa|prod>   # force-stop: no graceful draining, frees a stuck host
+#
+# kill (any env) and every action on prod ask you to type the env name; pass
+# --yes as a third argument to skip that (e.g. from scripts or Claude, after
+# confirming some other way). Without a terminal and without --yes they refuse.
 #
 # Account, profile and region come from that env's terraform.tfvars
 # (allowed_account_ids / aws_profile / aws_region), and the script refuses to
@@ -21,11 +26,16 @@ set -euo pipefail
 die() { echo "ERROR: $*" >&2; exit 1; }
 log() { echo "==> $*"; }
 
-[ $# -eq 2 ] || die "usage: $(basename "$0") <start|stop|status> <dev|qa|prod>"
+USAGE="usage: $(basename "$0") <start|stop|kill|status> <dev|qa|prod> [--yes]"
+[ $# -eq 2 ] || [ $# -eq 3 ] || die "$USAGE"
 ACTION=$1
 ENV=$2
+YES=false
+if [ $# -eq 3 ]; then
+  case "$3" in --yes | -y) YES=true ;; *) die "$USAGE" ;; esac
+fi
 
-case "$ACTION" in start | stop | status) ;; *) die "action must be start, stop or status (got '$ACTION')" ;; esac
+case "$ACTION" in start | stop | kill | status) ;; *) die "action must be start, stop, kill or status (got '$ACTION')" ;; esac
 case "$ENV" in
   dev | qa | prod) ;;
   local) die "'local' runs on your machine (docker compose), it has no AWS stack to start/stop" ;;
@@ -91,6 +101,22 @@ wait_for() {
   done
 }
 
+# kill on any env, and anything but status on prod, needs the env name typed
+# back (or --yes).
+confirm() {
+  [ "$ACTION" = "status" ] && return 0
+  [ "$ACTION" = "kill" ] || [ "$ENV" = "prod" ] || return 0
+  $YES && return 0
+  [ -t 0 ] || die "'$ACTION $ENV' needs confirmation: run it in a terminal, or add --yes"
+  local what="$ACTION $ENV"
+  [ "$ACTION" = "kill" ] && what="FORCE-STOP $ENV (running requests are cut off, no draining)"
+  [ "$ENV" = "prod" ] && what="$what — PRODUCTION, real users"
+  printf '%s\nType "%s" to continue: ' "$what" "$ENV"
+  local answer
+  read -r answer
+  [ "$answer" = "$ENV" ] || die "not confirmed, nothing changed"
+}
+
 status() {
   local svc_status
   svc_status=$(svc_field status 2>/dev/null || true)
@@ -144,6 +170,40 @@ stop() {
   log "Stopped. EC2 compute (instance, its public IP, root EBS) no longer bills; the ALB still does."
 }
 
+# Force-stop: the same end state as stop (services at 0, ASG at 0), without
+# waiting for tasks or the ALB to drain. ECS managed draining parks the host in
+# Terminating:Wait until its tasks are gone, which never happens if the host is
+# frozen, so this releases the lifecycle hook itself.
+kill_env() {
+  log "FORCE-STOP $ENV: no draining, running requests are cut off"
+  if has_frontend; then
+    "${AWS[@]}" ecs update-service --cluster "$CLUSTER" --service "$FE_SERVICE" --desired-count 0 --query 'service.desiredCount' >/dev/null
+  fi
+  "${AWS[@]}" ecs update-service --cluster "$CLUSTER" --service "$SERVICE" --desired-count 0 --query 'service.desiredCount' >/dev/null
+  "${AWS[@]}" autoscaling update-auto-scaling-group --auto-scaling-group-name "$ASG" --min-size 0 --desired-capacity 0
+
+  local hook waited=0 ids id
+  hook=$("${AWS[@]}" autoscaling describe-lifecycle-hooks --auto-scaling-group-name "$ASG" \
+    --query "LifecycleHooks[?LifecycleTransition=='autoscaling:EC2_INSTANCE_TERMINATING'].LifecycleHookName | [0]")
+  while [ "$(asg_instances)" != "0" ]; do
+    if [ -n "$hook" ] && [ "$hook" != "None" ]; then
+      ids=$("${AWS[@]}" autoscaling describe-auto-scaling-groups --auto-scaling-group-names "$ASG" \
+        --query "AutoScalingGroups[0].Instances[?LifecycleState=='Terminating:Wait'].InstanceId")
+      for id in $ids; do
+        [ "$id" = "None" ] && continue
+        log "Releasing $id from lifecycle hook $hook"
+        "${AWS[@]}" autoscaling complete-lifecycle-action --auto-scaling-group-name "$ASG" \
+          --lifecycle-hook-name "$hook" --instance-id "$id" --lifecycle-action-result CONTINUE >/dev/null 2>&1 || true
+      done
+    fi
+    [ "$waited" -ge 600 ] && { echo "WARNING: instance still terminating after 600s — re-run 'status' shortly"; return 0; }
+    sleep 15
+    waited=$((waited + 15))
+    echo "   ...instances left: $(asg_instances) (${waited}s)"
+  done
+  log "Force-stopped. EC2 compute no longer bills; the ALB still does. 'start' brings it back."
+}
+
 start() {
   log "Scaling ASG $ASG to 1 instance"
   "${AWS[@]}" autoscaling update-auto-scaling-group --auto-scaling-group-name "$ASG" --min-size 1 --max-size 1 --desired-capacity 1
@@ -163,8 +223,10 @@ start() {
   log "Started. The ALB health check needs ~1-2 more minutes to turn healthy."
 }
 
+confirm
 case "$ACTION" in
   status) status ;;
   stop) status; echo; stop; echo; status ;;
   start) status; echo; start; echo; status ;;
+  kill) status; echo; kill_env; echo; status ;;
 esac
