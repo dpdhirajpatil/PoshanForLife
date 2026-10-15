@@ -98,9 +98,11 @@ resource "aws_lb_target_group" "app" {
 }
 
 # Host-based routing: requests for var.host_name go to this app, everything
-# else keeps hitting the listener's default action (the API).
+# else keeps hitting the listener's default action (the API). Once the
+# certificate is attached the rule lives on :443 instead, so plain http for
+# var.host_name falls through to :80's redirect-to-https default.
 resource "aws_lb_listener_rule" "host" {
-  listener_arn = var.listener_arn
+  listener_arn = var.attach_certificate ? var.https_listener_arn : var.listener_arn
   priority     = var.listener_rule_priority
 
   action {

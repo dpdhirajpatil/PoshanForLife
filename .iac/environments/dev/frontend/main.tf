@@ -95,7 +95,7 @@ module "portal" {
   # Step 1: request. Step 2 (after the CNAME is live AND the backend's
   # enable_https_listener is applied): attach to the :443 listener.
   request_certificate = true
-  attach_certificate  = false
+  attach_certificate  = true
 
   tags = local.tags
 }
