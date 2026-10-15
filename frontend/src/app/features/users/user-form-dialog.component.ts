@@ -95,9 +95,9 @@ export interface UserFormDialogData {
         @if (isEdit) {
           <mat-form-field appearance="outline">
             <mat-label>Date of birth</mat-label>
-            <input matInput formControlName="dateOfBirth" [matDatepicker]="dobPicker" />
+            <input matInput formControlName="dateOfBirth" [matDatepicker]="dobPicker" [max]="today" />
             <mat-datepicker-toggle matIconSuffix [for]="dobPicker" />
-            <mat-datepicker #dobPicker />
+            <mat-datepicker #dobPicker startView="multi-year" />
           </mat-form-field>
         }
       </form>
@@ -125,6 +125,9 @@ export interface UserFormDialogData {
   `,
 })
 export class UserFormDialogComponent {
+  /** Date of birth can't be in the future; [max] also rejects typed future dates. */
+  protected readonly today = new Date();
+
   protected readonly ref = inject(MatDialogRef<UserFormDialogComponent>);
   private readonly data = inject<UserFormDialogData>(MAT_DIALOG_DATA);
   private readonly usersService = inject(UsersService);

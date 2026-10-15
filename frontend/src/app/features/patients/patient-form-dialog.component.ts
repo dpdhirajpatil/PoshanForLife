@@ -110,9 +110,9 @@ const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
         <div class="grid">
           <mat-form-field appearance="outline">
             <mat-label>Date of birth</mat-label>
-            <input matInput formControlName="dateOfBirth" [matDatepicker]="dobPicker" />
+            <input matInput formControlName="dateOfBirth" [matDatepicker]="dobPicker" [max]="today" />
             <mat-datepicker-toggle matIconSuffix [for]="dobPicker" />
-            <mat-datepicker #dobPicker />
+            <mat-datepicker #dobPicker startView="multi-year" />
           </mat-form-field>
 
           <mat-form-field appearance="outline">
@@ -190,6 +190,9 @@ const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
   `,
 })
 export class PatientFormDialogComponent {
+  /** Date of birth can't be in the future; [max] also rejects typed future dates. */
+  protected readonly today = new Date();
+
   protected readonly ref = inject(MatDialogRef<PatientFormDialogComponent>);
   private readonly data = inject<PatientFormDialogData>(MAT_DIALOG_DATA);
   private readonly patientsService = inject(PatientsService);
