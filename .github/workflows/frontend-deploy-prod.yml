@@ -1,0 +1,127 @@
+# Build the Angular staff portal for prod, push the image to the prod frontend
+# ECR repo, and roll the prod frontend ECS service onto it. Same pattern as
+# backend-deploy-prod.yml; deploys only from the `prod` branch.
+#
+# AWS auth is OIDC (no stored keys): the job assumes the role created by
+# .iac/environments/prod/frontend (module github_deploy), which trusts only
+# this repo's "prod" GitHub Environment.
+#
+# One-time setup: after applying .iac/environments/prod/frontend, copy its
+# `github_environment_variables` output (the FRONTEND_* variables) into
+# GitHub -> Settings -> Environments -> prod -> Variables.
+# Until FRONTEND_AWS_DEPLOY_ROLE_ARN is set there, the deploy is skipped, not failed.
+#
+# After a SUCCESSFUL deploy it also tags the commit (prod-ui-<date>-<sha>) and
+# opens (or reuses) the prod -> main PR, like backend-deploy-prod.yml. The
+# "prod" GitHub Environment requires a reviewer's approval before deploy runs.
+
+name: Frontend deploy (prod)
+
+on:
+  push:
+    branches: [prod]
+    paths:
+      - "frontend/**"
+      - ".github/workflows/frontend-deploy-prod.yml"
+  workflow_dispatch:
+
+permissions:
+  id-token: write # for the OIDC token exchanged for AWS credentials
+  contents: write # to push the release tag
+  pull-requests: write # to open the post-deploy PR to main
+
+concurrency:
+  group: frontend-deploy-prod
+  cancel-in-progress: false # never cut off a deploy mid-rollout
+
+jobs:
+  # Environment variables aren't visible to a job-level `if`, so a tiny job
+  # inside the environment reports whether deploy config exists. The
+  # github.ref guard also blocks a manual run started from any other branch
+  # (on top of push.branches and the "prod" Environment's branch policy).
+  config:
+    runs-on: ubuntu-latest
+    environment: prod
+    if: github.ref == 'refs/heads/prod'
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - id: check
+        run: |
+          if [ -n "${{ vars.FRONTEND_AWS_DEPLOY_ROLE_ARN }}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::prod frontend deploy skipped: FRONTEND_AWS_DEPLOY_ROLE_ARN not set on the 'prod' environment yet."
+          fi
+
+  deploy:
+    needs: config
+    if: needs.config.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # full history to push the release tag
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.FRONTEND_AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push image
+        id: image
+        env:
+          IMAGE: ${{ steps.ecr.outputs.registry }}/${{ vars.FRONTEND_ECR_REPOSITORY }}:${{ github.sha }}
+        run: |
+          docker build --build-arg BUILD_CONFIGURATION=production -t "$IMAGE" frontend
+          docker push "$IMAGE"
+          echo "uri=$IMAGE" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch current task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition "${{ vars.FRONTEND_ECS_TASK_FAMILY }}" \
+            --query taskDefinition > task-definition.json
+
+      - id: taskdef
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: ${{ vars.FRONTEND_CONTAINER_NAME }}
+          image: ${{ steps.image.outputs.uri }}
+
+      - uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.taskdef.outputs.task-definition }}
+          cluster: ${{ vars.FRONTEND_ECS_CLUSTER }}
+          service: ${{ vars.FRONTEND_ECS_SERVICE }}
+          wait-for-service-stability: true
+          wait-for-minutes: 10
+
+      # --- Only reached if the deploy above succeeded.
+
+      - name: Create and push release tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          TAG="prod-ui-$(date -u +%Y.%m.%d-%H%M)-${GITHUB_SHA::7}"
+          git tag -a "$TAG" -m "Prod frontend deploy of $GITHUB_SHA"
+          git push origin "$TAG"
+
+      - name: Open PR prod -> main (reuse if one is already open)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          EXISTING=$(gh pr list --repo "$GITHUB_REPOSITORY" --base main --head prod --state open --json number --jq 'length')
+          if [ "$EXISTING" = "0" ]; then
+            gh pr create --repo "$GITHUB_REPOSITORY" --base main --head prod \
+              --title "Release: frontend ${GITHUB_SHA::7}" \
+              --body "Automated PR after the prod frontend deployment of \`${{ github.sha }}\`."
+          else
+            echo "An open prod -> main PR already exists; not creating another."
+          fi

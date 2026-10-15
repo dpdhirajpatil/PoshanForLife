@@ -32,6 +32,12 @@ public class GlobalExceptionHandler {
     /** Domain exceptions carry their own code and status. */
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ApiErrorResponse> handleApiException(ApiException ex) {
+        // Wrapped infrastructure failures (e.g. StorageException around a
+        // Supabase call) reach the client as a generic message; log the cause
+        // so the server side isn't silent too.
+        if (ex.getCause() != null) {
+            log.warn("{}: {}", ex.getCode(), ex.getMessage(), ex.getCause());
+        }
         return respond(ex.getCode(), ex.getMessage(), ex.getDetails());
     }
 

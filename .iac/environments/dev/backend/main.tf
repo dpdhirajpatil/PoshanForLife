@@ -94,10 +94,19 @@ module "backend_app" {
   # case). While off, the ALB stays open on HTTP; flip to true after.
   enable_https_cdn = false
 
+  # HTTPS on the ALB itself via ACM (modules/ecs-ec2-app/https.tf). DNS for
+  # poshanforlife.com is at Squarespace, so validation is a manual CNAME.
+  # Step 1: certificate only. Step 2 (after the CNAME is live): listener on.
+  https_domain_name     = "dev.api.poshanforlife.com"
+  enable_https_listener = true
+
   container_environment = {
     # JVM defaults to 25% of the container limit for heap (~175 MB); 75% ≈ 525 MB.
     JAVA_TOOL_OPTIONS      = "-XX:MaxRAMPercentage=75"
     SPRING_PROFILES_ACTIVE = "dev"
+    # Browser origins allowed to call the API (comma-separated). The staff
+    # portal (environments/dev/frontend) plus local `ng serve`.
+    CORS_ALLOWED_ORIGINS = "https://dev.portal.poshanforlife.com,http://localhost:4200"
     # Supabase project "poshan-dev". Session pooler (IPv4) on 5432, not the
     # IPv6-only direct host and not the 6543 transaction pooler (breaks
     # Hibernate/Flyway prepared statements).
@@ -147,6 +156,30 @@ output "alb_dns_name" {
 output "static_ip" {
   value       = module.backend_app.static_ip
   description = "Fixed public IP of the dev ECS host. Whitelist this once in Supabase's Network Restrictions."
+}
+
+output "acm_validation_records" {
+  value       = module.backend_app.acm_validation_records
+  description = "Add these at the DNS host (Squarespace) so ACM can issue the dev.api certificate. Keep them for renewals."
+}
+
+output "acm_certificate_status" {
+  value = module.backend_app.acm_certificate_status
+}
+
+# Read by environments/dev/frontend through terraform_remote_state, so the
+# frontend can join this cluster and ALB without owning them.
+output "shared_platform" {
+  value = {
+    vpc_id                  = module.networking.vpc_id
+    ecs_cluster_name        = module.backend_app.ecs_cluster_name
+    ecs_cluster_arn         = module.backend_app.ecs_cluster_arn
+    capacity_provider_name  = module.backend_app.capacity_provider_name
+    public_listener_arn     = module.backend_app.public_listener_arn
+    https_listener_arn      = module.backend_app.https_listener_arn
+    alb_dns_name            = module.backend_app.alb_dns_name
+    task_execution_role_arn = module.backend_app.task_execution_role_arn
+  }
 }
 
 output "cloudfront_domain_name" {

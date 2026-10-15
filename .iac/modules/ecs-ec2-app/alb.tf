@@ -17,7 +17,7 @@ data "aws_ec2_managed_prefix_list" "cloudfront" {
 }
 
 resource "aws_security_group" "alb" {
-  name        = "${var.app_name}-alb-sg"
+  name = "${var.app_name}-alb-sg"
   # Kept static on purpose: an SG's description is ForceNew, and replacing an
   # SG the ALB is attached to fails (DependencyViolation). The ingress rule
   # below is what actually changes with enable_https_cdn.
@@ -31,6 +31,18 @@ resource "aws_security_group" "alb" {
     protocol        = "tcp"
     cidr_blocks     = var.enable_https_cdn ? null : ["0.0.0.0/0"]
     prefix_list_ids = var.enable_https_cdn ? [data.aws_ec2_managed_prefix_list.cloudfront[0].id] : null
+  }
+
+  # HTTPS listener (https.tf), when enabled.
+  dynamic "ingress" {
+    for_each = var.enable_https_listener ? [1] : []
+    content {
+      description = "HTTPS from anywhere"
+      from_port   = 443
+      to_port     = 443
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
   }
 
   egress {
@@ -81,13 +93,29 @@ resource "aws_lb_target_group" "app" {
   tags = var.tags
 }
 
+# With the HTTPS listener on, :80 only redirects to https. Not while
+# CloudFront fronts the ALB: its origin connection is plain HTTP, so a
+# redirect there would loop.
+locals {
+  redirect_http_to_https = var.enable_https_listener && !var.enable_https_cdn
+}
+
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.app.arn
   port              = 80
   protocol          = "HTTP"
 
   default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.app.arn
+    type             = local.redirect_http_to_https ? "redirect" : "forward"
+    target_group_arn = local.redirect_http_to_https ? null : aws_lb_target_group.app.arn
+
+    dynamic "redirect" {
+      for_each = local.redirect_http_to_https ? [1] : []
+      content {
+        protocol    = "HTTPS"
+        port        = "443"
+        status_code = "HTTP_301"
+      }
+    }
   }
 }

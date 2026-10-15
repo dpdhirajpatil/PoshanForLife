@@ -335,6 +335,68 @@ CloudFront alias with a real ACM certificate (must be requested in
 `us-east-1` regardless of the app's region) — nothing about the ALB or ECS
 service needs to change for that.
 
+### Roll out HTTPS on the ALB with ACM (`https_domain_name` + `enable_https_listener`, one-time)
+The alternative to CloudFront while that's blocked on AWS account
+verification: a free ACM certificate for `dev.api.poshanforlife.com` on a new
+:443 listener of the existing ALB. DNS for `poshanforlife.com` is at
+Squarespace, so ACM's validation record is added there by hand. Two applies,
+because ACM can't issue until that record exists:
+
+```bash
+cd .iac/environments/dev/backend
+
+# Step 1 — https_domain_name set, enable_https_listener = false
+terraform plan -out=dev.tfplan && terraform apply dev.tfplan   # requests the certificate (PENDING_VALIDATION)
+terraform output acm_validation_records                        # the CNAME to add at Squarespace
+```
+Add at Squarespace (Domains → poshanforlife.com → DNS → Custom records):
+- the validation CNAME from the output (name `_….dev.api`, value
+  `_….acm-validations.aws.`). **Keep it forever**: ACM re-checks it to renew.
+- `dev.api` CNAME → the `alb_dns_name` output.
+
+Leave the root and `www` records alone (they serve the website).
+
+```bash
+# Wait until issued (5–30 min after the CNAME is visible)
+terraform refresh && terraform output acm_certificate_status   # ISSUED
+
+# Step 2 — set enable_https_listener = true in main.tf
+terraform plan -out=dev.tfplan && terraform apply dev.tfplan   # :443 listener, 443 open on the ALB SG, :80 → 301 to https
+curl -s -o /dev/null -w '%{http_code}\n' https://dev.api.poshanforlife.com/api/v1/health   # 200
+curl -s -o /dev/null -w '%{http_code}\n' http://dev.api.poshanforlife.com/api/v1/health    # 301
+```
+If step 2's apply sits on `aws_acm_certificate_validation` for 30 min and
+fails, the CNAME isn't visible yet: check it with
+`dig +short CNAME _<token>.dev.api.poshanforlife.com` and apply again.
+
+Clients then use `https://dev.api.poshanforlife.com/api/v1`. Once AWS clears
+CloudFront, the two can be combined (CloudFront alias with its own us-east-1
+certificate), but this path doesn't need CloudFront at all.
+
+### Deploy the frontend (staff portal) to dev, one-time
+The Angular portal runs as a second ECS service on the dev cluster and host
+(nginx, 64 MB next to the 700 MB API), reached at
+`https://dev.portal.poshanforlife.com` through a host-header rule on the shared
+ALB. Terraform: `environments/dev/frontend` (own state, reads the backend's
+`shared_platform` output) + `modules/ecs-static-site`. Prerequisite: the
+backend env applied from this branch (it publishes `shared_platform` and
+sets `CORS_ALLOWED_ORIGINS` for the portal; the CORS change reaches the
+running API with its next deploy).
+
+```bash
+cd .iac/environments/dev/frontend
+terraform init -backend-config=backend-config.hcl
+terraform plan -out=dev.tfplan && terraform apply dev.tfplan   # ECR, service, target group, host rule, deploy role, cert request
+terraform output dns_records_to_add                            # dev.portal CNAME + ACM validation CNAME → Squarespace
+terraform output github_environment_variables                  # FRONTEND_* → GitHub Environment "dev" variables
+```
+Then, once the dev.portal validation CNAME is live **and** the backend's HTTPS
+listener is on, set `attach_certificate = true` and apply again (attaches
+the dev.portal certificate to the :443 listener by SNI and moves the host rule
+from :80 to :443 via `public_listener_arn`). Deploys then run on every push
+to `develop` touching `frontend/**`. `env-power.sh` starts/stops the portal
+service together with the API.
+
 ---
 
 ## 5. Local development
@@ -394,19 +456,28 @@ before then or the account closes. Details: [README.md](README.md#cost-posture--
 
 ## 9. Branching & release strategy
 
-| Environment | Deploys from | Workflow |
-|---|---|---|
-| dev | `develop` | `.github/workflows/backend-deploy-dev.yml` |
-| qa | `qa` | `.github/workflows/backend-deploy-qa.yml` |
-| prod | `prod` | `.github/workflows/backend-deploy-prod.yml` |
+Backend and frontend follow the same rules. GitHub Actions is the only
+thing that deploys application code; Terraform builds infrastructure through
+a reviewed plan/apply and ignores which image is running.
+
+| Environment | Deploys from | Backend workflow | Frontend workflow | GitHub Environment |
+|---|---|---|---|---|
+| dev | `develop` | `backend-deploy-dev.yml` | `frontend-deploy-dev.yml` | `dev`, branch `develop` only |
+| qa | `qa` | `backend-deploy-qa.yml` | `frontend-deploy-qa.yml` | `qa`, branch `qa` only |
+| prod | `prod` | `backend-deploy-prod.yml` | `frontend-deploy-prod.yml` | `prod`, branch `prod` only + required reviewer |
+
+Release flow: feature branches → PR into `develop` → promote `develop` → `qa`
+→ `prod` by PR; after each successful prod deploy a PR `prod` → `main` keeps
+`main` equal to what's live. (2026-10-11: the old `QA` branch was renamed to
+`qa` and `prod` was created from `main`.)
 
 Each workflow is restricted to its branch three ways: the workflow's
 `on.push.branches` filter, a `github.ref` guard on the first job (blocks a
 manual `workflow_dispatch` from any other branch), and — the one that
 actually matters, since it's enforced server-side by GitHub, not by
 anything in the workflow file — that environment's **deployment branch
-policy**. dev's is live today (§3 Step 7); qa's and prod's need the same
-treatment once those environments are built:
+policy**. All three are live (created 2026-10-11 with the commands below);
+the `prod` Environment also requires an approval before its deploy job runs:
 
 ```bash
 R=dpdhirajpatil/PoshanForLife
@@ -426,15 +497,15 @@ automatically (not applicable to dev/qa):
    This is a plain timestamp+sha scheme, not semver — if you'd rather tag
    releases `v1.2.3`, that needs a version-bump step added before this one;
    ask if you want that instead.
-2. **Opens a PR from `prod` into `master`** (reusing an existing open one
-   instead of creating a duplicate) so `master` always reflects what's
+2. **Opens a PR from `prod` into `main`** (reusing an existing open one
+   instead of creating a duplicate) so `main` always reflects what's
    actually live, not just what's been merged to `prod`. The PR isn't
    auto-merged — someone still reviews and merges it.
 
-**Not yet configured (recommended, not enforced by any file here):** add
-required reviewers to the `prod` GitHub Environment so a deploy pauses for
-manual approval before the `deploy` job runs. That's a GitHub-side setting,
-done the same way as the branch policy above, not a workflow change.
+**Prod approval (configured):** the `prod` GitHub Environment has a
+required reviewer, so every prod deploy, backend or frontend, pauses until
+it's approved in the Actions run. Frontend prod deploys tag the commit
+`prod-ui-<date>-<sha>` and share the same `prod` → `main` PR.
 
 **Why these three workflow files exist before qa/prod infra does:** they're
 inert until each environment's Terraform is applied and its

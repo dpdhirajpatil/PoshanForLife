@@ -225,10 +225,17 @@ export class TopbarComponent {
   );
 
   constructor() {
-    this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe(() => {
-      this.pageTitle.set(resolvePageTitle(this.router.url));
-      this.loadNotifications();
-    });
+    // takeUntilDestroyed: the router outlives the shell, so without it this
+    // keeps firing after logout and its 401 re-navigates to /login in a loop.
+    this.router.events
+      .pipe(
+        filter((e) => e instanceof NavigationEnd),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => {
+        this.pageTitle.set(resolvePageTitle(this.router.url));
+        this.loadNotifications();
+      });
 
     this.loadNotifications();
     interval(NOTIFICATION_POLL_MS)

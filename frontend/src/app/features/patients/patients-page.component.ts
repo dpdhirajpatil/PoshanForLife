@@ -20,6 +20,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog.component';
 import { openSidePanel } from '../../shared/side-panel';
+import { UploadReportDialogComponent, UploadReportDialogData } from '../reports/upload-report-dialog.component';
 import { PatientFormDialogComponent } from './patient-form-dialog.component';
 import { PatientsService } from './patients.service';
 
@@ -176,6 +177,10 @@ import { PatientsService } from './patients.service';
         <button mat-menu-item (click)="openEdit(patient)">
           <mat-icon>edit</mat-icon>
           Edit
+        </button>
+        <button mat-menu-item (click)="openUploadReport(patient)">
+          <mat-icon>upload_file</mat-icon>
+          Upload report
         </button>
         @if (isAdmin && patient.isActive) {
           <button mat-menu-item (click)="deactivate(patient)">
@@ -360,6 +365,12 @@ export class PatientsPageComponent {
       },
       error: (err: ApiError) => this.toast.error(err.error),
     });
+  }
+
+  /** Straight to the InBody upload for this patient (no patient picker). */
+  protected openUploadReport(patient: PatientSummary): void {
+    const data: UploadReportDialogData = { patient };
+    openSidePanel(this.dialog, UploadReportDialogComponent, { data });
   }
 
   protected deactivate(patient: PatientSummary): void {
