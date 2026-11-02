@@ -18,6 +18,11 @@ output "task_definition_family" {
   value = aws_ecs_task_definition.app.family
 }
 
+output "task_execution_role_arn" {
+  value       = aws_iam_role.task_execution.arn
+  description = "This app's own execution role (ECR pull + logs only). The deploy role may pass only this one."
+}
+
 output "container_name" {
   value = var.app_name
 }

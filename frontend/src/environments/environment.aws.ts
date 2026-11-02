@@ -1,7 +1,8 @@
 // Local `ng serve` against the AWS dev backend: `npm run start:aws`.
-// Plain HTTP to the load balancer until HTTPS is live; then switch to
-// 'https://dev.api.poshanforlife.com/api/v1' (the ALB will redirect HTTP).
+// Must be the HTTPS hostname: the ALB's own DNS name 301s HTTP to HTTPS on a
+// host the certificate doesn't cover, and browsers won't follow a redirect on
+// a CORS request anyway. The backend's CORS list includes http://localhost:4200.
 export const environment = {
   production: false,
-  apiBaseUrl: 'http://poshan-backend-dev-alb-1544740052.ap-south-1.elb.amazonaws.com/api/v1',
+  apiBaseUrl: 'https://dev.api.poshanforlife.com/api/v1',
 };

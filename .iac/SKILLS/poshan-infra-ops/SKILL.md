@@ -22,7 +22,7 @@ For ANY apply or destroy, confirm explicitly (don't assume defaults silently):
 1. **Which target?** One of:
    - `bootstrap` (state bucket — rarely touched after first creation)
    - `shared/github-oidc` (GitHub Actions identity provider, one per AWS account)
-   - (`shared/jenkins` / `modules/jenkins` are DEPRECATED — never apply them)
+   - `shared/security-baseline` (CloudTrail, GuardDuty, EBS/S3 guardrails, one per AWS account)
    - `environments/<dev|qa|prod>/<backend|frontend>`
 2. **Which action?** `apply` (create/update) or `destroy` (tear down).
 3. **Required variables for that target**, if not already in a `terraform.tfvars`

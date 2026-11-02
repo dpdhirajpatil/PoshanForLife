@@ -105,6 +105,27 @@ resource "aws_s3_bucket_public_access_block" "terraform_state" {
   restrict_public_buckets = true
 }
 
+# State holds resource IDs, ARNs and outputs (never the app secrets, see
+# modules/ecs-ec2-app/secrets.tf), but it is still the map of the whole
+# account: refuse any request that isn't over TLS.
+resource "aws_s3_bucket_policy" "terraform_state" {
+  bucket = aws_s3_bucket.terraform_state.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid       = "DenyInsecureTransport"
+      Effect    = "Deny"
+      Principal = "*"
+      Action    = "s3:*"
+      Resource  = [aws_s3_bucket.terraform_state.arn, "${aws_s3_bucket.terraform_state.arn}/*"]
+      Condition = { Bool = { "aws:SecureTransport" = "false" } }
+    }]
+  })
+
+  depends_on = [aws_s3_bucket_public_access_block.terraform_state]
+}
+
 # S3 has no real folders — these zero-byte "<env>/" objects just make each
 # environment's prefix visible in the console before any state is written.
 # Each config's backend key then lives under its env, e.g. "dev/backend/terraform.tfstate".
