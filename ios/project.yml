@@ -17,6 +17,8 @@ options:
 
 configs:
   Debug: debug
+  # AWS dev environment for testers — see Config/Staging.xcconfig.
+  Staging: release
   Release: release
 
 # The one deliberate exception to "zero third-party dependencies" (see
@@ -47,6 +49,7 @@ targets:
     # rather than gated with a compile-time flag.
     configFiles:
       Debug: Config/Debug.xcconfig
+      Staging: Config/Staging.xcconfig
       Release: Config/Release.xcconfig
     # XcodeGen generates and OWNS this file from `properties` below on every
     # `xcodegen generate` — hand-editing PoshanForLife.entitlements directly
@@ -96,3 +99,18 @@ schemes:
         - PoshanForLifeUITests
     archive:
       config: Release
+
+  # Same app against the AWS dev environment. Pick this scheme in Xcode's
+  # toolbar and Run; no UI tests here, they need the localhost backend.
+  PoshanForLife-Staging:
+    build:
+      targets:
+        PoshanForLife: all
+    run:
+      config: Staging
+    profile:
+      config: Staging
+    analyze:
+      config: Staging
+    archive:
+      config: Staging

@@ -1,0 +1,33 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ReadState",
+      "Effect": "Allow",
+      "Action": [
+        "sts:GetCallerIdentity",
+        "ecs:DescribeServices",
+        "ecs:ListContainerInstances",
+        "ecs:DescribeContainerInstances",
+        "autoscaling:DescribeAutoScalingGroups",
+        "autoscaling:DescribeLifecycleHooks"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "ScalePoshanServices",
+      "Effect": "Allow",
+      "Action": "ecs:UpdateService",
+      "Resource": "arn:aws:ecs:ap-south-1:046369253799:service/poshan-backend-*-cluster/*"
+    },
+    {
+      "Sid": "ScalePoshanServers",
+      "Effect": "Allow",
+      "Action": [
+        "autoscaling:UpdateAutoScalingGroup",
+        "autoscaling:CompleteLifecycleAction"
+      ],
+      "Resource": "arn:aws:autoscaling:ap-south-1:046369253799:autoScalingGroup:*:autoScalingGroupName/poshan-backend-*-ecs-asg"
+    }
+  ]
+}

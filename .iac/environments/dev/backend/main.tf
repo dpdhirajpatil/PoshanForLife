@@ -43,12 +43,14 @@ variable "allowed_account_ids" {
 
 variable "ssh_allowed_cidr" {
   type        = string
-  description = "Your IP in CIDR form, e.g. 49.207.xxx.xxx/32"
+  default     = null
+  description = "Your IP in CIDR form, e.g. 49.207.xxx.xxx/32. null = port 22 closed; use SSM Session Manager (aws ssm start-session) instead."
 }
 
 variable "key_pair_name" {
   type        = string
-  description = "Existing EC2 key pair name for SSH access (one key pair can be shared across environments in the same account)"
+  default     = null
+  description = "Existing EC2 key pair name for SSH access (one key pair can be shared across environments in the same account). null = no key."
 }
 
 variable "github_repository" {
@@ -99,6 +101,13 @@ module "backend_app" {
   # Step 1: certificate only. Step 2 (after the CNAME is live): listener on.
   https_domain_name     = "dev.api.poshanforlife.com"
   enable_https_listener = true
+
+  # Per-request ALB logs to a private S3 bucket (90-day expiry), so abuse can
+  # be traced after the fact. Cents per month.
+  enable_alb_access_logs = true
+  # WAF (rate limits + AWS managed rules) costs ~$10/month with no free tier;
+  # off for dev, turn on for prod.
+  enable_waf = false
 
   container_environment = {
     # JVM defaults to 25% of the container limit for heap (~175 MB); 75% ≈ 525 MB.

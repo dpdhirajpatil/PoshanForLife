@@ -439,7 +439,11 @@ before then or the account closes. Details: [README.md](README.md#cost-posture--
 
 ## 8. Open items
 
-- Delete deprecated `modules/jenkins/` and `shared/jenkins/`.
+- Security hardening that needs a manual step (see the security review of
+  2026-10-15): separate GitHub Environments per deploy role, Supabase
+  `sslmode=verify-full` with the CA baked into the image, Terraform >= 1.10
+  for S3 state locking (`use_lockfile = true`), GuardDuty once the account
+  can subscribe, `enable_waf = true` for prod.
 - Rotate the `poshan-for-life` DB password (it was shared in a chat), then
   update its password file.
 - Add remaining app keys to `poshan-backend-dev/app` as features need them

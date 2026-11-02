@@ -6,8 +6,13 @@
 # target group, a host-header rule on the ALB's public listener, an ECS
 # service, and optionally an ACM certificate attached to the :443 listener
 # by SNI. It never touches the shared cluster, ALB, security groups or host:
-# the host SG already admits the ALB on the dynamic port range, and the task
-# reuses the shared task execution role.
+# the host SG already admits the ALB on the dynamic port range.
+#
+# The task gets its OWN execution role (pull from ECR, write logs, nothing
+# else). It deliberately doesn't reuse the backend's, which can read the
+# API's Secrets Manager secret: otherwise this app's deploy role, which may
+# register any task definition and pass the role it's given, could launch a
+# task that injects DB_PASSWORD / JWT_SECRET.
 #
 # Images are shipped by GitHub Actions (frontend-deploy-<env>.yml); like the
 # backend service, Terraform ignores task_definition and desired_count.
@@ -15,8 +20,11 @@
 data "aws_region" "current" {}
 
 resource "aws_ecr_repository" "app" {
-  name                 = var.app_name
-  image_tag_mutability = "MUTABLE"
+  name = var.app_name
+  # A pushed tag can never be repointed at a different image, so the tag in
+  # a task definition always means exactly the image that was deployed.
+  # Deploys tag with <commit sha>-<run id>-<attempt>, unique per push.
+  image_tag_mutability = "IMMUTABLE"
 
   image_scanning_configuration {
     scan_on_push = true
@@ -48,12 +56,32 @@ resource "aws_cloudwatch_log_group" "app" {
   tags              = var.tags
 }
 
+resource "aws_iam_role" "task_execution" {
+  name = "${var.app_name}-ecs-task-execution-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action    = "sts:AssumeRole"
+      Effect    = "Allow"
+      Principal = { Service = "ecs-tasks.amazonaws.com" }
+    }]
+  })
+
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "task_execution" {
+  role       = aws_iam_role.task_execution.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
 resource "aws_ecs_task_definition" "app" {
   family                   = var.app_name
   requires_compatibilities = ["EC2"]
   network_mode             = "bridge"
   memory                   = var.task_memory
-  execution_role_arn       = var.task_execution_role_arn
+  execution_role_arn       = aws_iam_role.task_execution.arn
 
   container_definitions = jsonencode([{
     name      = var.app_name

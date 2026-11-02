@@ -66,6 +66,23 @@ resource "aws_lb" "app" {
   # would block `terraform destroy` and cost nothing to leave off.
   enable_deletion_protection = false
 
+  # Reject requests with malformed header names instead of passing them to
+  # the app (a request-smuggling / header-injection vector).
+  drop_invalid_header_fields = true
+
+  dynamic "access_logs" {
+    for_each = var.enable_alb_access_logs ? [1] : []
+    content {
+      bucket  = aws_s3_bucket.alb_logs[0].id
+      prefix  = "alb"
+      enabled = true
+    }
+  }
+
+  # The bucket policy must exist before the ALB is told to write there, or
+  # the ALB update fails its write-permission check.
+  depends_on = [aws_s3_bucket_policy.alb_logs]
+
   tags = var.tags
 }
 

@@ -335,8 +335,7 @@ provider "aws" {
 | CloudWatch log group | `aws_cloudwatch_log_group.app` | Container output, 14-day retention | The first place to look when a task fails | < 1 |
 | SSM Session Manager | enabled by the instance role | Browser/CLI shell on the host | No SSH port needed for routine access | 0 |
 
-`modules/jenkins` and `shared/jenkins` are still in the repo but deprecated
-and never applied. CI/CD is GitHub Actions.
+CI/CD is GitHub Actions (the never-applied Jenkins module was removed).
 
 ---
 
