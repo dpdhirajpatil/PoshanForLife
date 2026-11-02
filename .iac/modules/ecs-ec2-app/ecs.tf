@@ -36,12 +36,17 @@ resource "aws_security_group" "ecs_instance" {
     security_groups = [aws_security_group.alb.id]
   }
 
-  ingress {
-    description = "SSH (restrict to your own IP)"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.ssh_allowed_cidr]
+  # Optional: SSM Session Manager (instance role) already gives shell access
+  # without any open port, so SSH is only for when SSM itself is broken.
+  dynamic "ingress" {
+    for_each = var.ssh_allowed_cidr != null ? [1] : []
+    content {
+      description = "SSH (restrict to your own IP)"
+      from_port   = 22
+      to_port     = 22
+      protocol    = "tcp"
+      cidr_blocks = [var.ssh_allowed_cidr]
+    }
   }
 
   egress {
@@ -76,11 +81,24 @@ resource "aws_launch_template" "ecs_instance" {
 
   vpc_security_group_ids = [aws_security_group.ecs_instance.id]
 
+  # IMDSv2 only, and a hop limit of 1: bridge-mode containers sit one NAT hop
+  # behind the host, so the token response never reaches them. Without this
+  # any process in a container (an RCE/SSRF in the API) could read the
+  # instance role's credentials from 169.254.169.254. The ECS agent and the
+  # user_data below run on the host network and are unaffected.
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 1
+  }
+
   block_device_mappings {
     device_name = "/dev/xvda"
     ebs {
-      volume_size = var.root_volume_size_gb
-      volume_type = "gp3"
+      volume_size           = var.root_volume_size_gb
+      volume_type           = "gp3"
+      encrypted             = true # AWS-managed aws/ebs key; holds swap, so app memory can land here
+      delete_on_termination = true
     }
   }
 

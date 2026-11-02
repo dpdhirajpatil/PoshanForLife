@@ -22,11 +22,6 @@ variable "capacity_provider_name" {
   type = string
 }
 
-variable "task_execution_role_arn" {
-  type        = string
-  description = "Shared execution role: lets ECS pull from ECR and write logs."
-}
-
 variable "listener_arn" {
   type        = string
   description = "ALB listener to add the host rule to: :443 once HTTPS is on, else :80 (the backend's public_listener_arn output)."

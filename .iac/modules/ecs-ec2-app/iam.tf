@@ -78,7 +78,9 @@ resource "aws_iam_role_policy_attachment" "task_execution" {
 
 # Lets the task read the Secrets Manager secret holding DB creds/API keys
 # (mirrors Part 4.4 of the deployment guide). Scoped to secrets named
-# "<app_name>/*" rather than "*".
+# "<app_name>/*" in this account and region rather than "*". This role is
+# used by this app's tasks only: other services on the cluster (the portal)
+# get their own execution role with no secret access (ecs-static-site).
 resource "aws_iam_role_policy" "task_execution_secrets" {
   name = "${var.app_name}-secrets-access"
   role = aws_iam_role.task_execution.id
@@ -88,7 +90,7 @@ resource "aws_iam_role_policy" "task_execution_secrets" {
     Statement = [{
       Effect   = "Allow"
       Action   = ["secretsmanager:GetSecretValue"]
-      Resource = "arn:aws:secretsmanager:*:*:secret:${var.app_name}/*"
+      Resource = "arn:aws:secretsmanager:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:secret:${var.app_name}/*"
     }]
   })
 }

@@ -3,7 +3,8 @@
 ############################################
 # Separate state from environments/dev/backend, so a frontend apply can never
 # change the API's infrastructure. Everything shared (cluster, capacity,
-# ALB listener, execution role) is read from the backend's state.
+# ALB listener) is read from the backend's state. The execution role is the
+# portal's own (modules/ecs-static-site), not the backend's.
 #
 # Apply order: environments/dev/backend first (it owns the cluster and ALB).
 # Re-apply this config whenever the backend's HTTPS listener is switched on,
@@ -80,13 +81,12 @@ module "portal" {
   app_name  = "poshan-frontend-dev"
   host_name = "dev.portal.poshanforlife.com"
 
-  vpc_id                  = local.platform.vpc_id
-  ecs_cluster_arn         = local.platform.ecs_cluster_arn
-  capacity_provider_name  = local.platform.capacity_provider_name
-  task_execution_role_arn = local.platform.task_execution_role_arn
-  listener_arn            = local.platform.public_listener_arn
-  https_listener_arn      = local.platform.https_listener_arn
-  listener_rule_priority  = 100
+  vpc_id                 = local.platform.vpc_id
+  ecs_cluster_arn        = local.platform.ecs_cluster_arn
+  capacity_provider_name = local.platform.capacity_provider_name
+  listener_arn           = local.platform.public_listener_arn
+  https_listener_arn     = local.platform.https_listener_arn
+  listener_rule_priority = 100
 
   # dev is normally stopped; env-power.sh start scales this to 1 with the API.
   initial_desired_count = 0
@@ -112,7 +112,9 @@ module "github_deploy" {
   }
   ecr_repository_arn = module.portal.ecr_repository_arn
   ecs_service_arn    = module.portal.ecs_service_arn
-  pass_role_arns     = [local.platform.task_execution_role_arn]
+  # The portal's own execution role, never the backend's (that one can read
+  # the API's secrets).
+  pass_role_arns = [module.portal.task_execution_role_arn]
 
   tags = local.tags
 }

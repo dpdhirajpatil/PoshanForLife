@@ -29,6 +29,9 @@ enum BaseURL {
             #else
                 return "http://\(devLANHost):8080"
             #endif
+        #elseif STAGING
+            // The AWS dev environment — see Config/Staging.xcconfig.
+            return "https://dev.api.poshanforlife.com"
         #else
             return "https://api.poshanforlife.com"
         #endif

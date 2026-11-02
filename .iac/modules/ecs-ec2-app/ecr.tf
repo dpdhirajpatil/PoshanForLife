@@ -7,8 +7,11 @@
 # last 10 images so this doesn't grow unbounded.
 
 resource "aws_ecr_repository" "app" {
-  name                 = var.app_name
-  image_tag_mutability = "MUTABLE"
+  name = var.app_name
+  # A pushed tag can never be repointed at a different image, so the tag in
+  # a task definition always means exactly the image that was deployed.
+  # Deploys tag with <commit sha>-<run id>-<attempt>, unique per push.
+  image_tag_mutability = "IMMUTABLE"
 
   image_scanning_configuration {
     scan_on_push = true
