@@ -1,20 +1,21 @@
-# Stage 1: Build Angular app
-FROM node:20 AS build
-
+# Stage 1: build the Angular app for one environment.
+#   docker build --build-arg BUILD_CONFIGURATION=dev -t poshan-frontend .
+# BUILD_CONFIGURATION: production (default) | dev | qa — picks the API URL
+# from src/environments/environment.<config>.ts.
+FROM node:20-alpine AS build
+ARG BUILD_CONFIGURATION=production
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install
+COPY package.json package-lock.json ./
+RUN npm ci
 
 COPY . .
+RUN npx ng build --configuration "$BUILD_CONFIGURATION"
 
-RUN npm run build
-
-# Stage 2: Serve with Nginx
-FROM nginx:alpine
-
-COPY --from=build /app/dist /usr/share/nginx/html
+# Stage 2: serve the static files with nginx.
+FROM nginx:1.27-alpine
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
 
 EXPOSE 80
-
 CMD ["nginx", "-g", "daemon off;"]

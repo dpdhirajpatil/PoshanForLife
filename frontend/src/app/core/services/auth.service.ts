@@ -98,6 +98,10 @@ export class AuthService {
   /** Called by the interceptor when a 401 survives the silent-refresh attempt. */
   handleSessionExpired(): void {
     this.clearSession();
+    // Already signed out: a straggling request must not toast or re-navigate.
+    if (this.router.url.startsWith('/login')) {
+      return;
+    }
     this.toast.error('Your session has expired. Please sign in again.');
     this.router.navigate(['/login'], {
       queryParams: { returnUrl: this.router.url },

@@ -3,6 +3,13 @@
 Terraform for AWS infra, built free-tier-first for a first-time AWS account.
 Region: **ap-south-1 (Mumbai)** everywhere.
 
+**New here?** Start with [ARCHITECTURE.md](ARCHITECTURE.md), or the C4 view in
+[docs/architecture/AWS-INFRA-C4.md](../docs/architecture/AWS-INFRA-C4.md) — how the pieces
+fit together, with flow diagrams. **Deploying or operating dev?** See
+[DEPLOYMENT.md](DEPLOYMENT.md) — the step-by-step runbook (Supabase DB,
+secrets, GitHub Actions, start/stop, rollback, troubleshooting). This README
+covers structure, design and cost.
+
 ## Structure
 
 ```
@@ -11,11 +18,11 @@ Region: **ap-south-1 (Mumbai)** everywhere.
 ├── modules/                    # reusable, no environment-specific values
 │   ├── networking/              # default VPC lookup (optionally limited to chosen AZs)
 │   ├── ecs-ec2-app/             # ECR + ECS(EC2) + ALB + task def, reusable per app/env
-│   ├── github-deploy-role/      # per-env IAM role GitHub Actions assumes via OIDC
-│   └── jenkins/                 # DEPRECATED — replaced by GitHub Actions, safe to delete
+│   ├── ecs-static-site/         # nginx SPA as one more service on the backend's cluster/ALB
+│   └── github-deploy-role/      # per-env IAM role GitHub Actions assumes via OIDC
 ├── shared/
 │   ├── github-oidc/             # GitHub OIDC identity provider, one per AWS account
-│   └── jenkins/                 # DEPRECATED — never applied, safe to delete
+│   └── security-baseline/       # CloudTrail, GuardDuty, EBS/S3 guardrails, one per AWS account
 └── environments/
     ├── dev/backend/             # calls modules/ecs-ec2-app + github-deploy-role
     ├── dev/frontend/            # placeholder — built in a later phase

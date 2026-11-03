@@ -25,12 +25,19 @@ variable "root_volume_size_gb" {
 
 variable "key_pair_name" {
   type        = string
-  description = "Existing EC2 key pair name, for emergency SSH access to the container host."
+  default     = null
+  description = "Existing EC2 key pair name, for emergency SSH access to the container host. null = no key (use SSM Session Manager)."
 }
 
 variable "ssh_allowed_cidr" {
   type        = string
-  description = "CIDR allowed to SSH into the ECS container host. Use YOUR IP, not 0.0.0.0/0."
+  default     = null
+  description = "CIDR allowed to SSH into the ECS container host. Use YOUR IP, not 0.0.0.0/0. null = port 22 closed (use SSM Session Manager)."
+
+  validation {
+    condition     = var.ssh_allowed_cidr == null || !contains(["0.0.0.0/0", "::/0"], coalesce(var.ssh_allowed_cidr, "-"))
+    error_message = "ssh_allowed_cidr must not be open to the whole internet."
+  }
 }
 
 variable "container_port" {
@@ -95,6 +102,65 @@ variable "deployment_minimum_healthy_percent" {
 variable "deployment_maximum_percent" {
   type    = number
   default = 200
+}
+
+variable "enable_https_cdn" {
+  type        = bool
+  default     = true
+  description = "Put a CloudFront distribution in front of the ALB for free HTTPS (CloudFront's default *.cloudfront.net certificate, no domain or ACM needed). Caching is disabled — this is a TLS terminator for a dynamic API, not a cache. Use the cloudfront_domain_name output as the API's public HTTPS address instead of the ALB's bare HTTP DNS name."
+}
+
+variable "https_domain_name" {
+  type        = string
+  default     = ""
+  description = "Hostname for an ACM certificate on the ALB (e.g. dev.api.poshanforlife.com). Empty = no certificate. Step 1 of the HTTPS rollout in https.tf: apply, then add the acm_validation_records output to DNS."
+}
+
+variable "enable_https_listener" {
+  type        = bool
+  default     = false
+  description = "Step 2 of https.tf: wait for the ACM certificate to be issued, add the :443 listener, open 443 on the ALB SG, and redirect :80 to https. Needs https_domain_name and its validation CNAME in DNS."
+}
+
+variable "swap_size_mb" {
+  type        = number
+  default     = 1024
+  description = "Swap file created on each ECS host at boot (0 = none). On a 1 GB t3.micro running the API (700 MB) plus agents and the portal, no swap meant the host froze under memory pressure instead of slowing down. swappiness=10 keeps it a safety net, not a working set. Takes effect on new hosts only (stop/start)."
+}
+
+variable "enable_static_ip" {
+  type        = bool
+  default     = true
+  description = "Allocate a fixed Elastic IP and have the instance self-associate it on boot, so external allowlists (e.g. Supabase Network Restrictions) never need updating after a stop/start cycle replaces the instance. Costs nothing extra: since Feb 2024 AWS bills every public IPv4 (auto-assigned or Elastic) at the same $0.005/hr, so this just makes the existing charge permanent instead of the IP being random."
+}
+
+variable "enable_alb_access_logs" {
+  type        = bool
+  default     = false
+  description = "Write ALB access logs to a dedicated, private S3 bucket (created here). Needed to investigate abuse after the fact. Cost: S3 storage only, a few cents/month at dev traffic."
+}
+
+variable "alb_access_log_retention_days" {
+  type    = number
+  default = 90
+}
+
+variable "enable_waf" {
+  type        = bool
+  default     = false
+  description = "Attach an AWS WAF web ACL to the ALB: per-IP rate limit plus AWS managed rule groups (common exploits, known bad inputs, IP reputation). Cost: ~$5/month for the ACL + $1/month per rule + $0.60 per million requests — no free tier."
+}
+
+variable "waf_rate_limit_per_5min" {
+  type        = number
+  default     = 1000
+  description = "Requests per 5 minutes from one IP before WAF blocks it (WAF minimum is 10)."
+}
+
+variable "waf_auth_rate_limit_per_5min" {
+  type        = number
+  default     = 100
+  description = "Tighter per-IP limit for requests whose path starts with /api/v1/auth (login, refresh): blunts password guessing and credential stuffing."
 }
 
 variable "placeholder_image" {

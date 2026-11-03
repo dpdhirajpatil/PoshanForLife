@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="590" style="color:#1b2330" viewBox="0 0 1160 590" role="img" aria-label="C2 container diagram: staff use the Angular web portal and the mobile apps; patients and leads use the Android and iOS apps; all three clients call the Spring Boot API over JSON REST with a JWT; the API stores data in Postgres and files in Supabase Storage, and calls Firebase, MSG91 and Anthropic; Firebase delivers push to the mobile apps; the mobile apps read Health Connect and HealthKit.">
+<style>
+text { font-family: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif; }
+text { fill: #1b2330; font-family: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif; font-size: 13px; }
+.bt { font-weight: 600; font-size: 13.5px; }
+.sub { fill: #5a6575; font-family: "IBM Plex Mono", Menlo, Consolas, monospace; font-size: 9.6px; }
+.lbl { fill: #5a6575; font-size: 11.5px; paint-order: stroke; stroke: #ffffff; stroke-width: 4px; stroke-linejoin: round; }
+.lbl.acc { fill: #2c5aa0; }
+.lbl.warn { fill: #9a6200; }
+.lbl.bad { fill: #b03a3a; }
+.zl { fill: #5a6575; font-family: "IBM Plex Mono", Menlo, Consolas, monospace; font-size: 10.2px; letter-spacing: 0.04em; }
+.box { fill: #ffffff; stroke: #c6cfdb; stroke-width: 1.3; }
+.box-acc { fill: #e4ecf8; stroke: #2c5aa0; stroke-width: 1.3; }
+.box-ok { fill: #e1f2e7; stroke: #2b7a4b; stroke-width: 1.3; }
+.box-warn { fill: #f8edd8; stroke: #9a6200; stroke-width: 1.3; }
+.box-ghost { fill: none; stroke: #5a6575; stroke-width: 1.2; stroke-dasharray: 5 4; }
+.zone-aws { fill: #edf2f9; stroke: #c6cfdb; }
+.zone-sb { fill: #eef5f0; stroke: #c6cfdb; }
+.frame { fill: none; stroke: #5a6575; stroke-dasharray: 6 4; stroke-width: 1.1; }
+.e { fill: none; stroke: #1b2330; stroke-width: 1.5; }
+.e-acc { fill: none; stroke: #2c5aa0; stroke-width: 1.7; }
+.e-warn { fill: none; stroke: #9a6200; stroke-width: 1.5; stroke-dasharray: 5 3; }
+.e-prov { fill: none; stroke: #5a6575; stroke-width: 1.6; stroke-dasharray: 2 3; }
+.e-bad { fill: none; stroke: #b03a3a; stroke-width: 1.5; stroke-dasharray: 5 3; }
+.ret { stroke-dasharray: 5 4; }
+.life { stroke: #c6cfdb; stroke-width: 1.2; stroke-dasharray: 4 4; }
+.mk { fill: #1b2330; }
+.mk-acc { fill: #2c5aa0; }
+.mk-warn { fill: #9a6200; }
+.mk-prov { fill: #5a6575; }
+.mk-bad { fill: #b03a3a; }
+.axis { stroke: #5a6575; stroke-width: 1.2; }
+.band { fill: #f8edd8; stroke: #9a6200; stroke-width: 1; }
+.dot { fill: #ffffff; stroke: #1b2330; stroke-width: 1.5; }
+.dot-acc { fill: #2c5aa0; stroke: #2c5aa0; }
+.bracket { fill: none; stroke: #2b7a4b; stroke-width: 1.5; }
+.person { fill: #e4ecf8; stroke: #2c5aa0; stroke-width: 1.5; }
+.sys { fill: #e4ecf8; stroke: #2c5aa0; stroke-width: 2.4; }
+.comp { fill: #e4ecf8; stroke: #2c5aa0; stroke-width: 1.3; }
+.ext { fill: #eef5f0; stroke: #5a6575; stroke-width: 1.2; }
+.ext-g { fill: #f3f5f8; stroke: #5a6575; stroke-width: 1.2; }
+.bnd { fill: none; stroke: #2c5aa0; stroke-width: 1.4; stroke-dasharray: 8 5; }
+.node { fill: none; stroke: #5a6575; stroke-width: 1.3; }
+.node-f { fill: #edf2f9; stroke: #5a6575; stroke-width: 1.3; }
+.cls { fill: #ffffff; stroke: #1b2330; stroke-width: 1.2; }
+.cls-e { fill: #eef5f0; stroke: #1b2330; stroke-width: 1.2; }
+.sep { stroke: #c6cfdb; stroke-width: 1.2; }
+.st { fill: #5a6575; font-family: "IBM Plex Mono", Menlo, Consolas, monospace; font-size: 9.6px; }
+.m { font-family: "IBM Plex Mono", Menlo, Consolas, monospace; font-size: 10.2px; fill: #1b2330; }
+.bus { stroke: #5a6575; stroke-width: 1.4; fill: none; }
+</style>
+<rect width="100%" height="100%" fill="#ffffff"/>
+        <defs>
+          <marker id="x2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker>
+          <marker id="x2a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-acc"/></marker>
+          <marker id="x2p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-prov"/></marker>
+        </defs>
+        <!-- people -->
+        <circle class="person" cx="160" cy="30" r="14"/>
+        <rect class="person" x="60" y="46" width="200" height="56" rx="14"/>
+        <text class="bt" x="160" y="70" text-anchor="middle">Staff</text>
+        <text class="sub" x="160" y="88" text-anchor="middle">[Person] Admin, Doctor</text>
+        <circle class="person" cx="580" cy="30" r="14"/>
+        <rect class="person" x="480" y="46" width="200" height="56" rx="14"/>
+        <text class="bt" x="580" y="70" text-anchor="middle">Patient · Lead</text>
+        <text class="sub" x="580" y="88" text-anchor="middle">[Person]</text>
+
+        <!-- boundary -->
+        <rect class="bnd" x="20" y="130" width="860" height="440" rx="12"/>
+        <text class="zl" x="36" y="150">POSHAN FOR LIFE [SOFTWARE SYSTEM]</text>
+
+        <!-- clients -->
+        <rect class="comp" x="40" y="170" width="240" height="96" rx="8"/>
+        <text class="bt" x="160" y="196" text-anchor="middle">Web portal</text>
+        <text class="sub" x="160" y="214" text-anchor="middle">[Container: Angular 18 SPA]</text>
+        <text class="sub" x="160" y="232" text-anchor="middle">staff screens · signals</text>
+        <text class="sub" x="160" y="248" text-anchor="middle">not hosted yet</text>
+        <rect class="comp" x="320" y="170" width="240" height="96" rx="8"/>
+        <text class="bt" x="440" y="196" text-anchor="middle">Android app</text>
+        <text class="sub" x="440" y="214" text-anchor="middle">[Container: Kotlin, Compose]</text>
+        <text class="sub" x="440" y="232" text-anchor="middle">MVVM · Room · WorkManager</text>
+        <text class="sub" x="440" y="248" text-anchor="middle">all 4 roles</text>
+        <rect class="comp" x="600" y="170" width="240" height="96" rx="8"/>
+        <text class="bt" x="720" y="196" text-anchor="middle">iOS app</text>
+        <text class="sub" x="720" y="214" text-anchor="middle">[Container: Swift, SwiftUI]</text>
+        <text class="sub" x="720" y="232" text-anchor="middle">MVVM · Keychain · HealthKit</text>
+        <text class="sub" x="720" y="248" text-anchor="middle">all 4 roles</text>
+
+        <!-- api -->
+        <rect class="sys" x="300" y="330" width="300" height="96" rx="8"/>
+        <text class="bt" x="450" y="356" text-anchor="middle">Spring Boot API</text>
+        <text class="sub" x="450" y="374" text-anchor="middle">[Container: Java 25, Spring Boot 3.4]</text>
+        <text class="sub" x="450" y="392" text-anchor="middle">REST /api/v1 · JWT · business rules</text>
+        <text class="sub" x="450" y="408" text-anchor="middle">runs on AWS ECS (dev)</text>
+
+        <!-- stores -->
+        <rect class="comp" x="60" y="460" width="260" height="88" rx="8"/>
+        <text class="bt" x="190" y="486" text-anchor="middle">Database</text>
+        <text class="sub" x="190" y="504" text-anchor="middle">[Container: PostgreSQL 17]</text>
+        <text class="sub" x="190" y="520" text-anchor="middle">Supabase poshan-dev · 46 tables</text>
+        <text class="sub" x="190" y="536" text-anchor="middle">schema by Flyway V1–V20</text>
+        <rect class="comp" x="560" y="460" width="280" height="88" rx="8"/>
+        <text class="bt" x="700" y="486" text-anchor="middle">File storage</text>
+        <text class="sub" x="700" y="504" text-anchor="middle">[Container: Supabase Storage]</text>
+        <text class="sub" x="700" y="520" text-anchor="middle">covers (public) · reports, docs</text>
+        <text class="sub" x="700" y="536" text-anchor="middle">(private, signed URLs)</text>
+
+        <!-- externals -->
+        <rect class="ext" x="910" y="150" width="230" height="56" rx="8"/>
+        <text class="bt" x="1025" y="174" text-anchor="middle">Health Connect · HealthKit</text>
+        <text class="sub" x="1025" y="192" text-anchor="middle">[External, on device]</text>
+        <rect class="ext" x="910" y="236" width="230" height="56" rx="8"/>
+        <text class="bt" x="1025" y="260" text-anchor="middle">Firebase FCM</text>
+        <text class="sub" x="1025" y="278" text-anchor="middle">[External]</text>
+        <rect class="ext" x="910" y="322" width="230" height="56" rx="8"/>
+        <text class="bt" x="1025" y="346" text-anchor="middle">MSG91</text>
+        <text class="sub" x="1025" y="364" text-anchor="middle">[External]</text>
+        <rect class="ext" x="910" y="392" width="230" height="56" rx="8"/>
+        <text class="bt" x="1025" y="416" text-anchor="middle">Anthropic API</text>
+        <text class="sub" x="1025" y="434" text-anchor="middle">[External]</text>
+
+        <!-- people -> clients -->
+        <line class="e" x1="160" y1="102" x2="160" y2="167" marker-end="url(#x2)"/>
+        <text class="lbl" x="168" y="122">uses</text>
+        <polyline class="e-prov" points="260,74 420,74 420,167" marker-end="url(#x2p)"/>
+        <text class="lbl" x="340" y="66" text-anchor="middle">also on mobile</text>
+        <line class="e" x1="540" y1="102" x2="470" y2="167" marker-end="url(#x2)"/>
+        <line class="e" x1="620" y1="102" x2="690" y2="167" marker-end="url(#x2)"/>
+
+        <!-- clients -> api -->
+        <line class="e-acc" x1="160" y1="266" x2="330" y2="327" marker-end="url(#x2a)"/>
+        <line class="e-acc" x1="440" y1="266" x2="440" y2="327" marker-end="url(#x2a)"/>
+        <line class="e-acc" x1="720" y1="266" x2="570" y2="327" marker-end="url(#x2a)"/>
+        <text class="lbl acc" x="448" y="302">JSON/REST · JWT</text>
+
+        <!-- api -> stores -->
+        <line class="e" x1="360" y1="426" x2="240" y2="457" marker-end="url(#x2)"/>
+        <text class="lbl" x="268" y="436" text-anchor="end">JDBC · TLS · pooler</text>
+        <line class="e" x1="540" y1="426" x2="640" y2="457" marker-end="url(#x2)"/>
+        <text class="lbl" x="606" y="436">REST</text>
+
+        <!-- api -> externals -->
+        <line class="e" x1="600" y1="345" x2="907" y2="268" marker-end="url(#x2)"/>
+        <text class="lbl" x="860" y="304" text-anchor="middle">send push</text>
+        <line class="e" x1="600" y1="370" x2="907" y2="352" marker-end="url(#x2)"/>
+        <text class="lbl" x="860" y="350" text-anchor="middle">SMS</text>
+        <line class="e" x1="600" y1="400" x2="907" y2="420" marker-end="url(#x2)"/>
+        <text class="lbl" x="860" y="404" text-anchor="middle">extract</text>
+        <!-- externals -> apps -->
+        <line class="e ret" x1="910" y1="250" x2="843" y2="250" marker-end="url(#x2)"/>
+        <text class="lbl" x="876" y="242" text-anchor="middle">push</text>
+        <line class="e" x1="908" y1="186" x2="843" y2="200" marker-end="url(#x2)"/>
+        <text class="lbl" x="876" y="180" text-anchor="middle">reads</text>
+      </svg>

@@ -10,6 +10,7 @@ import com.poshanforlife.android.core.network.UserDto
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 import javax.inject.Inject
@@ -30,7 +31,7 @@ private val Context.dataStore by preferencesDataStore(name = "poshan_tokens")
 @Singleton
 class TokenDataStore @Inject constructor(
     @ApplicationContext private val context: Context,
-) {
+) : SessionTokenStore {
 
     private object Keys {
         val ACCESS_TOKEN = stringPreferencesKey("access_token")
@@ -42,7 +43,7 @@ class TokenDataStore @Inject constructor(
         val NOTIFICATION_PERMISSION_ASKED = booleanPreferencesKey("notification_permission_asked")
     }
 
-    suspend fun saveTokens(access: String, refresh: String) {
+    override suspend fun saveTokens(access: String, refresh: String) {
         context.dataStore.edit { prefs ->
             prefs[Keys.ACCESS_TOKEN] = access
             prefs[Keys.REFRESH_TOKEN] = refresh
@@ -56,6 +57,10 @@ class TokenDataStore @Inject constructor(
     fun refreshToken(): Flow<String?> = context.dataStore.data
         .catch { e -> if (e is IOException) emit(emptyPreferences()) else throw e }
         .map { prefs -> prefs[Keys.REFRESH_TOKEN] }
+
+    override suspend fun currentAccessToken(): String? = accessToken().firstOrNull()
+
+    override suspend fun currentRefreshToken(): String? = refreshToken().firstOrNull()
 
     /** Cached alongside the tokens so AuthViewModel can derive role without a network round trip on cold start. */
     suspend fun saveUser(user: UserDto) {
@@ -85,7 +90,7 @@ class TokenDataStore @Inject constructor(
         }
 
     /** Wipes tokens + cached user together — logout and failed-refresh both call this. Preserves NOTIFICATION_PERMISSION_ASKED (a device-level flag, not a session one). */
-    suspend fun clear() {
+    override suspend fun clear() {
         context.dataStore.edit { prefs ->
             val askedBefore = prefs[Keys.NOTIFICATION_PERMISSION_ASKED]
             prefs.clear()

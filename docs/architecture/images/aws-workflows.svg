@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="440" style="color:#1b2330" viewBox="0 0 1160 440" role="img" aria-label="Workflow map. Provision: edit Terraform, plan, review the saved plan, apply it under the account guard, AWS API calls, state written to S3. Deploy: push to develop, exchange the OIDC token for credentials, build and push the image, register a new task definition revision, update the service, two healthy checks. Serve: client request, ALB listener, EC2 host dynamic port, container on 8080, Supabase pooler, JSON response. Operate: env-power stop, service to zero tasks, ALB drains 30 seconds, ASG to zero, instance drained and terminated, idle cost about 27 dollars a month.">
+<style>
+text { font-family: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif; }
+text { fill: #1b2330; font-family: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif; font-size: 13px; }
+.bt { font-weight: 600; font-size: 13.5px; }
+.sub { fill: #5a6575; font-family: "IBM Plex Mono", Menlo, Consolas, monospace; font-size: 9.6px; }
+.lbl { fill: #5a6575; font-size: 11.5px; paint-order: stroke; stroke: #ffffff; stroke-width: 4px; stroke-linejoin: round; }
+.lbl.acc { fill: #2c5aa0; }
+.lbl.warn { fill: #9a6200; }
+.lbl.bad { fill: #b03a3a; }
+.zl { fill: #5a6575; font-family: "IBM Plex Mono", Menlo, Consolas, monospace; font-size: 10.2px; letter-spacing: 0.04em; }
+.box { fill: #ffffff; stroke: #c6cfdb; stroke-width: 1.3; }
+.box-acc { fill: #e4ecf8; stroke: #2c5aa0; stroke-width: 1.3; }
+.box-ok { fill: #e1f2e7; stroke: #2b7a4b; stroke-width: 1.3; }
+.box-warn { fill: #f8edd8; stroke: #9a6200; stroke-width: 1.3; }
+.box-ghost { fill: none; stroke: #5a6575; stroke-width: 1.2; stroke-dasharray: 5 4; }
+.zone-aws { fill: #edf2f9; stroke: #c6cfdb; }
+.zone-sb { fill: #eef5f0; stroke: #c6cfdb; }
+.frame { fill: none; stroke: #5a6575; stroke-dasharray: 6 4; stroke-width: 1.1; }
+.e { fill: none; stroke: #1b2330; stroke-width: 1.5; }
+.e-acc { fill: none; stroke: #2c5aa0; stroke-width: 1.7; }
+.e-warn { fill: none; stroke: #9a6200; stroke-width: 1.5; stroke-dasharray: 5 3; }
+.e-prov { fill: none; stroke: #5a6575; stroke-width: 1.6; stroke-dasharray: 2 3; }
+.e-bad { fill: none; stroke: #b03a3a; stroke-width: 1.5; stroke-dasharray: 5 3; }
+.ret { stroke-dasharray: 5 4; }
+.life { stroke: #c6cfdb; stroke-width: 1.2; stroke-dasharray: 4 4; }
+.mk { fill: #1b2330; }
+.mk-acc { fill: #2c5aa0; }
+.mk-warn { fill: #9a6200; }
+.mk-prov { fill: #5a6575; }
+.mk-bad { fill: #b03a3a; }
+.axis { stroke: #5a6575; stroke-width: 1.2; }
+.band { fill: #f8edd8; stroke: #9a6200; stroke-width: 1; }
+.dot { fill: #ffffff; stroke: #1b2330; stroke-width: 1.5; }
+.dot-acc { fill: #2c5aa0; stroke: #2c5aa0; }
+.bracket { fill: none; stroke: #2b7a4b; stroke-width: 1.5; }
+.person { fill: #e4ecf8; stroke: #2c5aa0; stroke-width: 1.5; }
+.sys { fill: #e4ecf8; stroke: #2c5aa0; stroke-width: 2.4; }
+.comp { fill: #e4ecf8; stroke: #2c5aa0; stroke-width: 1.3; }
+.ext { fill: #eef5f0; stroke: #5a6575; stroke-width: 1.2; }
+.ext-g { fill: #f3f5f8; stroke: #5a6575; stroke-width: 1.2; }
+.bnd { fill: none; stroke: #2c5aa0; stroke-width: 1.4; stroke-dasharray: 8 5; }
+.node { fill: none; stroke: #5a6575; stroke-width: 1.3; }
+.node-f { fill: #edf2f9; stroke: #5a6575; stroke-width: 1.3; }
+.cls { fill: #ffffff; stroke: #1b2330; stroke-width: 1.2; }
+.cls-e { fill: #eef5f0; stroke: #1b2330; stroke-width: 1.2; }
+.sep { stroke: #c6cfdb; stroke-width: 1.2; }
+.st { fill: #5a6575; font-family: "IBM Plex Mono", Menlo, Consolas, monospace; font-size: 9.6px; }
+.m { font-family: "IBM Plex Mono", Menlo, Consolas, monospace; font-size: 10.2px; fill: #1b2330; }
+.bus { stroke: #5a6575; stroke-width: 1.4; fill: none; }
+</style>
+<rect width="100%" height="100%" fill="#ffffff"/>
+        <defs>
+          <marker id="a5m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker>
+        </defs>
+        <g>
+          <text class="bt" x="20" y="58">1 · Provision</text><text class="sub" x="20" y="76">operator · Terraform</text>
+          <rect class="comp" x="210" y="34" width="140" height="56" rx="8"/><text class="bt" x="280" y="58" text-anchor="middle">Edit .tf</text><text class="sub" x="280" y="76" text-anchor="middle">or terraform.tfvars</text>
+          <rect class="comp" x="370" y="34" width="140" height="56" rx="8"/><text class="bt" x="440" y="58" text-anchor="middle">terraform plan</text><text class="sub" x="440" y="76" text-anchor="middle">code vs state vs AWS</text>
+          <rect class="comp" x="530" y="34" width="140" height="56" rx="8"/><text class="bt" x="600" y="58" text-anchor="middle">Review plan</text><text class="sub" x="600" y="76" text-anchor="middle">saved dev.tfplan</text>
+          <rect class="comp" x="690" y="34" width="140" height="56" rx="8"/><text class="bt" x="760" y="58" text-anchor="middle">terraform apply</text><text class="sub" x="760" y="76" text-anchor="middle">account guard</text>
+          <rect class="comp" x="850" y="34" width="140" height="56" rx="8"/><text class="bt" x="920" y="58" text-anchor="middle">AWS API calls</text><text class="sub" x="920" y="76" text-anchor="middle">create / update</text>
+          <rect class="comp" x="1010" y="34" width="140" height="56" rx="8"/><text class="bt" x="1080" y="58" text-anchor="middle">State → S3</text><text class="sub" x="1080" y="76" text-anchor="middle">dev/backend/…</text>
+          <line class="e" x1="350" y1="62" x2="367" y2="62" marker-end="url(#a5m)"/><line class="e" x1="510" y1="62" x2="527" y2="62" marker-end="url(#a5m)"/><line class="e" x1="670" y1="62" x2="687" y2="62" marker-end="url(#a5m)"/><line class="e" x1="830" y1="62" x2="847" y2="62" marker-end="url(#a5m)"/><line class="e" x1="990" y1="62" x2="1007" y2="62" marker-end="url(#a5m)"/>
+        </g>
+        <g>
+          <text class="bt" x="20" y="162">2 · Deploy</text><text class="sub" x="20" y="180">GitHub Actions</text>
+          <rect class="comp" x="210" y="138" width="140" height="56" rx="8"/><text class="bt" x="280" y="162" text-anchor="middle">Push develop</text><text class="sub" x="280" y="180" text-anchor="middle">touching backend/**</text>
+          <rect class="comp" x="370" y="138" width="140" height="56" rx="8"/><text class="bt" x="440" y="162" text-anchor="middle">OIDC → STS</text><text class="sub" x="440" y="180" text-anchor="middle">creds ≤ 1 h</text>
+          <rect class="comp" x="530" y="138" width="140" height="56" rx="8"/><text class="bt" x="600" y="162" text-anchor="middle">Build + push</text><text class="sub" x="600" y="180" text-anchor="middle">ECR :git-sha</text>
+          <rect class="comp" x="690" y="138" width="140" height="56" rx="8"/><text class="bt" x="760" y="162" text-anchor="middle">New revision</text><text class="sub" x="760" y="180" text-anchor="middle">image swapped only</text>
+          <rect class="comp" x="850" y="138" width="140" height="56" rx="8"/><text class="bt" x="920" y="162" text-anchor="middle">Update service</text><text class="sub" x="920" y="180" text-anchor="middle">stop old, start new</text>
+          <rect class="comp" x="1010" y="138" width="140" height="56" rx="8"/><text class="bt" x="1080" y="162" text-anchor="middle">Healthy ×2</text><text class="sub" x="1080" y="180" text-anchor="middle">workflow passes</text>
+          <line class="e" x1="350" y1="166" x2="367" y2="166" marker-end="url(#a5m)"/><line class="e" x1="510" y1="166" x2="527" y2="166" marker-end="url(#a5m)"/><line class="e" x1="670" y1="166" x2="687" y2="166" marker-end="url(#a5m)"/><line class="e" x1="830" y1="166" x2="847" y2="166" marker-end="url(#a5m)"/><line class="e" x1="990" y1="166" x2="1007" y2="166" marker-end="url(#a5m)"/>
+        </g>
+        <g>
+          <text class="bt" x="20" y="266">3 · Serve</text><text class="sub" x="20" y="284">every API request</text>
+          <rect class="comp" x="210" y="242" width="140" height="56" rx="8"/><text class="bt" x="280" y="266" text-anchor="middle">Client request</text><text class="sub" x="280" y="284" text-anchor="middle">HTTP :80 + JWT</text>
+          <rect class="comp" x="370" y="242" width="140" height="56" rx="8"/><text class="bt" x="440" y="266" text-anchor="middle">ALB listener</text><text class="sub" x="440" y="284" text-anchor="middle">→ target group</text>
+          <rect class="comp" x="530" y="242" width="140" height="56" rx="8"/><text class="bt" x="600" y="266" text-anchor="middle">EC2 :32768</text><text class="sub" x="600" y="284" text-anchor="middle">SG: ALB only</text>
+          <rect class="comp" x="690" y="242" width="140" height="56" rx="8"/><text class="bt" x="760" y="266" text-anchor="middle">Container :8080</text><text class="sub" x="760" y="284" text-anchor="middle">Spring Boot</text>
+          <rect class="comp" x="850" y="242" width="140" height="56" rx="8"/><text class="bt" x="920" y="266" text-anchor="middle">Supabase pooler</text><text class="sub" x="920" y="284" text-anchor="middle">TLS :5432</text>
+          <rect class="comp" x="1010" y="242" width="140" height="56" rx="8"/><text class="bt" x="1080" y="266" text-anchor="middle">JSON response</text><text class="sub" x="1080" y="284" text-anchor="middle">success envelope</text>
+          <line class="e" x1="350" y1="270" x2="367" y2="270" marker-end="url(#a5m)"/><line class="e" x1="510" y1="270" x2="527" y2="270" marker-end="url(#a5m)"/><line class="e" x1="670" y1="270" x2="687" y2="270" marker-end="url(#a5m)"/><line class="e" x1="830" y1="270" x2="847" y2="270" marker-end="url(#a5m)"/><line class="e" x1="990" y1="270" x2="1007" y2="270" marker-end="url(#a5m)"/>
+        </g>
+        <g>
+          <text class="bt" x="20" y="370">4 · Operate</text><text class="sub" x="20" y="388">env-power.sh stop</text>
+          <rect class="comp" x="210" y="346" width="140" height="56" rx="8"/><text class="bt" x="280" y="370" text-anchor="middle">stop dev</text><text class="sub" x="280" y="388" text-anchor="middle">account guard</text>
+          <rect class="comp" x="370" y="346" width="140" height="56" rx="8"/><text class="bt" x="440" y="370" text-anchor="middle">Service → 0</text><text class="sub" x="440" y="388" text-anchor="middle">task stopped</text>
+          <rect class="comp" x="530" y="346" width="140" height="56" rx="8"/><text class="bt" x="600" y="370" text-anchor="middle">ALB drains</text><text class="sub" x="600" y="388" text-anchor="middle">30 s</text>
+          <rect class="comp" x="690" y="346" width="140" height="56" rx="8"/><text class="bt" x="760" y="370" text-anchor="middle">ASG → 0</text><text class="sub" x="760" y="388" text-anchor="middle">Terminating:Wait</text>
+          <rect class="comp" x="850" y="346" width="140" height="56" rx="8"/><text class="bt" x="920" y="370" text-anchor="middle">Terminated</text><text class="sub" x="920" y="388" text-anchor="middle">~2 min total</text>
+          <rect class="box-warn" x="1010" y="346" width="140" height="56" rx="8"/><text class="bt" x="1080" y="370" text-anchor="middle">≈ $27 / month</text><text class="sub" x="1080" y="388" text-anchor="middle">ALB keeps billing</text>
+          <line class="e" x1="350" y1="374" x2="367" y2="374" marker-end="url(#a5m)"/><line class="e" x1="510" y1="374" x2="527" y2="374" marker-end="url(#a5m)"/><line class="e" x1="670" y1="374" x2="687" y2="374" marker-end="url(#a5m)"/><line class="e" x1="830" y1="374" x2="847" y2="374" marker-end="url(#a5m)"/><line class="e" x1="990" y1="374" x2="1007" y2="374" marker-end="url(#a5m)"/>
+        </g>
+      </svg>

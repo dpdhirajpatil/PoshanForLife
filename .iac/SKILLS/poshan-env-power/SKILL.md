@@ -1,6 +1,6 @@
 ---
 name: poshan-env-power
-description: Start, stop, or check the status of a Poshan for Life backend environment (dev/qa/prod) on AWS by scaling its ECS service and EC2 capacity between 0 and 1 — to save AWS credits when an environment isn't in use. Trigger on requests like "stop dev", "start qa", "pause the dev environment", "shut down dev for the night", "is dev running?", "bring prod back up", "save credits", or similar. Takes the environment as input.
+description: Start, stop, force-stop (kill), or check the status of a Poshan for Life backend environment (dev/qa/prod) on AWS by scaling its ECS service and EC2 capacity between 0 and 1 — to save AWS credits when an environment isn't in use. Trigger on requests like "stop dev", "start qa", "pause the dev environment", "shut down dev for the night", "is dev running?", "bring prod back up", "save credits", or similar. Takes the environment as input.
 ---
 
 # Poshan Env Power (start / stop / status)
@@ -13,7 +13,19 @@ infrastructure — that's the `poshan-infra-ops` skill (Terraform).
 .iac/SKILLS/poshan-env-power/scripts/env-power.sh status <dev|qa|prod>
 .iac/SKILLS/poshan-env-power/scripts/env-power.sh stop   <dev|qa|prod>
 .iac/SKILLS/poshan-env-power/scripts/env-power.sh start  <dev|qa|prod>
+.iac/SKILLS/poshan-env-power/scripts/env-power.sh kill   <dev|qa|prod> --yes
 ```
+
+From any folder, the same script runs as `poshan <action> <env>` (wrapper in
+`~/.local/bin/poshan`; global Claude skill `~/.claude/skills/poshan-aws`).
+
+`kill` is a force-stop: services and the ASG go to 0 without waiting for
+tasks or the ALB to drain, and the script completes the ECS managed-draining
+lifecycle hook itself, so a frozen host (agent disconnected, stuck in
+`Terminating:Wait`) terminates. `kill` on any env and every non-status action
+on prod ask for the env name to be typed back; `--yes` skips that and is
+required when there is no terminal (e.g. run by Claude after confirming in
+chat).
 
 ## Input: the environment
 

@@ -1,5 +1,6 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { APP_INITIALIZER, ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { provideNativeDateAdapter } from '@angular/material/core';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
@@ -35,5 +36,9 @@ export const appConfig: ApplicationConfig = {
       useValue: { floatLabel: 'always' },
     },
     provideCharts(withDefaultRegisterables()),
+    // App-wide, not per component: a datepicker's calendar popup is created
+    // outside the dialog that imports MatNativeDateModule, so without this it
+    // throws "No provider for DateAdapter" and never opens.
+    provideNativeDateAdapter(),
   ],
 };

@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -21,6 +21,11 @@ import { ReportsService } from './reports.service';
 const MAX_BYTES = 10 * 1024 * 1024;
 
 type Step = 'patient' | 'upload' | 'review';
+
+/** Opened from a patient (list menu or detail page): skip the patient picker. */
+export interface UploadReportDialogData {
+  patient: Pick<PatientSummary, 'id' | 'name' | 'email'>;
+}
 
 /**
  * Upload pipeline dialog: pick a patient, drag-drop (or browse) the InBody
@@ -79,7 +84,9 @@ type Step = 'patient' | 'upload' | 'review';
       @if (step() === 'upload') {
         <div class="selected-patient">
           <div><strong>{{ selectedPatient()!.name }}</strong> <span class="muted">· {{ selectedPatient()!.email }}</span></div>
-          <button mat-button type="button" (click)="step.set('patient')">Change</button>
+          @if (!fixedPatient) {
+            <button mat-button type="button" (click)="step.set('patient')">Change</button>
+          }
         </div>
 
         <div
@@ -273,6 +280,8 @@ type Step = 'patient' | 'upload' | 'review';
 })
 export class UploadReportDialogComponent {
   protected readonly ref = inject(MatDialogRef<UploadReportDialogComponent>);
+  private readonly data = inject<UploadReportDialogData | null>(MAT_DIALOG_DATA, { optional: true });
+  protected readonly fixedPatient = !!this.data?.patient;
   private readonly patientsService = inject(PatientsService);
   private readonly reportsService = inject(ReportsService);
   private readonly toast = inject(ToastService);
@@ -301,6 +310,10 @@ export class UploadReportDialogComponent {
   ) as Record<keyof InBodyData, FormControl<number | null>>;
 
   constructor() {
+    if (this.data?.patient) {
+      this.selectedPatient.set(this.data.patient as PatientSummary);
+      this.step.set('upload');
+    }
     this.search.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed())
       .subscribe((term) => this.loadPatients(term));

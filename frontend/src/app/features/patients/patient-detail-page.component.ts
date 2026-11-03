@@ -13,14 +13,15 @@ import { ToastService } from '../../core/services/toast.service';
 import { openSidePanel } from '../../shared/side-panel';
 import { AssignedDoctorsPanelComponent } from '../assignments/assigned-doctors-panel.component';
 import { HealthRecordsPanelComponent } from './health-records-panel.component';
+import { PatientReportsPanelComponent } from './patient-reports-panel.component';
 import { PatientFormDialogComponent } from './patient-form-dialog.component';
 import { PatientProgrammesPanelComponent } from './patient-programmes-panel.component';
 import { PatientsService } from './patients.service';
 
 /**
- * Patient detail: profile header + tabs. Programmes and Reports are visible
- * stubs — Reports arrives in its own prompt; Health Records now hosts the
- * full trend-chart/table view via HealthRecordsPanelComponent.
+ * Patient detail: profile header + tabs. Reports lists the patient's reports
+ * with a direct InBody upload (PatientReportsPanelComponent); Health Records
+ * hosts the full trend-chart/table view via HealthRecordsPanelComponent.
  */
 @Component({
   selector: 'app-patient-detail-page',
@@ -38,6 +39,7 @@ import { PatientsService } from './patients.service';
     AssignedDoctorsPanelComponent,
     PatientProgrammesPanelComponent,
     HealthRecordsPanelComponent,
+    PatientReportsPanelComponent,
   ],
   template: `
     @if (loading()) {
@@ -136,11 +138,7 @@ import { PatientsService } from './patients.service';
 
         <mat-tab label="Reports">
           <div class="tab-body">
-            <mat-card appearance="outlined">
-              <mat-card-content>
-                <p class="stub">Report list and upload arrive with the reports feature prompt.</p>
-              </mat-card-content>
-            </mat-card>
+            <app-patient-reports-panel [patientId]="p.id" [patientName]="p.name" [patientEmail]="p.email" />
           </div>
         </mat-tab>
 

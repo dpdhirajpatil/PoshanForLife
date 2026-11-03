@@ -23,8 +23,18 @@ import { SidebarTooltipDirective } from '../shared/sidebar-tooltip.directive';
   template: `
     <div [class]="containerClass()">
       <!-- Header -->
-      <div class="flex h-[60px] shrink-0 items-center justify-between border-b border-border px-3">
-        <div class="flex min-w-0 items-center gap-2.5">
+      <div
+        class="relative flex h-[60px] shrink-0 items-center border-b border-border px-3"
+        [class.justify-between]="showLabels()"
+        [class.justify-center]="!showLabels()"
+      >
+        <!-- Brand links home. Already on /dashboard, the router ignores the
+             same-URL navigation, so the click is a no-op. -->
+        <a
+          routerLink="/dashboard"
+          aria-label="Go to dashboard"
+          class="flex min-w-0 items-center gap-2.5 rounded-lg"
+        >
           <img
             src="icons/icon-192.png"
             alt="Poshan for Life"
@@ -39,11 +49,15 @@ import { SidebarTooltipDirective } from '../shared/sidebar-tooltip.directive';
               <span class="font-accent text-lg leading-none text-brand-green-dark">for life</span>
             </div>
           }
-        </div>
+        </a>
         @if (!mobileSheet) {
+          <!-- Collapsed, the 72px rail has no room for the logo and this button
+               side by side: the logo centres over the nav icons and the button
+               becomes a round tab straddling the rail's right edge. -->
           <button
             type="button"
-            class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+            [attr.aria-label]="collapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+            [class]="toggleButtonClass()"
             (click)="appState.toggleSidebar()"
           >
             <span class="material-icons text-[18px] leading-none">{{
@@ -193,6 +207,17 @@ export class SidebarComponent {
 
   protected isCurrentRoute(path: string): boolean {
     return this.router.url === path || this.router.url.startsWith(path + '/');
+  }
+
+  protected toggleButtonClass(): string {
+    const base = 'flex shrink-0 items-center justify-center text-muted-foreground hover:text-foreground';
+    if (this.collapsed()) {
+      return (
+        `${base} absolute -right-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full ` +
+        'border border-border bg-card shadow-sm hover:bg-muted'
+      );
+    }
+    return `${base} h-7 w-7 rounded-md hover:bg-muted`;
   }
 
   protected containerClass(): string {

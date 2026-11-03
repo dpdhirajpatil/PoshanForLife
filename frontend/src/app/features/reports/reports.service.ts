@@ -12,6 +12,7 @@ import {
 import { ApiService } from '../../core/services/api.service';
 
 export interface ReportListQuery {
+  patientId?: string;
   status?: ReportStatus;
   type?: ReportType;
   search?: string;

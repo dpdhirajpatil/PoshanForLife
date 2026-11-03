@@ -1,0 +1,23 @@
+#include "Base.xcconfig"
+
+// Per-machine signing team (DEVELOPMENT_TEAM), needed to install on a physical
+// iPhone. Gitignored; the leading ? makes the include silent when absent.
+#include? "Local.xcconfig"
+
+// The AWS dev environment (https://dev.api.poshanforlife.com), for testers.
+// Release-like on purpose, mirroring Android's `staging` build type: no DEBUG
+// flag, so BaseURL takes its STAGING branch and debug-only logging stays off.
+
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) STAGING
+SWIFT_OPTIMIZATION_LEVEL = -O
+SWIFT_COMPILATION_MODE = wholemodule
+VALIDATE_PRODUCT = YES
+
+// The Release plist: no ATS exception. dev.api is HTTPS with a real ACM
+// certificate, so it needs none — same reasoning as Release.xcconfig.
+INFOPLIST_FILE = PoshanForLife/Info-Release.plist
+
+// Staging builds are run from Xcode on a Simulator or a development-signed
+// device, which only ever receive sandbox APNs pushes. Switch to `production`
+// only if staging is ever distributed through TestFlight.
+APS_ENVIRONMENT = development

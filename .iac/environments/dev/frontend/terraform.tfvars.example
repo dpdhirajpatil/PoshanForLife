@@ -1,0 +1,5 @@
+aws_region = "ap-south-1"
+
+# Multi-account guard: Terraform aborts on any other account.
+allowed_account_ids = ["046369253799"]
+# aws_profile       = "poshan-dev"

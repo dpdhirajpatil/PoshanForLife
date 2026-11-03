@@ -36,12 +36,17 @@ resource "aws_security_group" "ecs_instance" {
     security_groups = [aws_security_group.alb.id]
   }
 
-  ingress {
-    description = "SSH (restrict to your own IP)"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.ssh_allowed_cidr]
+  # Optional: SSM Session Manager (instance role) already gives shell access
+  # without any open port, so SSH is only for when SSM itself is broken.
+  dynamic "ingress" {
+    for_each = var.ssh_allowed_cidr != null ? [1] : []
+    content {
+      description = "SSH (restrict to your own IP)"
+      from_port   = 22
+      to_port     = 22
+      protocol    = "tcp"
+      cidr_blocks = [var.ssh_allowed_cidr]
+    }
   }
 
   egress {
@@ -52,6 +57,16 @@ resource "aws_security_group" "ecs_instance" {
   }
 
   tags = merge(var.tags, { Name = "${var.app_name}-ecs-instance-sg" })
+}
+
+# Fixed public IP for the single ECS host, so it survives stop/start cycles
+# (each one terminates and relaunches the instance, which would otherwise get
+# a new random public IP). The instance self-associates this on boot, via
+# the launch template's user_data below.
+resource "aws_eip" "ecs_instance" {
+  count  = var.enable_static_ip ? 1 : 0
+  domain = "vpc"
+  tags   = merge(var.tags, { Name = "${var.app_name}-ecs-eip" })
 }
 
 resource "aws_launch_template" "ecs_instance" {
@@ -66,18 +81,55 @@ resource "aws_launch_template" "ecs_instance" {
 
   vpc_security_group_ids = [aws_security_group.ecs_instance.id]
 
+  # IMDSv2 only, and a hop limit of 1: bridge-mode containers sit one NAT hop
+  # behind the host, so the token response never reaches them. Without this
+  # any process in a container (an RCE/SSRF in the API) could read the
+  # instance role's credentials from 169.254.169.254. The ECS agent and the
+  # user_data below run on the host network and are unaffected.
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 1
+  }
+
   block_device_mappings {
     device_name = "/dev/xvda"
     ebs {
-      volume_size = var.root_volume_size_gb
-      volume_type = "gp3"
+      volume_size           = var.root_volume_size_gb
+      volume_type           = "gp3"
+      encrypted             = true # AWS-managed aws/ebs key; holds swap, so app memory can land here
+      delete_on_termination = true
     }
   }
 
-  # Tells the ECS agent which cluster to register this instance with.
+  # Tells the ECS agent which cluster to register this instance with, and
+  # (if enabled) self-associates the fixed Elastic IP so this instance's
+  # public address never changes across stop/start cycles.
   user_data = base64encode(<<-EOF
     #!/bin/bash
+    %{if var.swap_size_mb > 0~}
+    # Swap first, before the ECS agent starts containers: a 1 GB t3.micro with
+    # no swap freezes (memory thrash, agents disconnect) instead of slowing down.
+    if [ ! -f /swapfile ]; then
+      dd if=/dev/zero of=/swapfile bs=1M count=${var.swap_size_mb} status=none
+      chmod 600 /swapfile
+      mkswap /swapfile
+      echo '/swapfile none swap sw 0 0' >> /etc/fstab
+    fi
+    swapon /swapfile || true
+    sysctl -w vm.swappiness=10
+    %{endif~}
     echo ECS_CLUSTER=${aws_ecs_cluster.app.name} >> /etc/ecs/ecs.config
+    %{if var.enable_static_ip~}
+    if ! command -v aws >/dev/null 2>&1; then
+      curl -s "https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip" -o /tmp/awscliv2.zip
+      (cd /tmp && unzip -q awscliv2.zip && ./aws/install)
+    fi
+    TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+    INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
+    aws ec2 associate-address --region ${data.aws_region.current.name} --instance-id "$INSTANCE_ID" \
+      --allocation-id ${aws_eip.ecs_instance[0].id} --allow-reassociation || echo "WARNING: EIP self-association failed, check /var/log/cloud-init-output.log" >&2
+    %{endif~}
   EOF
   )
 

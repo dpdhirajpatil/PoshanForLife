@@ -34,6 +34,26 @@ resource "aws_iam_instance_profile" "ecs_instance" {
   role = aws_iam_role.ecs_instance.name
 }
 
+# Lets the instance attach its own fixed Elastic IP on boot (see eip.tf and
+# the launch template's user_data). ec2:AssociateAddress needs both the
+# instance and EIP as resources and doesn't support clean resource-level
+# scoping for the pair, so this is "*" — acceptable for a single-instance
+# dev host where the role itself is already scoped to this one app.
+resource "aws_iam_role_policy" "ecs_instance_eip" {
+  count = var.enable_static_ip ? 1 : 0
+  name  = "${var.app_name}-self-associate-eip"
+  role  = aws_iam_role.ecs_instance.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["ec2:AssociateAddress", "ec2:DescribeAddresses"]
+      Resource = "*"
+    }]
+  })
+}
+
 # --- Task execution role: used by ECS itself (not your app) to pull the
 #     image from ECR and write logs to CloudWatch on the task's behalf.
 resource "aws_iam_role" "task_execution" {
@@ -58,7 +78,9 @@ resource "aws_iam_role_policy_attachment" "task_execution" {
 
 # Lets the task read the Secrets Manager secret holding DB creds/API keys
 # (mirrors Part 4.4 of the deployment guide). Scoped to secrets named
-# "<app_name>/*" rather than "*".
+# "<app_name>/*" in this account and region rather than "*". This role is
+# used by this app's tasks only: other services on the cluster (the portal)
+# get their own execution role with no secret access (ecs-static-site).
 resource "aws_iam_role_policy" "task_execution_secrets" {
   name = "${var.app_name}-secrets-access"
   role = aws_iam_role.task_execution.id
@@ -68,7 +90,7 @@ resource "aws_iam_role_policy" "task_execution_secrets" {
     Statement = [{
       Effect   = "Allow"
       Action   = ["secretsmanager:GetSecretValue"]
-      Resource = "arn:aws:secretsmanager:*:*:secret:${var.app_name}/*"
+      Resource = "arn:aws:secretsmanager:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:secret:${var.app_name}/*"
     }]
   })
 }
