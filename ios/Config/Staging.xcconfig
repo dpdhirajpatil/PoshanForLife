@@ -1,5 +1,9 @@
 #include "Base.xcconfig"
 
+// Per-machine signing team (DEVELOPMENT_TEAM), needed to install on a physical
+// iPhone. Gitignored; the leading ? makes the include silent when absent.
+#include? "Local.xcconfig"
+
 // The AWS dev environment (https://dev.api.poshanforlife.com), for testers.
 // Release-like on purpose, mirroring Android's `staging` build type: no DEBUG
 // flag, so BaseURL takes its STAGING branch and debug-only logging stays off.
