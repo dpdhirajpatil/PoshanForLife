@@ -2,7 +2,7 @@
 # ECS service onto it. Same pattern as dev/qa, pointed at `prod`, plus two
 # release steps that only run after a SUCCESSFUL deploy:
 #   1. Create and push an annotated tag marking what's actually live.
-#   2. Open (or reuse) a PR from prod -> master, so master always reflects
+#   2. Open (or reuse) a PR from prod -> main, so main always reflects
 #      what's been released, not just what's been merged to prod.
 #
 # Dormant until environments/prod/backend is actually applied (it's a
@@ -27,7 +27,7 @@ on:
 permissions:
   id-token: write # for the OIDC token exchanged for AWS credentials
   contents: write # to push the release tag
-  pull-requests: write # to open the post-deploy PR to master
+  pull-requests: write # to open the post-deploy PR to main
 
 concurrency:
   group: backend-deploy-prod
@@ -61,22 +61,22 @@ jobs:
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0 # need full history to push a tag and diff against master
+          fetch-depth: 0 # need full history to push a tag and diff against main
 
-      - uses: aws-actions/configure-aws-credentials@v6
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
       - id: ecr
-        uses: aws-actions/amazon-ecr-login@v2
+        uses: aws-actions/amazon-ecr-login@03f1aad4c6c7ffd436567f42f9384779290529bd # v2.1.7
 
       - name: Build and push image
         id: image
         env:
-          IMAGE: ${{ steps.ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:${{ github.sha }}
+          IMAGE: ${{ steps.ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
         run: |
           docker build -t "$IMAGE" backend
           docker push "$IMAGE"
@@ -89,13 +89,13 @@ jobs:
             --query taskDefinition > task-definition.json
 
       - id: taskdef
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        uses: aws-actions/amazon-ecs-render-task-definition@8d79160660ad39c402a16e5fc7cd2a32e8f7d6b7 # v1.9.1
         with:
           task-definition: task-definition.json
           container-name: ${{ vars.CONTAINER_NAME }}
           image: ${{ steps.image.outputs.uri }}
 
-      - uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+      - uses: aws-actions/amazon-ecs-deploy-task-definition@a00d4d57ac0de1a99b39fe469f3d898d38717c2b # v2.6.4
         with:
           task-definition: ${{ steps.taskdef.outputs.task-definition }}
           cluster: ${{ vars.ECS_CLUSTER }}
@@ -116,15 +116,15 @@ jobs:
           git push origin "$TAG"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
-      - name: Open PR prod -> master (reuse if one is already open)
+      - name: Open PR prod -> main (reuse if one is already open)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          EXISTING=$(gh pr list --repo "$GITHUB_REPOSITORY" --base master --head prod --state open --json number --jq 'length')
+          EXISTING=$(gh pr list --repo "$GITHUB_REPOSITORY" --base main --head prod --state open --json number --jq 'length')
           if [ "$EXISTING" = "0" ]; then
-            gh pr create --repo "$GITHUB_REPOSITORY" --base master --head prod \
+            gh pr create --repo "$GITHUB_REPOSITORY" --base main --head prod \
               --title "Release ${{ steps.tag.outputs.tag }}" \
               --body "Automated PR after prod deployment of \`${{ github.sha }}\`. Release tag: \`${{ steps.tag.outputs.tag }}\`."
           else
-            echo "An open prod -> master PR already exists; not creating another."
+            echo "An open prod -> main PR already exists; not creating another."
           fi

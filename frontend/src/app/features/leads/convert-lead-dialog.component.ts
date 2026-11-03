@@ -87,9 +87,9 @@ const TYPE_TO_ROUTE: Record<ServiceType, CatalogueType> = {
 
             <mat-form-field appearance="outline">
               <mat-label>Date of birth (optional)</mat-label>
-              <input matInput formControlName="dateOfBirth" [matDatepicker]="dobPicker" />
+              <input matInput formControlName="dateOfBirth" [matDatepicker]="dobPicker" [max]="today" />
               <mat-datepicker-toggle matIconSuffix [for]="dobPicker" />
-              <mat-datepicker #dobPicker />
+              <mat-datepicker #dobPicker startView="multi-year" />
             </mat-form-field>
 
             <mat-form-field appearance="outline">
@@ -268,6 +268,9 @@ const TYPE_TO_ROUTE: Record<ServiceType, CatalogueType> = {
   `,
 })
 export class ConvertLeadDialogComponent {
+  /** Date of birth can't be in the future; [max] also rejects typed future dates. */
+  protected readonly today = new Date();
+
   protected readonly ref = inject(MatDialogRef<ConvertLeadDialogComponent>);
   protected readonly data = inject<ConvertLeadDialogData>(MAT_DIALOG_DATA);
   private readonly catalogueService = inject(CatalogueService);

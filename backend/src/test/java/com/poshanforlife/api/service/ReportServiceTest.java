@@ -97,6 +97,9 @@ class ReportServiceTest {
 
         lenient().when(userRepository.getReferenceById(admin.getId())).thenReturn(admin);
         lenient().when(userRepository.getReferenceById(doctor.getId())).thenReturn(doctor);
+        // upload() loads the creator with a real fetch (see ReportService.upload).
+        lenient().when(userRepository.findById(admin.getId())).thenReturn(Optional.of(admin));
+        lenient().when(userRepository.findById(doctor.getId())).thenReturn(Optional.of(doctor));
         lenient().when(userRepository.findById(patient.getId()))
                 .thenReturn(Optional.of(patient));
         lenient().when(reportRepository.save(any(Report.class))).thenAnswer(inv -> withId(inv.getArgument(0)));

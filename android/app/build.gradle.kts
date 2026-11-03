@@ -32,7 +32,25 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             buildConfigField("String", "BASE_URL", "\"https://api.poshanforlife.com/\"")
         }
+        // The AWS dev environment, for testers. Release-like on purpose: HTTPS
+        // only (no src/staging network config, so no cleartext exception) and
+        // BuildConfig.DEBUG=false, so OkHttp doesn't log request bodies.
+        // Signed with the debug key so the APK installs without a release
+        // keystore. Same applicationId as debug/release — google-services.json
+        // only registers com.poshanforlife.android, and a suffix would fail the
+        // build — so it replaces whichever variant is already installed.
+        create("staging") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("release")
+            versionNameSuffix = "-staging"
+            buildConfigField("String", "BASE_URL", "\"https://dev.api.poshanforlife.com/\"")
+        }
     }
+
+    // Instrumented tests run against debug (local backend) by default.
+    // `-PtestBuildType=staging` runs them against the AWS dev environment.
+    testBuildType = (project.findProperty("testBuildType") as String?) ?: "debug"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

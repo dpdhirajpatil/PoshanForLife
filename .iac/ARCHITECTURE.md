@@ -385,8 +385,6 @@ $25/month. Production would add Route 53 + ACM for
 
 **Other open items:**
 
-- Delete the deprecated `modules/jenkins` and `shared/jenkins`, replaced by
-  GitHub Actions.
 - Add the remaining app keys to `poshan-backend-dev/app` as features need
   them.
 - Add S3 state locking before more than one person runs `terraform apply`.
