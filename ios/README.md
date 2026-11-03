@@ -92,7 +92,26 @@ Resolved at build time by `Core/Networking/BaseURL.swift`:
 | --- | --- | --- |
 | Debug | Simulator | `http://localhost:8080` |
 | Debug | Device | `http://$(DEV_LAN_HOST):8080` |
+| Staging | — | `https://dev.api.poshanforlife.com` (AWS dev) |
 | Release | — | `https://api.poshanforlife.com` |
+
+### Running against AWS dev on your iPhone
+
+Pick the **PoshanForLife-Staging** scheme in Xcode's toolbar, select your
+iPhone, and Run. No Mac backend or shared Wi-Fi needed; the phone talks to AWS
+over HTTPS. The dev environment must be running (`poshan status dev`).
+
+Signing needs your Apple Developer team ID once, in `Config/Local.xcconfig`
+(gitignored), then `xcodegen generate`:
+
+```
+DEVELOPMENT_TEAM = ABCDE12345
+```
+
+Find the ID at developer.apple.com → Account → Membership details, or in
+Xcode → Settings → Accounts. Setting the team in Xcode's Signing tab works
+too, but the next `xcodegen generate` wipes it. A free Personal Team can't
+sign the push-notification and HealthKit entitlements; use a paid team.
 
 The Simulator shares the host's network stack, so `localhost` reaches a backend
 running on this Mac — unlike Android, whose emulator needs `10.0.2.2`.
