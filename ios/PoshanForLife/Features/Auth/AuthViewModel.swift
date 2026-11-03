@@ -32,6 +32,10 @@ final class AuthViewModel: ObservableObject {
             && !isSubmitting
     }
 
+    /// Set while the signup request is in flight, and on failure.
+    @Published private(set) var isSigningUp = false
+    @Published var signupErrorMessage: String?
+
     private let authRepository: AuthRepository
     private var cancellables = Set<AnyCancellable>()
 
@@ -78,10 +82,39 @@ final class AuthViewModel: ObservableObject {
         switch result {
         case .success(let auth):
             password = ""
-            state = .loggedIn(auth.user)
+            completeSignIn(auth.user)
         case .failure(let error):
             errorMessage = Self.loginErrorMessage(for: error)
         }
+    }
+
+    /// Self-signup. The backend makes the account a LEAD, so RootView routes it
+    /// to LeadTabView; staff converting the lead later turns it into a PATIENT.
+    func signup(_ request: SignupRequest) async {
+        guard !isSigningUp else { return }
+        isSigningUp = true
+        signupErrorMessage = nil
+        let result = await authRepository.signup(request)
+        isSigningUp = false
+
+        switch result {
+        case .success(let auth):
+            completeSignIn(auth.user)
+        case .failure(let error):
+            signupErrorMessage = Self.signupErrorMessage(for: error)
+        }
+    }
+
+    /// The phone form signs in through its own view model; it reports back here
+    /// so RootView switches on the one `state`.
+    func makePhoneAuthViewModel() -> PhoneAuthViewModel {
+        PhoneAuthViewModel(authRepository: authRepository) { [weak self] user in
+            self?.completeSignIn(user)
+        }
+    }
+
+    private func completeSignIn(_ user: User) {
+        state = .loggedIn(user)
     }
 
     func signOut() {
@@ -89,6 +122,24 @@ final class AuthViewModel: ObservableObject {
         email = ""
         password = ""
         state = .loggedOut
+    }
+
+    private static func signupErrorMessage(for error: APIError) -> String {
+        switch error.code {
+        case "EMAIL_CONFLICT", "HTTP_409":
+            return "An account with this email already exists. Sign in instead."
+        case "VALIDATION_ERROR", "HTTP_422", "HTTP_400":
+            let fields = (error.details ?? [:])
+                .sorted { $0.key < $1.key }
+                .map { "\($0.key): \($0.value)" }
+            return fields.isEmpty ? error.message : fields.joined(separator: "\n")
+        case "RATE_LIMIT_EXCEEDED", "HTTP_429":
+            return "Too many attempts. Try again in a few minutes."
+        case "NETWORK_ERROR":
+            return "Can't reach the server. Check your connection."
+        default:
+            return "Something went wrong. Please try again."
+        }
     }
 
     /// Never reveals which field was wrong — that turns the login form into an

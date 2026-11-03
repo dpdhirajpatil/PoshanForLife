@@ -27,16 +27,21 @@ extension XCTestCase {
         // `NavigationStack` over a settings-style list, so "Settings" (with
         // sign-out) sits directly on the root screen instead of behind More.
         let adminRoot = app.navigationBars["Admin"]
+        // A lead has four tabs and no More: Profile (with sign-out) is a tab.
+        let leadProfile = app.tabBars.buttons["Profile"]
         let deadline = Date().addingTimeInterval(25)
 
         while Date() < deadline {
-            if app.textFields.firstMatch.exists && !more.exists && !adminRoot.exists { return }  // already at login
-            if more.exists || adminRoot.exists { break }
+            let signedIn = more.exists || adminRoot.exists || leadProfile.exists
+            if app.textFields.firstMatch.exists && !signedIn { return }  // already at login
+            if signedIn { break }
             usleep(300_000)
         }
-        guard more.exists || adminRoot.exists else { return }
+        guard more.exists || adminRoot.exists || leadProfile.exists else { return }
         if more.exists {
             more.tap()
+        } else if leadProfile.exists {
+            leadProfile.tap()
         }
 
         // Patient keeps sign-out on Profile; practitioner and admin on Settings.
@@ -92,7 +97,7 @@ extension XCTestCase {
     /// registered in advance to dismiss reliably, and no other test cares
     /// about the granted/denied state, only that nothing is left blocking
     /// the screen.
-    private func dismissNotificationRationaleIfPresent(_ app: XCUIApplication) {
+    func dismissNotificationRationaleIfPresent(_ app: XCUIApplication) {
         let skip = app.buttons["skip-notifications"]
         if skip.waitForExistence(timeout: 5) {
             skip.tap()

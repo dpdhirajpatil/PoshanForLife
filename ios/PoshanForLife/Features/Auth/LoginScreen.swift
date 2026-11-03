@@ -4,13 +4,31 @@ import SwiftUI
 /// succeeds, so the neutral theme is the only honest choice here. It re-themes
 /// into the role's own theme the moment `state` becomes `.loggedIn`, the same
 /// seam the Android app uses.
+///
+/// Email (staff, and patients with a password) or Phone (OTP; also how a new
+/// person signs up by number), plus email self-signup. Both sign-up paths
+/// create a LEAD account, matching Android's LoginScreen.
 struct LoginScreen: View {
 
     @ObservedObject var viewModel: AuthViewModel
+    @StateObject private var phoneViewModel: PhoneAuthViewModel
     @Environment(\.appTheme) private var theme
     @FocusState private var focusedField: Field?
+    @State private var method: Method = .email
+    @State private var showingSignup = false
 
     private enum Field { case email, password }
+
+    private enum Method: String, CaseIterable, Identifiable {
+        case email = "Email"
+        case phone = "Phone"
+        var id: Self { self }
+    }
+
+    init(viewModel: AuthViewModel) {
+        self.viewModel = viewModel
+        _phoneViewModel = StateObject(wrappedValue: viewModel.makePhoneAuthViewModel())
+    }
 
     var body: some View {
         ZStack {
@@ -26,61 +44,30 @@ struct LoginScreen: View {
                         .font(.bodyFont(size: 15))
                         .foregroundStyle(theme.onBackground.opacity(0.7))
 
-                    VStack(spacing: 0) {
-                        TextField("Email", text: $viewModel.email)
-                            .textContentType(.emailAddress)
-                            .keyboardType(.emailAddress)
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled()
-                            .focused($focusedField, equals: .email)
-                            .submitLabel(.next)
-                            .onSubmit { focusedField = .password }
-                            .padding(.bottom, 12)
-
-                        // Without a rule between them the two fields read as one
-                        // control inside a single border — and iOS excludes
-                        // secure text from screenshots, so the lower row can look
-                        // empty with no cue that it's a separate field.
-                        Divider().overlay(theme.onBackground.opacity(0.12))
-
-                        SecureField("Password", text: $viewModel.password)
-                            .padding(.top, 12)
-                            .textContentType(.password)
-                            .focused($focusedField, equals: .password)
-                            .submitLabel(.go)
-                            .onSubmit { submit() }
+                    Picker("Sign in with", selection: $method) {
+                        ForEach(Method.allCases) { Text($0.rawValue).tag($0) }
                     }
-                    .font(.bodyFont(size: 16))
-                    .padding(14)
-                    .background(theme.surface, in: RoundedCornerShape())
-                    .overlay(
-                        RoundedCornerShape()
-                            .stroke(theme.onBackground.opacity(0.12), lineWidth: 1)
-                    )
+                    .pickerStyle(.segmented)
+                    .accessibilityIdentifier("loginMethod")
 
-                    Button(action: submit) {
-                        // The spinner replaces the label rather than sitting
-                        // beside it, so the button can't change width mid-tap.
-                        Group {
-                            if viewModel.isSubmitting {
-                                ProgressView().tint(theme.onPrimary)
-                            } else {
-                                Text("Sign in")
-                                    .font(.displayFont(.semibold, size: 16))
-                            }
-                        }
-                        .frame(maxWidth: .infinity, minHeight: 50)
+                    switch method {
+                    case .email: emailForm
+                    case .phone: PhoneAuthForm(viewModel: phoneViewModel)
                     }
-                    .background(
-                        (viewModel.canSubmit ? theme.primary : theme.primary.opacity(0.4)),
-                        in: RoundedCornerShape()
-                    )
-                    .foregroundStyle(theme.onPrimary)
-                    .disabled(!viewModel.canSubmit)
+
+                    Button("Don't have an account? Sign up") { showingSignup = true }
+                        .font(.bodyFont(size: 15))
+                        .foregroundStyle(theme.primary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 4)
                 }
                 .padding(24)
             }
             .scrollDismissesKeyboard(.interactively)
+        }
+        .sheet(isPresented: $showingSignup) {
+            SignupScreen(viewModel: viewModel)
+                .appTheme(StaffTheme.self)
         }
         .alert(
             "Couldn't sign in",
@@ -93,16 +80,41 @@ struct LoginScreen: View {
         )
     }
 
+    private var emailForm: some View {
+        Group {
+            VStack(spacing: 0) {
+                TextField("Email", text: $viewModel.email)
+                    .textContentType(.emailAddress)
+                    .keyboardType(.emailAddress)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .focused($focusedField, equals: .email)
+                    .submitLabel(.next)
+                    .onSubmit { focusedField = .password }
+                    .padding(.bottom, 12)
+
+                AuthFieldDivider()
+
+                SecureField("Password", text: $viewModel.password)
+                    .padding(.top, 12)
+                    .textContentType(.password)
+                    .focused($focusedField, equals: .password)
+                    .submitLabel(.go)
+                    .onSubmit { submit() }
+            }
+            .authFieldCard()
+
+            AuthPrimaryButton(
+                title: "Sign in",
+                isLoading: viewModel.isSubmitting,
+                isEnabled: viewModel.canSubmit,
+                action: submit
+            )
+        }
+    }
+
     private func submit() {
         focusedField = nil
         Task { await viewModel.login() }
-    }
-}
-
-/// Patient/Lead use generous rounding; Staff is slightly tighter. Matching
-/// Android's PoshanRoundedShapes / PoshanStaffShapes split.
-private struct RoundedCornerShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        RoundedRectangle(cornerRadius: 12, style: .continuous).path(in: rect)
     }
 }

@@ -31,6 +31,7 @@ final class AppContainer: ObservableObject {
     let userRepository: UserRepository
     let badgesRepository: BadgesRepository
     let leadsRepository: LeadsRepository
+    let leadSelfRepository: LeadSelfRepository
     let catalogueRepository: CatalogueRepository
     let documentsRepository: DocumentsRepository
 
@@ -65,6 +66,7 @@ final class AppContainer: ObservableObject {
         self.notificationsRepository = NotificationsRepositoryImpl(client: client)
         self.userRepository = UserRepositoryImpl(client: client)
         self.badgesRepository = BadgesRepositoryImpl(client: client)
+        self.leadSelfRepository = LeadSelfRepositoryImpl(client: client)
         self.leadsRepository = LeadsRepositoryImpl(client: client)
         self.catalogueRepository = CatalogueRepositoryImpl(client: client)
         self.documentsRepository = DocumentsRepositoryImpl(client: client)

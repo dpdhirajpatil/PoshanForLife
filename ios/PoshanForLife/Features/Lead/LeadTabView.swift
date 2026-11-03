@@ -11,7 +11,7 @@ struct LeadTabView: View {
     var body: some View {
         TabView {
             NavigationStack {
-                PlaceholderScreen(title: "Home")
+                LeadHomeView(repository: container.leadSelfRepository)
                     .toolbar {
                         ToolbarItem(placement: .navigationBarTrailing) {
                             NotificationBellButton(
@@ -23,17 +23,28 @@ struct LeadTabView: View {
             }
             .tabItem { Label("Home", systemImage: "house.fill") }
 
-            tab("Track", systemImage: "chart.xyaxis.line")
-            tab("Goals", systemImage: "target")
-            tab("Profile", systemImage: "person.crop.circle.fill", showsSignOut: true)
+            // Track and Goals are the patient screens, reused as on Android:
+            // the backend lets a LEAD log and read its own health records.
+            NavigationStack {
+                TrackView(
+                    repository: container.healthTracking,
+                    goalsStore: container.goalsStore,
+                    reminders: container.reminderScheduler,
+                    healthKit: container.healthKitManager
+                )
+            }
+            .tabItem { Label("Track", systemImage: "chart.xyaxis.line") }
+
+            NavigationStack {
+                GoalsView(store: container.goalsStore)
+            }
+            .tabItem { Label("Goals", systemImage: "target") }
+
+            NavigationStack {
+                ProfileView(healthKit: container.healthKitManager, themePreferenceStore: container.themePreferenceStore)
+            }
+            .tabItem { Label("Profile", systemImage: "person.crop.circle.fill") }
         }
         .tint(theme.onBackground)
-    }
-
-    private func tab(_ title: String, systemImage: String, showsSignOut: Bool = false) -> some View {
-        NavigationStack {
-            PlaceholderScreen(title: title, showsSignOut: showsSignOut)
-        }
-        .tabItem { Label(title, systemImage: systemImage) }
     }
 }
