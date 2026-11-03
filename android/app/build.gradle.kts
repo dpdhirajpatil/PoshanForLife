@@ -48,6 +48,10 @@ android {
         }
     }
 
+    // Instrumented tests run against debug (local backend) by default.
+    // `-PtestBuildType=staging` runs them against the AWS dev environment.
+    testBuildType = (project.findProperty("testBuildType") as String?) ?: "debug"
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
